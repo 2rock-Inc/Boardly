@@ -1,0 +1,52 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(swift build *)",
+      "Bash(swift test *)",
+      "Bash(xcodebuild *)",
+      "Bash(xcrun simctl *)",
+      "Bash(swiftlint *)",
+      "Bash(swiftformat *)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./**/*.xcconfig)",
+      "Read(./secrets/**)",
+      "Read(./**/GoogleService-Info.plist)",
+      "Bash(curl *)"
+    ],
+    "defaultMode": "acceptEdits"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $CLAUDE_PROJECT_DIR/.claude/hooks/block-secrets.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $CLAUDE_PROJECT_DIR/.claude/hooks/swift-format.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "apple-skills@apple-skills": true,
+    "security-guidance@claude-plugins-official": true
+  }
+}
