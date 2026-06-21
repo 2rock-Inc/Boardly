@@ -18,8 +18,10 @@ public struct PlankaClient: Sendable {
     // MARK: - Auth
 
     public func validateInstance() async throws -> Bootstrap {
+        struct Response: Decodable { let item: Bootstrap }
         let request = try buildRequest(method: "GET", path: "/bootstrap", requiresAuth: false)
-        return try await execute(request)
+        let response: Response = try await execute(request)
+        return response.item
     }
 
     public func login(emailOrUsername: String, password: String) async throws {

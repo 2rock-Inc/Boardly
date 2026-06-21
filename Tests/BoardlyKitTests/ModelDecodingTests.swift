@@ -81,7 +81,8 @@ struct ModelDecodingTests {
     @Test("Decode Bootstrap from fixture")
     func decodeBootstrap() throws {
         let data = loadFixture("bootstrap")
-        let bootstrap = try JSONDecoder.planka.decode(Bootstrap.self, from: data)
+        struct Response: Decodable { let item: Bootstrap }
+        let bootstrap = try JSONDecoder.planka.decode(Response.self, from: data).item
 
         #expect(bootstrap.version == "2.0.1")
         #expect(bootstrap.oidc == nil)

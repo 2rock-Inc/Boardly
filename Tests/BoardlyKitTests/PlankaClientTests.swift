@@ -23,7 +23,7 @@ struct PlankaClientTests {
 
     @Test("validateInstance sends GET /bootstrap without auth header")
     func validateInstanceRequest() async throws {
-        mockHTTP.stub(json: #"{"version":"2.0.1","termsLanguages":[],"oidc":null}"#)
+        mockHTTP.stub(json: #"{"item":{"version":"2.0.1","termsLanguages":[],"oidc":null}}"#)
         _ = try await client.validateInstance()
 
         let request = try #require(mockHTTP.lastRequest)
@@ -167,7 +167,7 @@ struct PlankaClientTests {
             tokenStore: TokenStore(profileID: subpathProfile.id, keychainStore: mockKeychain),
             httpClient: mockHTTP
         )
-        mockHTTP.stub(json: #"{"version":"2.0.1","termsLanguages":[],"oidc":null}"#)
+        mockHTTP.stub(json: #"{"item":{"version":"2.0.1","termsLanguages":[],"oidc":null}}"#)
         _ = try await subClient.validateInstance()
 
         let request = try #require(mockHTTP.lastRequest)
