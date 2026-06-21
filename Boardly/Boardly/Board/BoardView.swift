@@ -60,10 +60,12 @@ struct BoardView: View {
                 description: Text("Add lists to this board from the web app.")
             )
         } else {
-            // VStack+Spacer anchors the HStack to the top; without it the HStack
-            // floats to the vertical centre of the ScrollView's content area.
-            ScrollView(.horizontal, showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 0) {
+            // The ScrollView wraps only the kanban row; a Spacer OUTSIDE (in the
+            // VStack) fills the remaining height so the columns stay pinned to top.
+            // Putting the Spacer inside the ScrollView doesn't work — the horizontal
+            // scroll view floats small content to the vertical centre.
+            VStack(alignment: .leading, spacing: 0) {
+                ScrollView(.horizontal, showsIndicators: false) {
                     HStack(alignment: .top, spacing: 12) {
                         ForEach(lists) { list in
                             ListColumnView(
@@ -79,12 +81,11 @@ struct BoardView: View {
                         }
                     }
                     .padding(.horizontal, 16)
-                    .padding(.top, 12)
-                    .padding(.bottom, 12)
-                    Spacer(minLength: 0)
+                    .padding(.vertical, 12)
                 }
-                .frame(minHeight: 0, maxHeight: .infinity, alignment: .top)
+                Spacer(minLength: 0)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .background(Color(.systemGroupedBackground))
         }
     }
