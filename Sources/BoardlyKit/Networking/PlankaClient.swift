@@ -55,7 +55,7 @@ public struct PlankaClient: Sendable {
             throw PlankaAPIError.invalidURL
         }
         let basePath = components.path.hasSuffix("/") ? String(components.path.dropLast()) : components.path
-        components.path = basePath + path
+        components.path = basePath + "/api" + path
 
         guard let url = components.url else {
             throw PlankaAPIError.invalidURL

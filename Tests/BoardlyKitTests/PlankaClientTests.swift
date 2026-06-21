@@ -171,6 +171,6 @@ struct PlankaClientTests {
         _ = try await subClient.validateInstance()
 
         let request = try #require(mockHTTP.lastRequest)
-        #expect(request.url?.absoluteString == "https://example.com/planka/bootstrap")
+        #expect(request.url?.absoluteString == "https://example.com/planka/api/bootstrap")
     }
 }
