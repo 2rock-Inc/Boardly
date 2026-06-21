@@ -56,7 +56,7 @@ struct BoardView: View {
             )
         } else {
             ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: 12) {
+                LazyHStack(alignment: .top, spacing: 12) {
                     ForEach(lists) { list in
                         ListColumnView(
                             list: list,
@@ -67,7 +67,7 @@ struct BoardView: View {
                                 Task { await viewModel.createCard(in: list, name: name) }
                             }
                         )
-                        .containerRelativeFrame(.horizontal, count: 1, spacing: 12)
+                        .frame(width: 300)
                     }
                 }
                 .scrollTargetLayout()

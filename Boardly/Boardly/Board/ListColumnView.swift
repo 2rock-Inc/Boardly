@@ -32,7 +32,7 @@ struct ListColumnView: View {
 
             Divider()
 
-            // Cards
+            // Cards — height adapts to content, scrollable beyond 400 pt
             ScrollView(.vertical, showsIndicators: false) {
                 LazyVStack(spacing: 8) {
                     ForEach(cards) { card in
@@ -60,6 +60,7 @@ struct ListColumnView: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
             }
+            .frame(maxHeight: 400)
 
             Divider()
 
@@ -79,6 +80,7 @@ struct ListColumnView: View {
         .background(.background)
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .shadow(color: .black.opacity(0.06), radius: 4, y: 2)
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     private func submitNewCard() {
