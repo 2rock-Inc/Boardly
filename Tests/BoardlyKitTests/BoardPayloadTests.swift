@@ -30,7 +30,8 @@ struct BoardPayloadTests {
         let inc = response.included
 
         #expect(response.item.name == "Sprint 1")
-        #expect((inc.lists ?? []).count == 2)
+        #expect((inc.lists ?? []).count == 4)  // 2 active + 1 archive + 1 trash
+        #expect((inc.lists ?? []).filter { $0.type == "active" }.count == 2)
         #expect((inc.cards ?? []).count == 2)
         #expect((inc.taskLists ?? []).count == 1)
         #expect((inc.tasks ?? []).count == 2)

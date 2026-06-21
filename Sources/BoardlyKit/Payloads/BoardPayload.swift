@@ -35,6 +35,7 @@ public struct BoardPayload: Sendable {
 
     public func sortedLists() -> [PlankaList] {
         lists
+            .filter { $0.type == "active" }
             .sorted { ($0.position ?? 0) < ($1.position ?? 0) }
     }
 

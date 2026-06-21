@@ -21,6 +21,7 @@
       {
         "id": "list-001",
         "boardId": "board-001",
+        "type": "active",
         "position": 65536,
         "name": "To Do",
         "color": null,
@@ -30,11 +31,32 @@
       {
         "id": "list-002",
         "boardId": "board-001",
+        "type": "active",
         "position": 131072,
         "name": "In Progress",
         "color": null,
         "createdAt": "2024-01-01T10:00:00.000Z",
         "updatedAt": "2024-01-01T10:00:00.000Z"
+      },
+      {
+        "id": "list-sys-archive",
+        "boardId": "board-001",
+        "type": "archive",
+        "position": null,
+        "name": null,
+        "color": null,
+        "createdAt": "2024-01-01T10:00:00.000Z",
+        "updatedAt": null
+      },
+      {
+        "id": "list-sys-trash",
+        "boardId": "board-001",
+        "type": "trash",
+        "position": null,
+        "name": null,
+        "color": null,
+        "createdAt": "2024-01-01T10:00:00.000Z",
+        "updatedAt": null
       }
     ],
     "cards": [
