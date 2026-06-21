@@ -98,7 +98,8 @@ struct LoginView: View {
         Task {
             let client = profileStore.makeClient(for: profile)
             if await viewModel.login(using: client) {
-                path.append(.main(profileID: profile.id))
+                profileStore.setActiveProfile(id: profile.id)
+                // RootView swaps to MainView when activeProfile becomes non-nil
             }
         }
     }
