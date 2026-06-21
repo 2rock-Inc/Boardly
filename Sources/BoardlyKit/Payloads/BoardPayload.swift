@@ -35,7 +35,6 @@ public struct BoardPayload: Sendable {
 
     public func sortedLists() -> [PlankaList] {
         lists
-            .filter { $0.type == nil }  // PLANKA system lists (archive etc.) have a non-nil type
             .sorted { ($0.position ?? 0) < ($1.position ?? 0) }
     }
 
