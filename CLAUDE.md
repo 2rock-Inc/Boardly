@@ -1,101 +1,149 @@
-# Boardly — Project Brief for Claude Code
+# CLAUDE.md
 
-## Context
-**Boardly** is a native iOS client (SwiftUI) for **PLANKA**, the open source /
-self-hosted collaborative kanban app (https://github.com/plankanban/planka).
-The app must work with **any self-hosted PLANKA instance** belonging to any
-user — this is not an app for a single personal instance. Boardly has no
-backend of its own: the app talks directly over REST to the user's PLANKA
-instance.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Reference API spec (OpenAPI 3.0): `https://plankanban.github.io/planka/swagger-ui/swagger.json`
-→ Download it and commit it to the repo under `Reference/planka-openapi.json`
-(source of truth for the models — do not infer them from the Postman docs).
+## What this project is
 
-## Repo
-**Mono-repo** named `boardly`, containing both the API client module and the
-SwiftUI app:
+**Boardly** is a native iOS SwiftUI client for any self-hosted [PLANKA](https://github.com/plankanban/planka) instance. It has no backend of its own — the app talks directly to the user's PLANKA server over REST (and Socket.IO for real-time updates). It must support multiple server profiles (one user, many PLANKA instances).
+
+The canonical API reference is `Reference/planka-openapi.json` (OpenAPI 3.0). **Always derive models from this file**, not from Postman docs or guesswork.
+
+The work is split into 5 phases — see `ROADMAP.md` for the execution plan and the suggested kickoff prompt for each phase.
+
+---
+
+## Commands
+
+```bash
+# Build the BoardlyKit SPM module
+swift build
+
+# Run unit tests (BoardlyKit only — no Xcode needed)
+swift test
+
+# Run a single test
+swift test --filter BoardlyKitTests./
+
+# Build the Xcode app (simulator)
+xcodebuild -project Boardly/Boardly.xcodeproj -scheme Boardly -destination 'platform=iOS Simulator,name=iPhone 16' build
+
+# Run app tests via Xcode
+xcodebuild -project Boardly/Boardly.xcodeproj -scheme Boardly -destination 'platform=iOS Simulator,name=iPhone 16' test
+
+# Format (auto-runs as a post-edit hook)
+swiftformat .
+```
+
+---
+
+## Repo layout
 
 ```
 boardly/
-├── Package.swift          # declares the BoardlyKit module
-├── Sources/
-│   └── BoardlyKit/         # PLANKA API client (models + networking + auth)
-├── Boardly.xcodeproj       # SwiftUI app, depends on BoardlyKit locally
-├── Boardly/                # app code (Views, etc.)
-├── Reference/
-│   └── planka-openapi.json
-└── CLAUDE.md
+├── Package.swift              # SPM manifest — declares BoardlyKit  [Phase 1]
+├── Sources/BoardlyKit/        # PLANKA API client: models, networking, auth, real-time  [Phase 1]
+├── Tests/BoardlyKitTests/     # unit tests for BoardlyKit  [Phase 1]
+├── Reference/planka-openapi.json  # canonical API spec  [Phase 1]
+└── Boardly/                   # Xcode project folder (already exists)
+    ├── Boardly.xcodeproj      # SwiftUI app, will depend on BoardlyKit locally
+    └── Boardly/               # app source (Views, ViewModels, Resources)
 ```
 
-## Module architecture
-1. **`BoardlyKit`** (Swift module, under `Sources/`)
-   - PLANKA API client: `Codable` models, networking layer, token management
-   - Must be testable and usable independently of the UI
-   - No third-party networking dependency: `URLSession` + `async/await`
+Items marked `[Phase 1]` do not exist yet — they are created in the first implementation phase.
 
-2. **`Boardly`** (SwiftUI app target)
-   - Consumes `BoardlyKit` as a local dependency (same repo)
-   - No business logic directly inside Views
+---
 
-## Tech stack
-- Recent Swift (6.x), SwiftUI
-- `URLSession` + `async/await`, no Alamofire
-- Token storage: **Keychain** (never `UserDefaults`)
-- No CloudKit (unlike CyberScan) — this is a genuine third-party REST API
-- No Socket.IO / real-time in V1 (see Out of scope)
+## Architecture rules
+
+### BoardlyKit (SPM module)
+- Pure Swift — no UIKit, no SwiftUI
+- REST networking: `URLSession` + `async/await` only (no Alamofire)
+- Real-time: a Socket.IO client library is the **one allowed third-party dependency**, scoped strictly to the real-time sync layer — do not introduce other third-party dependencies for REST, auth, or models
+- Token storage: **Keychain only** — never `UserDefaults`
+- Tokens are scoped per server profile (keyed by the base URL or a stable profile ID)
+- Tests must be possible via a mockable `URLSession` protocol; no real network in tests
+
+### Boardly (SwiftUI app)
+- Views hold **no business logic** — all logic lives in `@Observable` view models or BoardlyKit
+- State pattern: **MV (Model-View)** — `@Observable` view models injected explicitly, no singletons passed through the environment unless it is a top-level app-wide store (e.g. `ProfileStore`)
+- Navigation: `NavigationStack` with a path-based router; no sheet-only navigation for primary flows
+- Multi-instance from day one: every API call (REST and Socket.IO) goes through a `PlankaClient` instance bound to a specific server profile, never a global client
+
+### Data flow
+- `GET /boards/{id}` returns an `included` sideloaded payload — parse lists, cards, and tasks from there; **never** make one network call per card/task
+- Real-time: subscribe to the board's Socket.IO event stream while it is open to keep lists/cards/tasks in sync live; pull-to-refresh remains as a manual fallback/recovery mechanism (e.g. after reconnecting)
+- The Socket.IO connection is per server profile and must be torn down when leaving a board or switching profiles — never kept alive across profiles
+
+---
 
 ## Authentication
-- Primary login: `POST /access-tokens` (`emailOrUsername` + `password`) → JWT
-- Store the JWT in Keychain, **scoped per server profile** (see multi-instance)
-- Handle the 401 case (expired token) → route back to that profile's login
-- OIDC/SSO: out of scope for V1
 
-## Core requirement: multi-instance (not a V2 option)
-Since the app targets every self-hosted PLANKA user, from V1 onward:
-- **Onboarding screen**: the user enters their server URL
-  - Validate that the instance responds before offering login (don't blindly
-    assume `/api` — PLANKA supports subpath hosting since v2.1)
-- **Multiple stored server profiles**, with a profile switcher (a single user
-  may have a personal PLANKA, a club/association PLANKA, etc.)
-- **Self-signed certificates / private networks**: do not disable ATS
-  globally. Provide an explicit "trust this certificate" flow with a visible
-  warning to the user, not a silent bypass.
+- Login: `POST /access-tokens` with `emailOrUsername` + `password` → JWT, **or** via OIDC/SSO using `POST /access-tokens/exchange-with-oidc`
+- Store JWT in Keychain keyed to the profile's base URL
+- On 401: clear the stored token and route back to that profile's login screen
+- PLANKA supports subpath hosting (e.g. `https://example.com/planka`), so the base URL is user-supplied — validate the instance responds before showing the login form
+- Self-signed certificates: surface an explicit "trust this certificate" warning UI; **do not disable ATS globally or silently bypass TLS errors**
 
-## V1 functional scope (minimal — do not over-build)
-- Onboarding: add/select server profile + login
-- List of projects → boards (`GET /projects`, `GET /boards/{id}`)
-- Display lists and cards of a board (from the `included` payload returned
-  by `GET /boards/{id}` — don't make one call per card)
-- Create a card within a list, edit it (name, description, dueDate, move
-  between lists via `listId`)
-- View/create a task within a card's task list, toggle completion
-  (`PATCH` on `isCompleted`)
-- Manual pull-to-refresh to resync
-- Logout / remove a profile
+---
 
-## Explicitly out of scope for V1 (to avoid over-building)
-- Real-time sync via Socket.IO/WebSocket
-- Custom fields, labels, attachments, comments, notifications
-- OIDC/SSO login
+## PLANKA error codes
+
+PLANKA returns structured errors. Map these centrally in `BoardlyKit`:
+
+| Code | Meaning |
+|------|---------|
+| `E_UNAUTHORIZED` | 401 — token expired or missing |
+| `E_FORBIDDEN` | 403 — insufficient permissions |
+| `E_NOT_FOUND` | 404 |
+| `E_CONFLICT` | 409 |
+| `E_MISSING_OR_INVALID_PARAMS` | 422 |
+
+---
+
+## V1 scope
+
+**In scope:**
+- Add / select server profile, login (password or OIDC/SSO), logout, remove profile
+- Projects → boards list (`GET /projects`, board list from project payload)
+- Board detail: lists and cards from `GET /boards/{id}` `included` payload
+- Real-time sync of boards/lists/cards/tasks via Socket.IO, with pull-to-refresh as fallback
+- Create card, edit card (name, description, dueDate, move between lists via `listId`)
+- View / create tasks inside a card's task list; toggle `isCompleted`
+- Labels: create, assign, and remove labels on cards
+- Attachments: add and view attachments (file or link) on cards
+- Comments: add and view comments on cards
+- Custom fields: create/manage custom field groups and fields, set values on cards
+- Notifications: view in-app notifications, mark as read; manage notification services
+- Board backgrounds: set/change a board's background image
+- Admin config: webhooks management and instance config (SMTP, etc.) where the authenticated user has admin rights
+
+**Explicitly out of scope — do not implement:**
 - Trello import
-- Admin endpoints (Config, Webhooks, Background Images)
 
-## Expected deliverables
-- `Package.swift` declaring `BoardlyKit` with models aligned to the OpenAPI
-  schemas (`Board`, `List`, `Card`, `Task`, `TaskList`, `User`, `Project`...)
-- Centralized error handling on PLANKA's standardized error codes
-  (`E_UNAUTHORIZED`, `E_FORBIDDEN`, `E_NOT_FOUND`, `E_CONFLICT`,
-  `E_MISSING_OR_INVALID_PARAMS`)
-- Unit tests for the API client (mockable URLSession)
-- `Boardly.xcodeproj` referencing `BoardlyKit` locally
-- A `CLAUDE.md` at the repo root documenting Git branch conventions, the
-  SwiftUI state patterns in use, and architecture rules (same spirit as the
-  one already in place on CyberScan)
+---
 
-## First task for Claude Code
-Set up the repo structure above (`Sources/BoardlyKit`, the initial
-`Package.swift`, an empty `Boardly` Xcode project wired to the module),
-download and commit the reference OpenAPI spec, then propose the `Codable`
-models for `Board`, `List`, `Card`, `Task`, and `TaskList` before starting on
-the networking layer.
+## Git workflow
+
+### Branches
+- `main` — always releasable; no direct commits for features
+- `feat/<short-slug>` — new features
+- `fix/<short-slug>` — bug fixes
+- `chore/<short-slug>` — tooling, CI, non-functional changes
+
+### Commit messages
+Format: `<emoji> <type>(<scope>): <imperative message>`
+
+| Type | Emoji |
+|------|-------|
+| feat | ✨ |
+| fix | 🐛 |
+| docs | 📝 |
+| refactor | ♻️ |
+| style | 🎨 |
+| test | ✅ |
+| chore | 🧑‍💻 |
+| wip | 🚧 |
+
+Example: `✨ feat(auth): add OIDC token exchange flow`
+
+PRs require a passing `swift test` run. Squash-merge into `main`.

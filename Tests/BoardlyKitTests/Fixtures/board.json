@@ -1,0 +1,54 @@
+{
+  "item": {
+    "id": "board-abc-789",
+    "projectId": "project-xyz-456",
+    "position": 65535.0,
+    "name": "Sprint 1",
+    "defaultView": "board",
+    "defaultCardType": "task",
+    "limitCardTypesToDefaultOne": false,
+    "alwaysDisplayCardCreator": false,
+    "expandTaskListsByDefault": false,
+    "createdAt": "2024-01-20T09:00:00.000Z",
+    "updatedAt": "2024-06-01T08:00:00.000Z"
+  },
+  "included": {
+    "lists": [
+      {
+        "id": "list-001",
+        "boardId": "board-abc-789",
+        "type": "active",
+        "position": 65535.0,
+        "name": "To Do",
+        "color": null,
+        "createdAt": "2024-01-20T09:00:00.000Z",
+        "updatedAt": "2024-01-20T09:00:00.000Z"
+      }
+    ],
+    "cards": [
+      {
+        "id": "card-001",
+        "boardId": "board-abc-789",
+        "listId": "list-001",
+        "creatorUserId": "user-abc-123",
+        "prevListId": null,
+        "coverAttachmentId": null,
+        "type": "task",
+        "position": 65535.0,
+        "name": "Implement login",
+        "description": null,
+        "dueDate": null,
+        "isDueCompleted": false,
+        "stopwatch": null,
+        "commentsTotal": 0,
+        "isClosed": false,
+        "listChangedAt": null,
+        "createdAt": "2024-01-20T09:05:00.000Z",
+        "updatedAt": "2024-01-20T09:05:00.000Z"
+      }
+    ],
+    "users": [],
+    "labels": [],
+    "boardMemberships": []
+  }
+}

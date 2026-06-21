@@ -1,0 +1,21 @@
+patterns:
+  - rule_name: tls_bypass_all_certs
+    regex: "useCredential.*URLCredential\\(trust:"
+    paths: ["**/*.swift"]
+    reminder: "Possible blanket TLS trust bypass. Self-signed certs must go through an explicit per-server trust flow, never an unconditional accept in URLSessionDelegate."
+
+  - rule_name: token_in_userdefaults
+    regex: "UserDefaults.*\\.(set|string)\\(.*[Tt]oken"
+    paths: ["**/*.swift"]
+    reminder: "Auth tokens must be stored in the Keychain, never in UserDefaults."
+
+  - rule_name: hardcoded_planka_credentials
+    substrings: ["emailOrUsername =", "password =\""]
+    paths: ["**/*.swift"]
+    exclude_paths: ["**/Tests/**"]
+    reminder: "Looks like a hardcoded PLANKA login. Credentials must come from user input or the Keychain, never be hardcoded outside tests."
+
+  - rule_name: token_logging
+    regex: "(print|os_log|NSLog)\\(.*[Aa]uthorization"
+    paths: ["**/*.swift"]
+    reminder: "Never log the Authorization or X-Api-Key header, even in debug builds."

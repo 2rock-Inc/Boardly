@@ -1,0 +1,39 @@
+included:
+  - Boardly
+  - Sources/BoardlyKit
+  - Tests
+
+excluded:
+  - .build
+  - DerivedData
+  - Reference
+
+opt_in_rules:
+  - empty_count
+  - explicit_init
+  - closure_spacing
+  - redundant_type_annotation
+  - sorted_imports
+  - unused_import
+
+disabled_rules:
+  - todo
+
+line_length:
+  warning: 140
+  error: 200
+
+identifier_name:
+  min_length:
+    warning: 2
+  excluded:
+    - id
+    - i
+    - j
+
+type_name:
+  min_length: 3
+
+force_cast: warning
+force_try: warning
+force_unwrapping: warning
