@@ -3,7 +3,7 @@ import Foundation
 public struct Board: Codable, Identifiable, Sendable {
     public let id: String
     public let projectId: String
-    public let position: Double
+    public let position: Double?
     public let name: String
     public let defaultView: String?
     public let defaultCardType: String?

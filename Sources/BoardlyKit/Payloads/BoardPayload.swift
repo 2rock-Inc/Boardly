@@ -34,12 +34,12 @@ public struct BoardPayload: Sendable {
     }
 
     public func sortedLists() -> [PlankaList] {
-        lists.sorted { $0.position < $1.position }
+        lists.sorted { ($0.position ?? 0) < ($1.position ?? 0) }
     }
 
     public func cards(for list: PlankaList) -> [Card] {
         cards.filter { $0.listId == list.id }
-             .sorted { $0.position < $1.position }
+             .sorted { ($0.position ?? 0) < ($1.position ?? 0) }
     }
 
     public func card(id: String) -> Card? {
@@ -48,12 +48,12 @@ public struct BoardPayload: Sendable {
 
     public func taskLists(for card: Card) -> [TaskList] {
         taskLists.filter { $0.cardId == card.id }
-                 .sorted { $0.position < $1.position }
+                 .sorted { ($0.position ?? 0) < ($1.position ?? 0) }
     }
 
     public func tasks(for taskList: TaskList) -> [PlankaTask] {
         tasks.filter { $0.taskListId == taskList.id }
-             .sorted { $0.position < $1.position }
+             .sorted { ($0.position ?? 0) < ($1.position ?? 0) }
     }
 
     public func nextCardPosition(in list: PlankaList) -> Double {

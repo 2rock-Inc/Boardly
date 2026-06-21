@@ -8,7 +8,7 @@ public struct Card: Codable, Identifiable, Sendable {
     public let prevListId: String?
     public let coverAttachmentId: String?
     public let type: String
-    public let position: Double
+    public let position: Double?
     public let name: String
     public let description: String?
     public let dueDate: Date?
