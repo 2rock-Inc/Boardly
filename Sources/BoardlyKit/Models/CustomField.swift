@@ -6,7 +6,7 @@ public struct CustomField: Codable, Identifiable, Sendable {
     public let customFieldGroupId: String?
     public let position: Double?
     public let name: String
-    public let showOnFrontOfCard: Bool
+    public let showOnFrontOfCard: Bool?
     public let createdAt: Date?
     public let updatedAt: Date?
 }

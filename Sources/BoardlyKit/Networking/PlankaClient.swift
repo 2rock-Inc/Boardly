@@ -81,6 +81,12 @@ public struct PlankaClient: Sendable {
         let request = try buildRequest(method: "GET", path: "/boards/\(id)")
         let response: Response = try await execute(request)
         let inc = response.included
+        BoardlyLog.tag(.board).icon("📋").info("Board payload decoded", metadata: [
+            "lists": "\(inc.lists?.count ?? -1)",
+            "cards": "\(inc.cards?.count ?? -1)",
+            "taskLists": "\(inc.taskLists?.count ?? -1)",
+            "tasks": "\(inc.tasks?.count ?? -1)",
+        ])
         return BoardPayload(
             board: response.item,
             lists: inc.lists ?? [],
