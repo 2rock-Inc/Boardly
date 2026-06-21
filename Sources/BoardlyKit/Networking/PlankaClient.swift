@@ -39,6 +39,121 @@ public struct PlankaClient: Sendable {
         try tokenStore.saveToken(response.item)
     }
 
+    // MARK: - Projects
+
+    public func getProjects() async throws -> ProjectsPayload {
+        struct ProjectsIncluded: Decodable {
+            let boards: [Board]
+        }
+        struct Response: Decodable {
+            let items: [Project]
+            let included: ProjectsIncluded
+        }
+        let request = try buildRequest(method: "GET", path: "/projects")
+        let response: Response = try await execute(request)
+        return ProjectsPayload(projects: response.items, boards: response.included.boards)
+    }
+
+    // MARK: - Board
+
+    public func getBoard(id: String) async throws -> BoardPayload {
+        struct BoardIncluded: Decodable {
+            let lists: [PlankaList]?
+            let cards: [Card]?
+            let taskLists: [TaskList]?
+            let tasks: [PlankaTask]?
+            let labels: [Label]?
+            let cardMemberships: [CardMembership]?
+            let cardLabels: [CardLabel]?
+            let users: [User]?
+        }
+        struct Response: Decodable {
+            let item: Board
+            let included: BoardIncluded
+        }
+        let request = try buildRequest(method: "GET", path: "/boards/\(id)")
+        let response: Response = try await execute(request)
+        let inc = response.included
+        return BoardPayload(
+            board: response.item,
+            lists: inc.lists ?? [],
+            cards: inc.cards ?? [],
+            taskLists: inc.taskLists ?? [],
+            tasks: inc.tasks ?? [],
+            labels: inc.labels ?? [],
+            cardMemberships: inc.cardMemberships ?? [],
+            cardLabels: inc.cardLabels ?? [],
+            users: inc.users ?? []
+        )
+    }
+
+    // MARK: - Cards
+
+    public func createCard(listId: String, name: String, position: Double) async throws -> Card {
+        struct Body: Encodable { let name: String; let position: Double }
+        struct Response: Decodable { let item: Card }
+        let body = try JSONEncoder().encode(Body(name: name, position: position))
+        let request = try buildRequest(method: "POST", path: "/lists/\(listId)/cards", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    public func updateCard(id: String, patch: CardPatch) async throws -> Card {
+        struct Response: Decodable { let item: Card }
+        let body = try JSONEncoder().encode(patch)
+        let request = try buildRequest(method: "PATCH", path: "/cards/\(id)", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    @discardableResult
+    public func deleteCard(id: String) async throws -> Card {
+        struct Response: Decodable { let item: Card }
+        let request = try buildRequest(method: "DELETE", path: "/cards/\(id)")
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    // MARK: - Task lists
+
+    public func createTaskList(cardId: String, name: String, position: Double) async throws -> TaskList {
+        struct Body: Encodable { let name: String; let position: Double }
+        struct Response: Decodable { let item: TaskList }
+        let body = try JSONEncoder().encode(Body(name: name, position: position))
+        let request = try buildRequest(method: "POST", path: "/cards/\(cardId)/task-lists", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    // MARK: - Tasks
+
+    public func createTask(taskListId: String, name: String, position: Double) async throws -> PlankaTask {
+        struct Body: Encodable { let name: String; let position: Double }
+        struct Response: Decodable { let item: PlankaTask }
+        let body = try JSONEncoder().encode(Body(name: name, position: position))
+        let request = try buildRequest(method: "POST", path: "/task-lists/\(taskListId)/tasks", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    public func updateTask(id: String, patch: TaskPatch) async throws -> PlankaTask {
+        struct Response: Decodable { let item: PlankaTask }
+        let body = try JSONEncoder().encode(patch)
+        let request = try buildRequest(method: "PATCH", path: "/tasks/\(id)", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    @discardableResult
+    public func deleteTask(id: String) async throws -> PlankaTask {
+        struct Response: Decodable { let item: PlankaTask }
+        let request = try buildRequest(method: "DELETE", path: "/tasks/\(id)")
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    // MARK: - Auth (continued)
+
     public func logout() async throws {
         let request = try buildRequest(method: "DELETE", path: "/access-tokens/me")
         try await executeVoid(request)

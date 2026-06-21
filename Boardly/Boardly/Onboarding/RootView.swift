@@ -16,8 +16,10 @@ struct RootView: View {
                         if let profile = profileStore.profiles.first(where: { $0.id == profileID }) {
                             LoginView(profile: profile, path: $path)
                         }
-                    case .main:
-                        MainPlaceholderView()
+                    case .main(let profileID):
+                        if let profile = profileStore.profiles.first(where: { $0.id == profileID }) {
+                            MainView(profile: profile)
+                        }
                     }
                 }
         }

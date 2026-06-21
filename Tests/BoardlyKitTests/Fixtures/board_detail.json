@@ -1,0 +1,127 @@
+{
+  "item": {
+    "id": "board-001",
+    "projectId": "proj-001",
+    "position": 65536,
+    "name": "Sprint 1",
+    "defaultView": "board",
+    "defaultCardType": "project",
+    "limitCardTypesToDefaultOne": false,
+    "alwaysDisplayCardCreator": false,
+    "expandTaskListsByDefault": true,
+    "createdAt": "2024-01-01T10:00:00.000Z",
+    "updatedAt": "2024-01-01T10:00:00.000Z"
+  },
+  "included": {
+    "users": [],
+    "projects": [],
+    "boardMemberships": [],
+    "labels": [],
+    "lists": [
+      {
+        "id": "list-001",
+        "boardId": "board-001",
+        "position": 65536,
+        "name": "To Do",
+        "color": null,
+        "createdAt": "2024-01-01T10:00:00.000Z",
+        "updatedAt": "2024-01-01T10:00:00.000Z"
+      },
+      {
+        "id": "list-002",
+        "boardId": "board-001",
+        "position": 131072,
+        "name": "In Progress",
+        "color": null,
+        "createdAt": "2024-01-01T10:00:00.000Z",
+        "updatedAt": "2024-01-01T10:00:00.000Z"
+      }
+    ],
+    "cards": [
+      {
+        "id": "card-001",
+        "boardId": "board-001",
+        "listId": "list-001",
+        "creatorUserId": "user-001",
+        "prevListId": null,
+        "coverAttachmentId": null,
+        "type": "project",
+        "position": 65536,
+        "name": "Implement login",
+        "description": null,
+        "dueDate": null,
+        "isDueCompleted": null,
+        "stopwatch": null,
+        "commentsTotal": 0,
+        "isClosed": false,
+        "isSubscribed": false,
+        "listChangedAt": null,
+        "createdAt": "2024-01-02T10:00:00.000Z",
+        "updatedAt": "2024-01-02T10:00:00.000Z"
+      },
+      {
+        "id": "card-002",
+        "boardId": "board-001",
+        "listId": "list-002",
+        "creatorUserId": "user-001",
+        "prevListId": null,
+        "coverAttachmentId": null,
+        "type": "project",
+        "position": 65536,
+        "name": "Fix crash on startup",
+        "description": "App crashes when launched on iOS 17.",
+        "dueDate": "2024-03-31T23:59:59.000Z",
+        "isDueCompleted": false,
+        "stopwatch": null,
+        "commentsTotal": 2,
+        "isClosed": false,
+        "isSubscribed": true,
+        "listChangedAt": null,
+        "createdAt": "2024-01-03T10:00:00.000Z",
+        "updatedAt": "2024-01-03T10:00:00.000Z"
+      }
+    ],
+    "cardMemberships": [],
+    "cardLabels": [],
+    "taskLists": [
+      {
+        "id": "tl-001",
+        "cardId": "card-001",
+        "position": 65536,
+        "name": "Tasks",
+        "showOnFrontOfCard": true,
+        "hideCompletedTasks": false,
+        "createdAt": "2024-01-02T10:00:00.000Z",
+        "updatedAt": "2024-01-02T10:00:00.000Z"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "task-001",
+        "taskListId": "tl-001",
+        "linkedCardId": null,
+        "assigneeUserId": null,
+        "position": 65536,
+        "name": "Write unit tests",
+        "isCompleted": false,
+        "createdAt": "2024-01-02T10:00:00.000Z",
+        "updatedAt": "2024-01-02T10:00:00.000Z"
+      },
+      {
+        "id": "task-002",
+        "taskListId": "tl-001",
+        "linkedCardId": null,
+        "assigneeUserId": null,
+        "position": 131072,
+        "name": "Code review",
+        "isCompleted": true,
+        "createdAt": "2024-01-02T10:00:00.000Z",
+        "updatedAt": "2024-01-02T10:00:00.000Z"
+      }
+    ],
+    "attachments": [],
+    "customFieldGroups": [],
+    "customFields": [],
+    "customFieldValues": []
+  }
+}
