@@ -7,7 +7,7 @@ struct BoardView: View {
     let boardName: String
 
     @State private var viewModel: BoardViewModel
-    @State private var selectedCardId: String?
+    @State private var selectedCardId: SelectedCard?
 
     init(client: PlankaClient, boardId: String, boardName: String) {
         self.client = client
@@ -30,9 +30,9 @@ struct BoardView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task { await viewModel.load() }
         .refreshable { await viewModel.load() }
-        .sheet(item: $selectedCardId) { cardId in
+        .sheet(item: $selectedCardId) { selected in
             NavigationStack {
-                CardDetailView(cardId: cardId, boardVM: viewModel)
+                CardDetailView(cardId: selected.id, boardVM: viewModel)
             }
         }
         .alert("Error", isPresented: Binding(
@@ -62,7 +62,7 @@ struct BoardView: View {
                             list: list,
                             cards: payload.cards(for: list),
                             payload: payload,
-                            onCardTap: { card in selectedCardId = card.id },
+                            onCardTap: { card in selectedCardId = SelectedCard(id: card.id) },
                             onCreateCard: { name in
                                 Task { await viewModel.createCard(in: list, name: name) }
                             }
@@ -80,6 +80,6 @@ struct BoardView: View {
     }
 }
 
-extension String: @retroactive Identifiable {
-    public var id: String { self }
+private struct SelectedCard: Identifiable {
+    let id: String
 }

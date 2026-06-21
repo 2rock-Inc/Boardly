@@ -5,7 +5,7 @@ import BoardlyKit
 @MainActor
 final class ProjectListViewModel {
     var payload: ProjectsPayload?
-    var isLoading = false
+    var isLoading = true
     var error: String?
 
     func load(using client: PlankaClient) async {
@@ -27,7 +27,7 @@ struct ProjectListView: View {
 
     var body: some View {
         Group {
-            if viewModel.isLoading && viewModel.payload == nil {
+            if viewModel.payload == nil && viewModel.error == nil {
                 ProgressView()
             } else if let error = viewModel.error {
                 ContentUnavailableView(error, systemImage: "exclamationmark.triangle")
