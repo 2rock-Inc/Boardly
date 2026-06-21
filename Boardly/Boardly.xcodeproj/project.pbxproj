@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		52A25AAC2FE6D60000AD387B /* BoardlyKit in Frameworks */ = {isa = PBXBuildFile; productRef = 52A25AAB2FE6D60000AD387B /* BoardlyKit */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		52A258F42FE6D63800AD387B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -22,10 +26,6 @@
 			remoteInfo = Boardly;
 		};
 /* End PBXContainerItemProxy section */
-
-/* Begin PBXBuildFile section */
-		52A25AAC2FE6D60000AD387B /* BoardlyKit in Frameworks */ = {isa = PBXBuildFile; productRef = 52A25AAB2FE6D60000AD387B /* BoardlyKit */; };
-/* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		52A258E62FE6D63600AD387B /* Boardly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Boardly.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -201,10 +201,10 @@
 			);
 			mainGroup = 52A258DD2FE6D63600AD387B;
 			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
 			packageReferences = (
-				52A25AAA2FE6D60000AD387B /* BoardlyKit */,
+				52A25AAA2FE6D60000AD387B /* XCLocalSwiftPackageReference ".." */,
 			);
+			preferredProjectObjectVersion = 77;
 			productRefGroup = 52A258E72FE6D63600AD387B /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -276,21 +276,6 @@
 			targetProxy = 52A258FE2FE6D63800AD387B /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
-
-/* Begin XCLocalSwiftPackageReference section */
-		52A25AAA2FE6D60000AD387B /* BoardlyKit */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = "..";
-		};
-/* End XCLocalSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		52A25AAB2FE6D60000AD387B /* BoardlyKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 52A25AAA2FE6D60000AD387B /* BoardlyKit */;
-			productName = BoardlyKit;
-		};
-/* End XCSwiftPackageProductDependency section */
 
 /* Begin XCBuildConfiguration section */
 		52A259052FE6D63800AD387B /* Debug */ = {
@@ -602,6 +587,21 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		52A25AAA2FE6D60000AD387B /* XCLocalSwiftPackageReference ".." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ..;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		52A25AAB2FE6D60000AD387B /* BoardlyKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 52A25AAA2FE6D60000AD387B /* XCLocalSwiftPackageReference ".." */;
+			productName = BoardlyKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 52A258DE2FE6D63600AD387B /* Project object */;
 }
