@@ -122,11 +122,28 @@ PLANKA returns structured errors. Map these centrally in `BoardlyKit`:
 
 ---
 
-## Git branch conventions
+## Git workflow
 
+### Branches
 - `main` — always releasable; no direct commits for features
 - `feat/<short-slug>` — new features
 - `fix/<short-slug>` — bug fixes
 - `chore/<short-slug>` — tooling, CI, non-functional changes
+
+### Commit messages
+Format: `<emoji> <type>(<scope>): <imperative message>`
+
+| Type | Emoji |
+|------|-------|
+| feat | ✨ |
+| fix | 🐛 |
+| docs | 📝 |
+| refactor | ♻️ |
+| style | 🎨 |
+| test | ✅ |
+| chore | 🧑‍💻 |
+| wip | 🚧 |
+
+Example: `✨ feat(auth): add OIDC token exchange flow`
 
 PRs require a passing `swift test` run. Squash-merge into `main`.
