@@ -3,7 +3,7 @@ import BoardlyKit
 
 @main
 struct BoardlyApp: App {
-    private let profileStore = ProfileStore()
+    @State private var profileStore = ProfileStore()
 
     var body: some Scene {
         WindowGroup {
