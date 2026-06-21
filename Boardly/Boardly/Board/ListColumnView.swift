@@ -32,9 +32,9 @@ struct ListColumnView: View {
 
             Divider()
 
-            // Cards — height adapts to content, scrollable beyond 400 pt
+            // Cards — VStack (not lazy) so height is always known at first layout pass
             ScrollView(.vertical, showsIndicators: false) {
-                LazyVStack(spacing: 8) {
+                VStack(spacing: 8) {
                     ForEach(cards) { card in
                         Button {
                             onCardTap(card)

@@ -56,7 +56,7 @@ struct BoardView: View {
             )
         } else {
             ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(alignment: .top, spacing: 12) {
+                HStack(alignment: .top, spacing: 12) {
                     ForEach(lists) { list in
                         ListColumnView(
                             list: list,
@@ -70,11 +70,9 @@ struct BoardView: View {
                         .frame(width: 300)
                     }
                 }
-                .scrollTargetLayout()
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
             }
-            .scrollTargetBehavior(.viewAligned)
             .background(Color(.systemGroupedBackground))
         }
     }
