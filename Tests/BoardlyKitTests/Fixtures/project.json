@@ -1,0 +1,20 @@
+{
+  "item": {
+    "id": "project-xyz-456",
+    "ownerProjectManagerId": "pm-001",
+    "backgroundImageId": null,
+    "name": "My Project",
+    "description": "A test project",
+    "backgroundType": "gradient",
+    "backgroundGradient": "old-lime",
+    "isHidden": false,
+    "createdAt": "2024-01-15T10:30:00.000Z",
+    "updatedAt": "2024-06-01T08:00:00.000Z"
+  },
+  "included": {
+    "boards": [],
+    "boardMemberships": [],
+    "projectManagers": [],
+    "users": []
+  }
+}

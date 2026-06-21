@@ -1,0 +1,27 @@
+{
+  "item": {
+    "id": "user-abc-123",
+    "email": "alice@example.com",
+    "role": "admin",
+    "name": "Alice Smith",
+    "username": "alice",
+    "avatar": null,
+    "gravatarUrl": "https://www.gravatar.com/avatar/abc123",
+    "phone": "",
+    "organization": "Acme Corp",
+    "language": "en-US",
+    "apiKeyPrefix": null,
+    "subscribeToOwnCards": false,
+    "subscribeToCardWhenCommenting": true,
+    "turnOffRecentCardHighlighting": false,
+    "enableFavoritesByDefault": false,
+    "defaultEditorMode": "plainText",
+    "defaultHomeView": "boards",
+    "defaultProjectsOrder": "byDefault",
+    "isSsoUser": false,
+    "isDeactivated": false,
+    "isDefaultAdmin": true,
+    "createdAt": "2024-01-15T10:30:00.000Z",
+    "updatedAt": "2024-06-01T08:00:00.000Z"
+  }
+}
