@@ -19,10 +19,11 @@ public struct PlankaClient: Sendable {
 
     public func validateInstance() async throws -> Bootstrap {
         struct Response: Decodable { let item: Bootstrap }
-        BoardlyLog.tag(.network).info("Validating instance", metadata: ["url": profile.baseURL.absoluteString])
+        BoardlyLog.tag(.network).icon("🔍").info("Validate instance",
+                                                  metadata: ["url": profile.baseURL.absoluteString])
         let request = try buildRequest(method: "GET", path: "/bootstrap", requiresAuth: false)
         let response: Response = try await execute(request)
-        BoardlyLog.tag(.network).info("Instance reachable")
+        BoardlyLog.tag(.network).icon("✅").info("Instance reachable")
         return response.item
     }
 
@@ -35,12 +36,14 @@ public struct PlankaClient: Sendable {
             let item: String
         }
 
-        BoardlyLog.tag(.auth).info("Login attempt", metadata: ["user": emailOrUsername])
+        BoardlyLog.tag(.auth).icon("🔐").info("Login attempt",
+                                               metadata: ["user": emailOrUsername])
         let body = try JSONEncoder().encode(Body(emailOrUsername: emailOrUsername, password: password))
         let request = try buildRequest(method: "POST", path: "/access-tokens", body: body, requiresAuth: false)
         let response: Response = try await execute(request)
         try tokenStore.saveToken(response.item)
-        BoardlyLog.tag(.auth).info("Login succeeded", metadata: ["user": emailOrUsername])
+        BoardlyLog.tag(.auth).icon("✅").info("Login succeeded",
+                                               metadata: ["user": emailOrUsername])
     }
 
     // MARK: - Projects
@@ -159,11 +162,11 @@ public struct PlankaClient: Sendable {
     // MARK: - Auth (continued)
 
     public func logout() async throws {
-        BoardlyLog.tag(.auth).info("Logout")
+        BoardlyLog.tag(.auth).icon("🔓").info("Logout")
         let request = try buildRequest(method: "DELETE", path: "/access-tokens/me")
         try await executeVoid(request)
         try tokenStore.clearToken()
-        BoardlyLog.tag(.auth).info("Logout succeeded")
+        BoardlyLog.tag(.auth).icon("✅").info("Logout succeeded")
     }
 
     // MARK: - Request building
@@ -204,6 +207,11 @@ public struct PlankaClient: Sendable {
         do {
             return try JSONDecoder.planka.decode(T.self, from: data)
         } catch {
+            BoardlyLog.tag(.network).icon("❌").error(
+                "Decode failed",
+                error: error,
+                metadata: ["type": "\(T.self)", "path": request.url?.path ?? "?"]
+            )
             throw PlankaAPIError.decodingError(error)
         }
     }
@@ -215,19 +223,21 @@ public struct PlankaClient: Sendable {
     private func performRequest(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
         let method = request.httpMethod ?? "?"
         let path = request.url?.path ?? "?"
-        BoardlyLog.tag(.network).info("→ \(method) \(path)")
+        BoardlyLog.tag(.network).icon("📡").info("→ \(method) \(path)")
 
         let (data, response): (Data, URLResponse)
         do {
             (data, response) = try await httpClient.data(for: request)
         } catch {
-            BoardlyLog.tag(.network).icon("⚠️").error("Network failure", error: error,
+            BoardlyLog.tag(.network).icon("❌").error("Network failure",
+                                                       error: error,
                                                        metadata: ["path": path])
             throw PlankaAPIError.networkError(error)
         }
 
         guard let http = response as? HTTPURLResponse else {
-            BoardlyLog.tag(.network).error("Invalid response", metadata: ["path": path])
+            BoardlyLog.tag(.network).icon("❌").error("Invalid response",
+                                                       metadata: ["path": path])
             throw PlankaAPIError.networkError(URLError(.badServerResponse))
         }
 
@@ -240,9 +250,11 @@ public struct PlankaClient: Sendable {
                 BoardlyLog.tag(.auth).icon("⚠️").warning("401 Unauthorized — token cleared",
                                                           metadata: meta)
             } else if http.statusCode >= 500 {
-                BoardlyLog.tag(.network).icon("🔴").error("HTTP \(http.statusCode)", metadata: meta)
+                BoardlyLog.tag(.network).icon("❌").error("← \(http.statusCode) \(method) \(path)",
+                                                           metadata: meta)
             } else {
-                BoardlyLog.tag(.network).warning("HTTP \(http.statusCode)", metadata: meta)
+                BoardlyLog.tag(.network).icon("⚠️").warning("← \(http.statusCode) \(method) \(path)",
+                                                              metadata: meta)
             }
             if let mapped = plankaCode.flatMap(PlankaAPIError.from(plankaCode:)) {
                 throw mapped
@@ -259,7 +271,7 @@ public struct PlankaClient: Sendable {
             }
         }
 
-        BoardlyLog.tag(.network).info("← \(http.statusCode) \(method) \(path)")
+        BoardlyLog.tag(.network).icon("✅").info("← \(http.statusCode) \(method) \(path)")
         return (data, http)
     }
 }
