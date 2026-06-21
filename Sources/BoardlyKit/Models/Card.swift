@@ -4,7 +4,7 @@ public struct Card: Codable, Identifiable, Sendable {
     public let id: String
     public let boardId: String
     public let listId: String
-    public let creatorUserId: String
+    public let creatorUserId: String?
     public let prevListId: String?
     public let coverAttachmentId: String?
     public let type: String

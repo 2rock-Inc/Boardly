@@ -16,7 +16,7 @@ struct ListColumnView: View {
         VStack(spacing: 0) {
             // Header
             HStack {
-                Text(list.name)
+                Text(list.name ?? "Untitled")
                     .font(.headline)
                     .lineLimit(1)
                 Spacer()

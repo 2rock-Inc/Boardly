@@ -91,7 +91,7 @@ struct CardDetailView: View {
                     Button {
                         Task { await boardVM.moveCard(card, to: list) }
                     } label: {
-                        Label(list.name, systemImage: "arrow.right")
+                        Label(list.name ?? "Untitled", systemImage: "arrow.right")
                     }
                 }
             }
