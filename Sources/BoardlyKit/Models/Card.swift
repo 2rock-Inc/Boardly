@@ -17,6 +17,6 @@ public struct Card: Codable, Identifiable, Sendable {
     public let commentsTotal: Int
     public let isClosed: Bool
     public let listChangedAt: Date?
-    public let createdAt: Date
-    public let updatedAt: Date
+    public let createdAt: Date?
+    public let updatedAt: Date?
 }

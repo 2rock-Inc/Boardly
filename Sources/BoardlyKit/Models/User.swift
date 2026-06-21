@@ -22,6 +22,6 @@ public struct User: Codable, Identifiable, Sendable {
     public let isSsoUser: Bool?
     public let isDeactivated: Bool
     public let isDefaultAdmin: Bool?
-    public let createdAt: Date
-    public let updatedAt: Date
+    public let createdAt: Date?
+    public let updatedAt: Date?
 }

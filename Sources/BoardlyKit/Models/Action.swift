@@ -7,6 +7,6 @@ public struct Action: Codable, Identifiable, Sendable {
     public let userId: String
     public let type: String
     public let data: AnyCodable
-    public let createdAt: Date
-    public let updatedAt: Date
+    public let createdAt: Date?
+    public let updatedAt: Date?
 }

@@ -10,6 +10,6 @@ public struct Board: Codable, Identifiable, Sendable {
     public let limitCardTypesToDefaultOne: Bool?
     public let alwaysDisplayCardCreator: Bool?
     public let expandTaskListsByDefault: Bool?
-    public let createdAt: Date
-    public let updatedAt: Date
+    public let createdAt: Date?
+    public let updatedAt: Date?
 }

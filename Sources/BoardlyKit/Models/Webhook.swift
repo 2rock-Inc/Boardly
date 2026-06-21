@@ -7,6 +7,6 @@ public struct Webhook: Codable, Identifiable, Sendable {
     public let accessToken: String
     public let events: [String]
     public let excludedEvents: [String]
-    public let createdAt: Date
-    public let updatedAt: Date
+    public let createdAt: Date?
+    public let updatedAt: Date?
 }

@@ -6,6 +6,6 @@ public struct CustomFieldValue: Codable, Identifiable, Sendable {
     public let customFieldGroupId: String
     public let customFieldId: String
     public let content: String?
-    public let createdAt: Date
-    public let updatedAt: Date
+    public let createdAt: Date?
+    public let updatedAt: Date?
 }

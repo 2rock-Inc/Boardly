@@ -11,6 +11,6 @@ public struct PlankaNotification: Codable, Identifiable, Sendable {
     public let type: String
     public let data: AnyCodable
     public let isRead: Bool
-    public let createdAt: Date
-    public let updatedAt: Date
+    public let createdAt: Date?
+    public let updatedAt: Date?
 }

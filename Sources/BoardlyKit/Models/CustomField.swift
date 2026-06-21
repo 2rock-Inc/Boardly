@@ -7,6 +7,6 @@ public struct CustomField: Codable, Identifiable, Sendable {
     public let position: Double
     public let name: String
     public let showOnFrontOfCard: Bool
-    public let createdAt: Date
-    public let updatedAt: Date
+    public let createdAt: Date?
+    public let updatedAt: Date?
 }

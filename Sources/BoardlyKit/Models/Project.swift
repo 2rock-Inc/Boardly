@@ -9,6 +9,6 @@ public struct Project: Codable, Identifiable, Sendable {
     public let backgroundType: String?
     public let backgroundGradient: String?
     public let isHidden: Bool
-    public let createdAt: Date
-    public let updatedAt: Date
+    public let createdAt: Date?
+    public let updatedAt: Date?
 }

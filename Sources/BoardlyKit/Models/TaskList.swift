@@ -7,6 +7,6 @@ public struct TaskList: Codable, Identifiable, Sendable {
     public let name: String
     public let showOnFrontOfCard: Bool
     public let hideCompletedTasks: Bool
-    public let createdAt: Date
-    public let updatedAt: Date
+    public let createdAt: Date?
+    public let updatedAt: Date?
 }
