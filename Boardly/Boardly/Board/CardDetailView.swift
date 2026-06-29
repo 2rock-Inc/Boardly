@@ -11,6 +11,7 @@ struct CardDetailView: View {
     @State private var editedDescription = ""
     @State private var hasDueDate = false
     @State private var editedDueDate = Date()
+    @State private var didSeedEditState = false
     @State private var newTaskName = ""
     @State private var addingTaskInListId: String? = nil
     @FocusState private var taskFieldFocused: Bool
@@ -62,7 +63,6 @@ struct CardDetailView: View {
                     TextEditor(text: $editedDescription)
                         .frame(minHeight: 80)
                 }
-                .onAppear { editedDescription = card.description ?? "" }
                 Button("Save") { saveDescription(card: card) }
                     .disabled(editedDescription == (card.description ?? ""))
             }
@@ -79,10 +79,6 @@ struct CardDetailView: View {
                 }
                 Button("Save") { saveDueDate(card: card) }
                     .disabled(!dueDateChanged(card: card))
-            }
-            .onAppear {
-                hasDueDate = card.dueDate != nil
-                editedDueDate = card.dueDate ?? Date()
             }
 
             // Task lists
@@ -116,6 +112,24 @@ struct CardDetailView: View {
                     Label("Delete Card", systemImage: "trash")
                 }
             }
+        }
+        // Seed the edit buffers once for this card. Doing it here (not in
+        // per-Section .onAppear) avoids the List recycling rows and silently
+        // reverting in-progress edits when the user scrolls.
+        .onAppear {
+            guard !didSeedEditState else { return }
+            didSeedEditState = true
+            editedDescription = card.description ?? ""
+            hasDueDate = card.dueDate != nil
+            editedDueDate = card.dueDate ?? Date()
+        }
+        .alert("Couldn’t save card", isPresented: Binding(
+            get: { boardVM.error != nil },
+            set: { if !$0 { boardVM.error = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(boardVM.error ?? "")
         }
     }
 
@@ -208,10 +222,8 @@ struct CardDetailView: View {
     }
 
     private func saveDueDate(card: Card) {
-        let patch = hasDueDate
-            ? CardPatch(dueDate: editedDueDate)
-            : CardPatch(clearDueDate: true)
-        Task { await boardVM.updateCard(card, patch: patch) }
+        let newDueDate = hasDueDate ? editedDueDate : nil
+        Task { await boardVM.updateDueDate(card, to: newDueDate) }
     }
 
     private func submitTask(taskList: TaskList) {

@@ -17,7 +17,9 @@ extension JSONDecoder {
     }()
 }
 
-private enum ISO8601Formatters {
+/// Canonical PLANKA wire-format date formatters, shared by both the decoder
+/// (above) and `CardPatch` encoding so the read and write sides never desync.
+enum ISO8601Formatters {
     nonisolated(unsafe) static let fractional: ISO8601DateFormatter = {
         let f = ISO8601DateFormatter()
         f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]

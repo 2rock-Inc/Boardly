@@ -152,6 +152,12 @@ final class BoardViewModel {
         }
     }
 
+    /// Set or clear a card's due date. Passing `nil` clears it (sends `dueDate: null`).
+    func updateDueDate(_ card: Card, to dueDate: Date?) async {
+        let patch = dueDate.map { CardPatch(dueDate: $0) } ?? CardPatch(clearDueDate: true)
+        await updateCard(card, patch: patch)
+    }
+
     // MARK: - Local state helpers
 
     private func replaceCard(_ updated: Card) {

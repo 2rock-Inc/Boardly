@@ -24,9 +24,7 @@ struct CardPatchTests {
         let json = try encoded(CardPatch(dueDate: due))
         let string = try #require(json["dueDate"] as? String)
 
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        #expect(formatter.date(from: string) == due)
+        #expect(ISO8601Formatters.fractional.date(from: string) == due)
     }
 
     @Test("clearDueDate emits an explicit null")

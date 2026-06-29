@@ -206,6 +206,26 @@ struct BoardViewModelTests {
         #expect(body["dueDate"] is NSNull)
     }
 
+    @Test("updateDueDate(to:) sends an ISO date when set and null when cleared")
+    func updateDueDateChoosesPatchShape() async {
+        let stub = StubHTTPClient()
+        stub.routes["GET /api/boards/b1"] = (200, boardJSON)
+        stub.routes["PATCH /api/cards/c1"] = (200, card(id: "c1", listId: "l1"))
+        let vm = makeViewModel(stub)
+        await vm.load()
+        let cardC1 = vm.payload!.cards.first { $0.id == "c1" }!
+
+        // Set → ISO-8601 string.
+        await vm.updateDueDate(cardC1, to: Date(timeIntervalSince1970: 1_700_000_000))
+        #expect(bodyJSON(stub.lastRequest("PATCH /api/cards/c1"))["dueDate"] is String)
+
+        // Clear → explicit null.
+        await vm.updateDueDate(cardC1, to: nil)
+        let cleared = bodyJSON(stub.lastRequest("PATCH /api/cards/c1"))
+        #expect(cleared.keys.contains("dueDate"))
+        #expect(cleared["dueDate"] is NSNull)
+    }
+
     @Test("toggleTask flips isCompleted locally and PATCHes the new value")
     func toggleTaskFlips() async {
         let stub = StubHTTPClient()

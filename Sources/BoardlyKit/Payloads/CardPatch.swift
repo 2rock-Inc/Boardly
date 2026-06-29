@@ -38,19 +38,14 @@ public struct CardPatch: Encodable, Sendable {
         if let position { try c.encode(position, forKey: .position) }
         // PLANKA expects an ISO-8601 string, or explicit null to clear.
         // Serialize manually — the plain JSONEncoder used by PlankaClient would
-        // otherwise encode Date as a numeric reference-date interval.
+        // otherwise encode Date as a numeric reference-date interval. Reuse the
+        // same formatter the decoder uses so encode/decode never desync.
         if clearDueDate {
             try c.encodeNil(forKey: .dueDate)
         } else if let dueDate {
-            try c.encode(Self.dueDateFormatter.string(from: dueDate), forKey: .dueDate)
+            try c.encode(ISO8601Formatters.fractional.string(from: dueDate), forKey: .dueDate)
         }
     }
-
-    nonisolated(unsafe) private static let dueDateFormatter: ISO8601DateFormatter = {
-        let f = ISO8601DateFormatter()
-        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        return f
-    }()
 }
 
 public struct TaskPatch: Encodable, Sendable {
@@ -62,13 +57,7 @@ public struct TaskPatch: Encodable, Sendable {
         self.isCompleted = isCompleted
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case name, isCompleted
-    }
-
-    public func encode(to encoder: any Encoder) throws {
-        var c = encoder.container(keyedBy: CodingKeys.self)
-        if let name { try c.encode(name, forKey: .name) }
-        if let isCompleted { try c.encode(isCompleted, forKey: .isCompleted) }
-    }
+    // Encodable is synthesized: optional fields encode via encodeIfPresent,
+    // so nil properties are omitted from the PATCH body — same result the
+    // hand-written encode(to:) produced, without the maintenance burden.
 }
