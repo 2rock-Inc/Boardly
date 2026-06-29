@@ -9,6 +9,8 @@ struct CardDetailView: View {
     @State private var isEditingName = false
     @State private var editedName = ""
     @State private var editedDescription = ""
+    @State private var hasDueDate = false
+    @State private var editedDueDate = Date()
     @State private var newTaskName = ""
     @State private var addingTaskInListId: String? = nil
     @FocusState private var taskFieldFocused: Bool
@@ -66,14 +68,21 @@ struct CardDetailView: View {
             }
 
             // Due date
-            if let due = card.dueDate {
-                Section("Due Date") {
-                    Label(
-                        due.formatted(.dateTime.weekday().month().day().hour().minute()),
-                        systemImage: "calendar"
+            Section("Due Date") {
+                Toggle("Set due date", isOn: $hasDueDate)
+                if hasDueDate {
+                    DatePicker(
+                        "Date",
+                        selection: $editedDueDate,
+                        displayedComponents: [.date, .hourAndMinute]
                     )
-                    .foregroundStyle(due < Date() ? .red : .primary)
                 }
+                Button("Save") { saveDueDate(card: card) }
+                    .disabled(!dueDateChanged(card: card))
+            }
+            .onAppear {
+                hasDueDate = card.dueDate != nil
+                editedDueDate = card.dueDate ?? Date()
             }
 
             // Task lists
@@ -186,6 +195,23 @@ struct CardDetailView: View {
 
     private func saveDescription(card: Card) {
         Task { await boardVM.updateCard(card, patch: CardPatch(description: editedDescription)) }
+    }
+
+    private func dueDateChanged(card: Card) -> Bool {
+        if hasDueDate {
+            guard let existing = card.dueDate else { return true }
+            // Tolerate sub-second drift from the DatePicker round-trip.
+            return abs(existing.timeIntervalSince(editedDueDate)) >= 1
+        } else {
+            return card.dueDate != nil
+        }
+    }
+
+    private func saveDueDate(card: Card) {
+        let patch = hasDueDate
+            ? CardPatch(dueDate: editedDueDate)
+            : CardPatch(clearDueDate: true)
+        Task { await boardVM.updateCard(card, patch: patch) }
     }
 
     private func submitTask(taskList: TaskList) {
