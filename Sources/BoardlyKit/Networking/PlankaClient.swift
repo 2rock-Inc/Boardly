@@ -64,40 +64,23 @@ public struct PlankaClient: Sendable {
     // MARK: - Board
 
     public func getBoard(id: String) async throws -> BoardPayload {
-        struct BoardIncluded: Decodable {
-            let lists: [PlankaList]?
-            let cards: [Card]?
-            let taskLists: [TaskList]?
-            let tasks: [PlankaTask]?
-            let labels: [Label]?
-            let cardMemberships: [CardMembership]?
-            let cardLabels: [CardLabel]?
-            let users: [User]?
-        }
-        struct Response: Decodable {
-            let item: Board
-            let included: BoardIncluded
-        }
         let request = try buildRequest(method: "GET", path: "/boards/\(id)")
-        let response: Response = try await execute(request)
-        let inc = response.included
-        BoardlyLog.tag(.board).icon("📋").info("Board payload decoded", metadata: [
-            "lists": "\(inc.lists?.count ?? -1)",
-            "cards": "\(inc.cards?.count ?? -1)",
-            "taskLists": "\(inc.taskLists?.count ?? -1)",
-            "tasks": "\(inc.tasks?.count ?? -1)",
-        ])
-        return BoardPayload(
-            board: response.item,
-            lists: inc.lists ?? [],
-            cards: inc.cards ?? [],
-            taskLists: inc.taskLists ?? [],
-            tasks: inc.tasks ?? [],
-            labels: inc.labels ?? [],
-            cardMemberships: inc.cardMemberships ?? [],
-            cardLabels: inc.cardLabels ?? [],
-            users: inc.users ?? []
-        )
+        let (data, _) = try await performRequest(request)
+        do {
+            let payload = try BoardPayload.decode(from: data)
+            BoardlyLog.tag(.board).icon("📋").info("Board payload decoded", metadata: [
+                "lists": "\(payload.lists.count)",
+                "cards": "\(payload.cards.count)",
+                "taskLists": "\(payload.taskLists.count)",
+                "tasks": "\(payload.tasks.count)",
+            ])
+            return payload
+        } catch {
+            BoardlyLog.tag(.network).icon("❌").error(
+                "Decode failed", error: error, metadata: ["type": "BoardPayload", "path": request.url?.path ?? "?"]
+            )
+            throw PlankaAPIError.decodingError(error)
+        }
     }
 
     // MARK: - Cards

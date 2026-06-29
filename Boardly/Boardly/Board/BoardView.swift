@@ -20,7 +20,13 @@ struct BoardView: View {
         boardContent
             .navigationTitle(boardName)
             .navigationBarTitleDisplayMode(.inline)
-            .task { await viewModel.load() }
+            .task {
+                await viewModel.load()
+                await viewModel.startRealtime()
+            }
+            .onDisappear {
+                Task { await viewModel.stopRealtime() }
+            }
             .refreshable { await viewModel.load() }
             .sheet(item: $selectedCardId) { selected in
                 NavigationStack {

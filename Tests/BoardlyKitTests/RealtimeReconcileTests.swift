@@ -1,0 +1,142 @@
+import Testing
+import Foundation
+@testable import BoardlyKit
+
+// MARK: - Model builders (internal memberwise inits via @testable)
+
+private func makeBoard(id: String = "b1") -> Board {
+    Board(id: id, projectId: "p1", position: 1, name: "Board", defaultView: nil,
+          defaultCardType: nil, limitCardTypesToDefaultOne: nil, alwaysDisplayCardCreator: nil,
+          expandTaskListsByDefault: nil, createdAt: nil, updatedAt: nil)
+}
+
+private func makeCard(_ id: String, list: String = "l1", name: String = "Card", pos: Double = 1,
+                      due: Date? = nil) -> Card {
+    Card(id: id, boardId: "b1", listId: list, creatorUserId: nil, prevListId: nil,
+         coverAttachmentId: nil, type: "active", position: pos, name: name, description: nil,
+         dueDate: due, isDueCompleted: nil, stopwatch: nil, commentsTotal: nil, isClosed: nil,
+         listChangedAt: nil, createdAt: nil, updatedAt: nil)
+}
+
+private func makeList(_ id: String, name: String = "List", pos: Double = 1) -> PlankaList {
+    PlankaList(id: id, boardId: "b1", type: "active", position: pos, name: name, color: nil,
+               createdAt: nil, updatedAt: nil)
+}
+
+private func makeTask(_ id: String, taskList: String = "tl1", name: String = "Task",
+                      completed: Bool = false) -> PlankaTask {
+    PlankaTask(id: id, taskListId: taskList, linkedCardId: nil, assigneeUserId: nil, position: 1,
+               name: name, isCompleted: completed, createdAt: nil, updatedAt: nil)
+}
+
+private func makePayload(cards: [Card] = [], lists: [PlankaList] = [], tasks: [PlankaTask] = []) -> BoardPayload {
+    BoardPayload(board: makeBoard(), lists: lists, cards: cards, taskLists: [], tasks: tasks,
+                 labels: [], cardMemberships: [], cardLabels: [], users: [])
+}
+
+private func event(_ name: String, _ json: String) -> BoardRealtimeEvent {
+    BoardRealtimeEvent.parse(event: name, payload: Data(json.utf8))!
+}
+
+// MARK: - Event parsing
+
+@Suite("Realtime event parsing")
+struct RealtimeEventParsingTests {
+
+    @Test("cardCreate parses a full Card")
+    func cardCreate() {
+        let e = event("cardCreate", #"{"item":{"id":"c9","boardId":"b1","listId":"l1","name":"New"}}"#)
+        guard case .cardCreated(let card) = e else { Issue.record("wrong case"); return }
+        #expect(card.id == "c9")
+        #expect(card.name == "New")
+    }
+
+    @Test("cardUpdate parses a partial (position-only) update")
+    func cardUpdatePartial() {
+        let e = event("cardUpdate", #"{"item":{"id":"c1","position":99}}"#)
+        guard case .cardUpdated(let partial) = e else { Issue.record("wrong case"); return }
+        #expect(partial.id == "c1")
+        #expect(partial.position == 99)
+        #expect(partial.name == nil)
+    }
+
+    @Test("cardDelete parses the id")
+    func cardDelete() {
+        let e = event("cardDelete", #"{"item":{"id":"c1","boardId":"b1"}}"#)
+        guard case .cardDeleted(let id) = e else { Issue.record("wrong case"); return }
+        #expect(id == "c1")
+    }
+
+    @Test("unknown event returns nil")
+    func unknown() {
+        #expect(BoardRealtimeEvent.parse(event: "somethingElse", payload: Data(#"{"item":{}}"#.utf8)) == nil)
+    }
+}
+
+// MARK: - Reconciliation
+
+@Suite("Realtime reconciliation")
+struct RealtimeReconcileTests {
+
+    @Test("cardCreate inserts the card")
+    func cardCreateInserts() {
+        let payload = makePayload(cards: [makeCard("c1")])
+        let result = payload.applying(event("cardCreate",
+            #"{"item":{"id":"c2","boardId":"b1","listId":"l1","name":"Second"}}"#))
+        #expect(result.cards.count == 2)
+        #expect(result.cards.contains { $0.id == "c2" })
+    }
+
+    @Test("partial cardUpdate merges, keeping unspecified fields")
+    func partialUpdateMerges() {
+        let payload = makePayload(cards: [makeCard("c1", name: "Original", pos: 1)])
+        let result = payload.applying(event("cardUpdate", #"{"item":{"id":"c1","position":500}}"#))
+        let c1 = result.cards.first { $0.id == "c1" }
+        #expect(c1?.position == 500)
+        #expect(c1?.name == "Original") // untouched
+    }
+
+    @Test("full cardUpdate replaces, reflecting cleared fields")
+    func fullUpdateReplaces() {
+        let payload = makePayload(cards: [makeCard("c1", name: "Original", due: Date())])
+        // Full record (carries boardId + listId + name) with dueDate omitted → cleared.
+        let result = payload.applying(event("cardUpdate",
+            #"{"item":{"id":"c1","boardId":"b1","listId":"l1","name":"Renamed"}}"#))
+        let c1 = result.cards.first { $0.id == "c1" }
+        #expect(c1?.name == "Renamed")
+        #expect(c1?.dueDate == nil)
+    }
+
+    @Test("cardDelete removes the card")
+    func cardDeleteRemoves() {
+        let payload = makePayload(cards: [makeCard("c1"), makeCard("c2")])
+        let result = payload.applying(event("cardDelete", #"{"item":{"id":"c1"}}"#))
+        #expect(result.cards.map(\.id) == ["c2"])
+    }
+
+    @Test("listUpdate partial reposition merges")
+    func listRepositionMerges() {
+        let payload = makePayload(lists: [makeList("l1", name: "To Do", pos: 1)])
+        let result = payload.applying(event("listUpdate", #"{"item":{"id":"l1","position":3}}"#))
+        let l1 = result.lists.first { $0.id == "l1" }
+        #expect(l1?.position == 3)
+        #expect(l1?.name == "To Do")
+    }
+
+    @Test("taskUpdate toggling isCompleted merges")
+    func taskToggleMerges() {
+        let payload = makePayload(tasks: [makeTask("t1", name: "Step", completed: false)])
+        let result = payload.applying(event("taskUpdate", #"{"item":{"id":"t1","isCompleted":true}}"#))
+        let t1 = result.tasks.first { $0.id == "t1" }
+        #expect(t1?.isCompleted == true)
+        #expect(t1?.name == "Step")
+    }
+
+    @Test("resynced replaces the whole payload")
+    func resyncedReplaces() {
+        let payload = makePayload(cards: [makeCard("c1")])
+        let fresh = makePayload(cards: [makeCard("c2"), makeCard("c3")])
+        let result = payload.applying(.resynced(fresh))
+        #expect(result.cards.map(\.id) == ["c2", "c3"])
+    }
+}

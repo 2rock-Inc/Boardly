@@ -10,10 +10,42 @@ final class BoardViewModel {
 
     private let client: PlankaClient
     let boardId: String
+    private var realtime: BoardRealtimeClient?
 
     init(client: PlankaClient, boardId: String) {
         self.client = client
         self.boardId = boardId
+    }
+
+    // MARK: - Real-time sync
+
+    /// Open the live socket for this board and apply incoming events to `payload`.
+    /// Runs until the stream finishes (i.e. `stopRealtime()` is called).
+    func startRealtime() async {
+        guard realtime == nil else { return }
+        let tokenStore = TokenStore(profileID: client.profile.id)
+        guard let token = try? tokenStore.loadToken() else { return }
+
+        let rt = BoardRealtimeClient(
+            transport: SocketIOTransport(baseURL: client.profile.baseURL),
+            boardId: boardId,
+            token: token
+        )
+        realtime = rt
+
+        for await event in await rt.start() {
+            if let current = payload {
+                payload = current.applying(event)
+            } else if case .resynced(let fresh) = event {
+                payload = fresh
+            }
+        }
+    }
+
+    /// Tear down the socket. Must be called when leaving the board.
+    func stopRealtime() async {
+        await realtime?.stop()
+        realtime = nil
     }
 
     func load() async {
