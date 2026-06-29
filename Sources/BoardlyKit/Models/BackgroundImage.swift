@@ -6,6 +6,6 @@ public struct BackgroundImage: Codable, Identifiable, Sendable {
     public let size: String
     public let url: String
     public let thumbnailUrls: AnyCodable
-    public let createdAt: Date
-    public let updatedAt: Date
+    public let createdAt: Date?
+    public let updatedAt: Date?
 }

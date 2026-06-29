@@ -1,0 +1,41 @@
+{
+  "items": [
+    {
+      "id": "proj-001",
+      "ownerProjectManagerId": "pm-001",
+      "backgroundImageId": null,
+      "name": "My Project",
+      "description": null,
+      "backgroundType": null,
+      "backgroundGradient": null,
+      "isHidden": false,
+      "isFavorite": false,
+      "createdAt": "2024-01-01T10:00:00.000Z",
+      "updatedAt": "2024-01-01T10:00:00.000Z"
+    }
+  ],
+  "included": {
+    "users": [],
+    "projectManagers": [],
+    "backgroundImages": [],
+    "baseCustomFieldGroups": [],
+    "boards": [
+      {
+        "id": "board-001",
+        "projectId": "proj-001",
+        "position": 65536,
+        "name": "Sprint 1",
+        "defaultView": "board",
+        "defaultCardType": "project",
+        "limitCardTypesToDefaultOne": false,
+        "alwaysDisplayCardCreator": false,
+        "expandTaskListsByDefault": false,
+        "createdAt": "2024-01-01T10:00:00.000Z",
+        "updatedAt": "2024-01-01T10:00:00.000Z"
+      }
+    ],
+    "boardMemberships": [],
+    "customFields": [],
+    "notificationServices": []
+  }
+}

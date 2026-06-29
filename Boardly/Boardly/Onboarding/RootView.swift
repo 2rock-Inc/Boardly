@@ -16,10 +16,16 @@ struct RootView: View {
                         if let profile = profileStore.profiles.first(where: { $0.id == profileID }) {
                             LoginView(profile: profile, path: $path)
                         }
-                    case .main:
-                        MainPlaceholderView()
                     }
                 }
+        }
+        .fullScreenCover(isPresented: Binding(
+            get: { profileStore.activeProfile != nil },
+            set: { _ in }
+        )) {
+            if let profile = profileStore.activeProfile {
+                MainView(profile: profile)
+            }
         }
     }
 }

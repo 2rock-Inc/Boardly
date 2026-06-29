@@ -76,6 +76,32 @@ Items marked `[Phase 1]` do not exist yet — they are created in the first impl
 
 ---
 
+## Logging
+
+Use `BoardlyLog` (in `BoardlyKit`) for all diagnostic output. Never use `print`, `NSLog`, or raw `os_log` directly.
+
+```swift
+BoardlyLog.tag(.network).icon("📡").info("Request started", metadata: ["url": url])
+BoardlyLog.tag(.auth).warning("Token expiring soon")
+BoardlyLog.tag(.network).icon("⚠️").error("Request failed", error: error, metadata: ["url": url])
+```
+
+**Redaction rule (non-negotiable):** Any metadata value that could be a token, password, or API key must be wrapped in `Redacted(...)`. The wrapper discards the real value at init and emits `"<redacted>"` — making it structurally impossible for a secret to reach the log sink in plaintext.
+
+```swift
+// Correct
+BoardlyLog.tag(.auth).info("Logged in", metadata: ["token": Redacted(jwt)])
+
+// Never do this — caught by security-patterns.yaml
+print("token: \(jwt)")
+```
+
+Available tags: `.auth` `.network` `.profile` `.sync` `.board` `.ui`
+
+In tests, swap `BoardlyLog.sink` for a `TestLogSink` (defined in `BoardlyLogTests.swift`) to capture log entries without writing to `os_log`. Restore the previous sink in `tearDown`.
+
+---
+
 ## Authentication
 
 - Login: `POST /access-tokens` with `emailOrUsername` + `password` → JWT, **or** via OIDC/SSO using `POST /access-tokens/exchange-with-oidc`

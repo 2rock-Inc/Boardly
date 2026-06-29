@@ -102,6 +102,6 @@ struct ModelDecodingTests {
         let user = try JSONDecoder.planka.decode(User.self, from: json)
         #expect(user.name == "Bob")
         // Verify the date was parsed (not nil/epoch)
-        #expect(user.createdAt.timeIntervalSince1970 > 0)
+        #expect((user.createdAt?.timeIntervalSince1970 ?? 0) > 0)
     }
 }

@@ -22,6 +22,7 @@ public final class ProfileStore {
     }
 
     public func addProfile(_ profile: ServerProfile) {
+        BoardlyLog.tag(.profile).icon("➕").info("Profile added", metadata: ["name": profile.name])
         profiles.append(profile)
         if profiles.count == 1 {
             activeProfileID = profile.id
@@ -31,6 +32,7 @@ public final class ProfileStore {
     }
 
     public func removeProfile(id: UUID) {
+        BoardlyLog.tag(.profile).icon("🗑️").info("Profile removed", metadata: ["id": id.uuidString])
         profiles.removeAll { $0.id == id }
         if activeProfileID == id {
             activeProfileID = profiles.first?.id
@@ -41,6 +43,7 @@ public final class ProfileStore {
 
     public func setActiveProfile(id: UUID) {
         guard profiles.contains(where: { $0.id == id }) else { return }
+        BoardlyLog.tag(.profile).icon("🔄").info("Active profile set", metadata: ["id": id.uuidString])
         activeProfileID = id
         userDefaults.set(id.uuidString, forKey: activeProfileKey)
     }

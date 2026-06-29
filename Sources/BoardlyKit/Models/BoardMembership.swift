@@ -6,7 +6,7 @@ public struct BoardMembership: Codable, Identifiable, Sendable {
     public let boardId: String
     public let userId: String
     public let role: String
-    public let canComment: Bool
-    public let createdAt: Date
-    public let updatedAt: Date
+    public let canComment: Bool?
+    public let createdAt: Date?
+    public let updatedAt: Date?
 }

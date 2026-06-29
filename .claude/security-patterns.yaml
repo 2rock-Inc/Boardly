@@ -19,3 +19,19 @@ patterns:
     regex: "(print|os_log|NSLog)\\(.*[Aa]uthorization"
     paths: ["**/*.swift"]
     reminder: "Never log the Authorization or X-Api-Key header, even in debug builds."
+
+  - rule_name: print_near_secret
+    regex: "print\\(.*([Tt]oken|[Pp]assword|[Jj]wt|[Ss]ecret|[Cc]redential)"
+    paths: ["**/*.swift"]
+    exclude_paths: ["**/Tests/**"]
+    reminder: "Possible secret in plaintext print(). Wrap the sensitive value in Redacted() and use BoardlyLog instead of print."
+
+  - rule_name: nslog_near_secret
+    regex: "NSLog\\(.*([Tt]oken|[Pp]assword|[Jj]wt|[Ss]ecret|[Cc]redential)"
+    paths: ["**/*.swift"]
+    reminder: "Possible secret in plaintext NSLog(). Wrap the sensitive value in Redacted() and use BoardlyLog instead of NSLog."
+
+  - rule_name: direct_print_in_sources
+    regex: "^\\s*print\\("
+    paths: ["Sources/**/*.swift"]
+    reminder: "Use BoardlyLog instead of print() for diagnostic output in BoardlyKit. This keeps logging consistent and testable."
