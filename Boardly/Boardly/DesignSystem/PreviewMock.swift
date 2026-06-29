@@ -24,13 +24,53 @@ private final class MockKeychain: KeychainStoring, @unchecked Sendable {
 
 enum PreviewMock {
     static func boardClient() -> PlankaClient {
+        client(json: boardJSON)
+    }
+
+    static func projectsClient() -> PlankaClient {
+        client(json: projectsJSON)
+    }
+
+    private static func client(json: String) -> PlankaClient {
         let profile = ServerProfile(name: "Mock", baseURL: URL(string: "https://mock.local")!)
         return PlankaClient(
             profile: profile,
             tokenStore: TokenStore(profileID: profile.id, keychainStore: MockKeychain()),
-            httpClient: MockHTTPClient(json: boardJSON)
+            httpClient: MockHTTPClient(json: json)
         )
     }
+
+    static let projectsJSON = """
+    {
+      "items": [
+        { "id": "p1", "name": "Refonte 2026", "isHidden": false },
+        { "id": "p2", "name": "Marketing", "isHidden": false },
+        { "id": "p3", "name": "Infra", "isHidden": false }
+      ],
+      "included": {
+        "boards": [
+          { "id": "b1", "projectId": "p1", "name": "Sprint Produit", "position": 1 },
+          { "id": "b2", "projectId": "p1", "name": "Recherche & specs", "position": 2 },
+          { "id": "b3", "projectId": "p2", "name": "Campagne Été", "position": 1 },
+          { "id": "b4", "projectId": "p3", "name": "Todo", "position": 1 }
+        ],
+        "users": [
+          { "id": "u1", "role": "admin", "name": "Marie Dupont", "isDeactivated": false },
+          { "id": "u2", "role": "member", "name": "Paul Lefevre", "isDeactivated": false },
+          { "id": "u3", "role": "member", "name": "Julie Klein", "isDeactivated": false },
+          { "id": "u4", "role": "member", "name": "Hugo Bernard", "isDeactivated": false }
+        ],
+        "boardMemberships": [
+          { "id": "m1", "projectId": "p1", "boardId": "b1", "userId": "u1", "role": "editor" },
+          { "id": "m2", "projectId": "p1", "boardId": "b1", "userId": "u2", "role": "editor" },
+          { "id": "m3", "projectId": "p1", "boardId": "b2", "userId": "u3", "role": "editor" },
+          { "id": "m4", "projectId": "p1", "boardId": "b2", "userId": "u4", "role": "editor" },
+          { "id": "m5", "projectId": "p2", "boardId": "b3", "userId": "u3", "role": "editor" },
+          { "id": "m6", "projectId": "p2", "boardId": "b3", "userId": "u1", "role": "editor" }
+        ]
+      }
+    }
+    """
 
     static let boardJSON = """
     {
@@ -88,6 +128,31 @@ struct MockBoardHarness: View {
         NavigationStack {
             BoardView(client: PreviewMock.boardClient(), boardId: "b1", boardName: "Sprint Produit")
         }
+    }
+}
+
+struct MockProjectsHarness: View {
+    @State private var path: [AppRoute] = []
+    var body: some View {
+        TabView {
+            NavigationStack(path: $path) {
+                ProjectListView(client: PreviewMock.projectsClient(), path: $path)
+                    .navigationDestination(for: AppRoute.self) { route in
+                        switch route {
+                        case .board(let id, let name):
+                            BoardView(client: PreviewMock.boardClient(), boardId: id, boardName: name)
+                        }
+                    }
+            }
+            .tabItem { Label("Projets", systemImage: "house") }
+            ComingSoonView(title: "Recherche", systemImage: "magnifyingglass")
+                .tabItem { Label("Recherche", systemImage: "magnifyingglass") }
+            ComingSoonView(title: "Activité", systemImage: "bell")
+                .tabItem { Label("Activité", systemImage: "bell") }
+            ComingSoonView(title: "Profil", systemImage: "person")
+                .tabItem { Label("Profil", systemImage: "person") }
+        }
+        .tint(.accentColor)
     }
 }
 

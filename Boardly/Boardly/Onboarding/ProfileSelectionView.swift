@@ -34,22 +34,21 @@ struct ProfileSelectionView: View {
         VStack(spacing: 0) {
             Spacer()
 
-            Text("CLIENT KANBAN")
-                .font(.boardlyMonoLabel)
-                .tracking(2)
-                .foregroundStyle(Color.boardlyTextTertiary)
-                .padding(.bottom, 10)
+            BoardlyLogo(size: 88)
+                .padding(.bottom, 30)
 
             Text("Boardly")
-                .font(.sans(40, .heavy, relativeTo: .largeTitle))
+                .font(.sans(34, .heavy, relativeTo: .largeTitle))
+                .tracking(-1)
                 .foregroundStyle(Color.boardlyInk)
 
             Text("Vos tableaux, vos cartes et votre équipe — réunis dans une app pensée pour avancer.")
-                .font(.boardlyBody)
+                .font(.sans(16.5, .regular))
                 .foregroundStyle(Color.boardlyTextSecondary)
                 .multilineTextAlignment(.center)
-                .padding(.top, 14)
-                .padding(.horizontal, 36)
+                .lineSpacing(2)
+                .padding(.top, 12)
+                .frame(maxWidth: 290)
 
             Spacer()
 

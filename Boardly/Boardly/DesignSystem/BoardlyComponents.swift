@@ -72,6 +72,32 @@ extension View {
     func boardlyField() -> some View { modifier(BoardlyFieldStyle()) }
 }
 
+/// Circular initials avatar, colored deterministically from the name.
+struct AvatarView: View {
+    let name: String
+    var size: CGFloat = 28
+    var bordered: Bool = true
+
+    private static let palette: [Color] = [.labelRose, .labelBlue, .labelGreen, .labelPurple, .labelTeal]
+
+    private var initials: String {
+        let chars = name.split(separator: " ").prefix(2).compactMap(\.first).map(String.init)
+        return chars.joined().uppercased()
+    }
+    private var color: Color {
+        Self.palette[abs(name.hashValue) % Self.palette.count]
+    }
+
+    var body: some View {
+        Text(initials.isEmpty ? "?" : initials)
+            .font(.mono(size * 0.34, .semibold))
+            .foregroundStyle(.white)
+            .frame(width: size, height: size)
+            .background(color, in: Circle())
+            .overlay(bordered ? Circle().stroke(Color.boardlySurface, lineWidth: 2) : nil)
+    }
+}
+
 /// Uppercase mono field label, per the design.
 struct BoardlyFieldLabel: View {
     let text: String

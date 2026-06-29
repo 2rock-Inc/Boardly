@@ -59,7 +59,15 @@ struct ProjectListView: View {
                     emptyState
                 } else {
                     ForEach(projects) { project in
-                        projectSection(project, boards: payload.boards(for: project))
+                        let boards = payload.boards(for: project)
+                        if !boards.isEmpty {
+                            ProjectCard(
+                                project: project,
+                                boards: boards,
+                                members: payload.members(for: project),
+                                onOpenBoard: { path.append(.board(id: $0.id, name: $0.name)) }
+                            )
+                        }
                     }
                 }
             }
@@ -85,28 +93,6 @@ struct ProjectListView: View {
         .overlay(Capsule().stroke(Color.boardlySeparator, lineWidth: 1))
     }
 
-    @ViewBuilder
-    private func projectSection(_ project: Project, boards: [Board]) -> some View {
-        if !boards.isEmpty {
-            VStack(alignment: .leading, spacing: 10) {
-                Text(project.name)
-                    .font(.boardlyMonoLabel)
-                    .tracking(1.5)
-                    .textCase(.uppercase)
-                    .foregroundStyle(Color.boardlyTextSecondary)
-
-                ForEach(boards) { board in
-                    Button {
-                        path.append(.board(id: board.id, name: board.name))
-                    } label: {
-                        BoardRowView(board: board)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-        }
-    }
-
     private var emptyState: some View {
         VStack(spacing: 8) {
             Image(systemName: "folder")
@@ -123,7 +109,6 @@ struct ProjectListView: View {
         .padding(.top, 60)
     }
 
-    // Client-side filter over already-loaded data (the global search screen is Phase 5).
     private func filteredProjects(_ payload: ProjectsPayload) -> [Project] {
         guard !query.isEmpty else { return payload.projects }
         let q = query.lowercased()
@@ -134,27 +119,102 @@ struct ProjectListView: View {
     }
 }
 
-private struct BoardRowView: View {
+// MARK: - Project card (colored header + member avatars + board rows)
+
+private struct ProjectCard: View {
+    let project: Project
+    let boards: [Board]
+    let members: [User]
+    let onOpenBoard: (Board) -> Void
+
+    private static let headerColors: [Color] = [.labelTeal, .labelBlue, .labelPurple, .labelGreen]
+    private var headerColor: Color {
+        Self.headerColors[abs(project.id.hashValue) % Self.headerColors.count]
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            HStack(spacing: 10) {
+                Text(project.name)
+                    .font(.sans(16, .bold))
+                    .foregroundStyle(.white)
+                    .lineLimit(1)
+                Spacer(minLength: 8)
+                AvatarStack(members: members)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 13)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(headerColor)
+
+            // Board rows
+            VStack(spacing: 0) {
+                ForEach(Array(boards.enumerated()), id: \.element.id) { index, board in
+                    Button { onOpenBoard(board) } label: {
+                        BoardRow(board: board)
+                    }
+                    .buttonStyle(.plain)
+                    if index < boards.count - 1 {
+                        Divider().padding(.leading, 38)
+                    }
+                }
+            }
+            .background(Color.boardlySurface)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(Color.boardlySeparator, lineWidth: 0.5)
+        )
+    }
+}
+
+private struct BoardRow: View {
     let board: Board
+
+    private static let dotColors: [Color] = [.labelTeal, .labelBlue, .labelGreen, .labelPurple, .labelRose]
+    private var dotColor: Color {
+        Self.dotColors[abs(board.id.hashValue) % Self.dotColors.count]
+    }
 
     var body: some View {
         HStack(spacing: 14) {
-            Image(systemName: "rectangle.split.3x1")
-                .font(.system(size: 17, weight: .medium))
-                .foregroundStyle(Color.accentColor)
-                .frame(width: 40, height: 40)
-                .background(Color.boardlySurfaceSecondary, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-
+            RoundedRectangle(cornerRadius: 3, style: .continuous)
+                .fill(dotColor)
+                .frame(width: 8, height: 8)
             Text(board.name)
-                .font(.boardlyHeadline)
+                .font(.sans(15, .semibold))
                 .foregroundStyle(Color.boardlyInk)
-
+                .lineLimit(1)
             Spacer(minLength: 0)
-
             Image(systemName: "chevron.right")
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(Color.boardlyTextTertiary)
         }
-        .boardlyCard()
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .contentShape(Rectangle())
+    }
+}
+
+private struct AvatarStack: View {
+    let members: [User]
+
+    var body: some View {
+        let shown = members.prefix(3)
+        HStack(spacing: -8) {
+            ForEach(shown) { user in
+                AvatarView(name: user.name, size: 26)
+            }
+            if members.count > shown.count {
+                Text("+\(members.count - shown.count)")
+                    .font(.mono(10, .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 26, height: 26)
+                    .background(.white.opacity(0.25), in: Circle())
+                    .overlay(Circle().stroke(Color.boardlySurface, lineWidth: 2))
+            }
+        }
     }
 }

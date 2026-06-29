@@ -50,7 +50,9 @@ public struct PlankaClient: Sendable {
 
     public func getProjects() async throws -> ProjectsPayload {
         struct ProjectsIncluded: Decodable {
-            let boards: [Board]
+            let boards: [Board]?
+            let users: [User]?
+            let boardMemberships: [BoardMembership]?
         }
         struct Response: Decodable {
             let items: [Project]
@@ -58,7 +60,12 @@ public struct PlankaClient: Sendable {
         }
         let request = try buildRequest(method: "GET", path: "/projects")
         let response: Response = try await execute(request)
-        return ProjectsPayload(projects: response.items, boards: response.included.boards)
+        return ProjectsPayload(
+            projects: response.items,
+            boards: response.included.boards ?? [],
+            users: response.included.users ?? [],
+            boardMemberships: response.included.boardMemberships ?? []
+        )
     }
 
     // MARK: - Board

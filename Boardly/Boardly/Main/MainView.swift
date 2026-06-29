@@ -11,14 +11,51 @@ struct MainView: View {
     }
 
     var body: some View {
-        NavigationStack(path: $path) {
-            ProjectListView(client: client, path: $path)
-                .navigationDestination(for: AppRoute.self) { route in
-                    switch route {
-                    case .board(let id, let name):
-                        BoardView(client: client, boardId: id, boardName: name)
+        TabView {
+            NavigationStack(path: $path) {
+                ProjectListView(client: client, path: $path)
+                    .navigationDestination(for: AppRoute.self) { route in
+                        switch route {
+                        case .board(let id, let name):
+                            BoardView(client: client, boardId: id, boardName: name)
+                        }
                     }
-                }
+            }
+            .tabItem { Label("Projets", systemImage: "house") }
+
+            ComingSoonView(title: "Recherche", systemImage: "magnifyingglass")
+                .tabItem { Label("Recherche", systemImage: "magnifyingglass") }
+
+            ComingSoonView(title: "Activité", systemImage: "bell")
+                .tabItem { Label("Activité", systemImage: "bell") }
+
+            ComingSoonView(title: "Profil", systemImage: "person")
+                .tabItem { Label("Profil", systemImage: "person") }
+        }
+        .tint(.accentColor)
+    }
+}
+
+/// Placeholder for tabs whose feature lands in Phase 5 (search, notifications,
+/// profile/settings).
+struct ComingSoonView: View {
+    let title: String
+    let systemImage: String
+
+    var body: some View {
+        ZStack {
+            Color.boardlyBackground.ignoresSafeArea()
+            VStack(spacing: 12) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 40, weight: .light))
+                    .foregroundStyle(Color.boardlyTextTertiary)
+                Text(title)
+                    .font(.boardlyTitle)
+                    .foregroundStyle(Color.boardlyInk)
+                Text("Bientôt disponible")
+                    .font(.boardlyBody)
+                    .foregroundStyle(Color.boardlyTextSecondary)
+            }
         }
     }
 }
