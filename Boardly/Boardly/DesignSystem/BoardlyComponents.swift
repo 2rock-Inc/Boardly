@@ -51,3 +51,36 @@ struct BoardlyCard: ViewModifier {
 extension View {
     func boardlyCard(padding: CGFloat = 16) -> some View { modifier(BoardlyCard(padding: padding)) }
 }
+
+/// Rounded input surface for text fields.
+struct BoardlyFieldStyle: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.boardlyBody)
+            .foregroundStyle(Color.boardlyInk)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 13)
+            .background(Color.boardlySurface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(Color.boardlySeparator, lineWidth: 1)
+            )
+    }
+}
+
+extension View {
+    func boardlyField() -> some View { modifier(BoardlyFieldStyle()) }
+}
+
+/// Uppercase mono field label, per the design.
+struct BoardlyFieldLabel: View {
+    let text: String
+    init(_ text: String) { self.text = text }
+    var body: some View {
+        Text(text)
+            .font(.boardlyMonoLabel)
+            .tracking(1.5)
+            .textCase(.uppercase)
+            .foregroundStyle(Color.boardlyTextTertiary)
+    }
+}

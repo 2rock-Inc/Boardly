@@ -58,44 +58,75 @@ struct AddServerView: View {
     @State private var viewModel = AddServerViewModel()
 
     var body: some View {
-        Form {
-            Section("Server URL") {
-                TextField("https://planka.example.com", text: $viewModel.urlText)
-                    .textContentType(.URL)
-                    .keyboardType(.URL)
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
-            }
+        ZStack {
+            Color.boardlyBackground.ignoresSafeArea()
 
-            Section("Display Name (optional)") {
-                TextField("My Server", text: $viewModel.name)
-                    .autocorrectionDisabled()
-            }
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("NOUVEAU SERVEUR")
+                        .font(.boardlyMonoLabel)
+                        .tracking(2)
+                        .foregroundStyle(Color.boardlyTextTertiary)
+                        .padding(.bottom, 8)
 
-            if let error = viewModel.error {
-                Section {
-                    Text(error)
-                        .foregroundStyle(.red)
-                        .font(.callout)
-                }
-            }
-        }
-        .navigationTitle("Add Server")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                if viewModel.isValidating {
-                    ProgressView()
-                } else {
-                    Button("Connect") {
-                        Task {
-                            if let profile = await viewModel.validateAndAdd(profileStore: profileStore) {
-                                path.append(.login(profileID: profile.id))
-                            }
+                    Text("Ajouter un serveur")
+                        .font(.boardlyTitle)
+                        .foregroundStyle(Color.boardlyInk)
+
+                    Text("Connecte Boardly à ton instance PLANKA auto-hébergée.")
+                        .font(.boardlyBody)
+                        .foregroundStyle(Color.boardlyTextSecondary)
+                        .padding(.top, 4)
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        BoardlyFieldLabel("Adresse du serveur")
+                        TextField("https://planka.example.com", text: $viewModel.urlText)
+                            .textContentType(.URL)
+                            .keyboardType(.URL)
+                            .autocorrectionDisabled()
+                            .textInputAutocapitalization(.never)
+                            .boardlyField()
+                    }
+                    .padding(.top, 28)
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        BoardlyFieldLabel("Nom affiché (optionnel)")
+                        TextField("Mon serveur", text: $viewModel.name)
+                            .autocorrectionDisabled()
+                            .boardlyField()
+                    }
+                    .padding(.top, 16)
+
+                    if let error = viewModel.error {
+                        Text(error)
+                            .font(.boardlyCallout)
+                            .foregroundStyle(.red)
+                            .padding(.top, 16)
+                    }
+
+                    Button(action: handleConnect) {
+                        if viewModel.isValidating {
+                            ProgressView().tint(.white)
+                        } else {
+                            Text("Se connecter")
                         }
                     }
-                    .disabled(!viewModel.canValidate)
+                    .buttonStyle(.boardlyPrimary)
+                    .disabled(!viewModel.canValidate || viewModel.isValidating)
+                    .opacity(viewModel.canValidate ? 1 : 0.5)
+                    .padding(.top, 28)
                 }
+                .padding(24)
+            }
+        }
+        .navigationTitle("")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func handleConnect() {
+        Task {
+            if let profile = await viewModel.validateAndAdd(profileStore: profileStore) {
+                path.append(.login(profileID: profile.id))
             }
         }
     }
