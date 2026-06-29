@@ -5,10 +5,23 @@ import BoardlyKit
 struct BoardlyApp: App {
     @State private var profileStore = ProfileStore()
 
+    init() {
+        BoardlyFonts.register()
+    }
+
     var body: some Scene {
         WindowGroup {
-            RootView()
-                .environment(profileStore)
+            #if DEBUG
+            if CommandLine.arguments.contains("-mockCard") {
+                MockCardHarness()
+            } else if CommandLine.arguments.contains("-mockBoard") {
+                MockBoardHarness()
+            } else {
+                RootView().environment(profileStore)
+            }
+            #else
+            RootView().environment(profileStore)
+            #endif
         }
     }
 }

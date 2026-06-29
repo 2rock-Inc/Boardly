@@ -44,54 +44,69 @@ struct LoginView: View {
     @State private var viewModel = LoginViewModel()
 
     var body: some View {
-        Form {
-            Section {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Sign in to \(profile.name)")
-                        .font(.headline)
+        ZStack {
+            Color.boardlyBackground.ignoresSafeArea()
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("CONNEXION")
+                        .font(.boardlyMonoLabel)
+                        .tracking(2)
+                        .foregroundStyle(Color.boardlyTextTertiary)
+                        .padding(.bottom, 8)
+
+                    Text(profile.name)
+                        .font(.boardlyTitle)
+                        .foregroundStyle(Color.boardlyInk)
+
                     Text(profile.baseURL.absoluteString)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.boardlyMonoCaption)
+                        .foregroundStyle(Color.boardlyTextSecondary)
+                        .padding(.top, 4)
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        BoardlyFieldLabel("Identifiant")
+                        TextField("email ou nom d’utilisateur", text: $viewModel.email)
+                            .textContentType(.emailAddress)
+                            .keyboardType(.emailAddress)
+                            .autocorrectionDisabled()
+                            .textInputAutocapitalization(.never)
+                            .boardlyField()
+                    }
+                    .padding(.top, 28)
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        BoardlyFieldLabel("Mot de passe")
+                        SecureField("••••••••", text: $viewModel.password)
+                            .textContentType(.password)
+                            .boardlyField()
+                    }
+                    .padding(.top, 16)
+
+                    if let errorMessage = viewModel.error {
+                        Text(errorMessage)
+                            .font(.boardlyCallout)
+                            .foregroundStyle(.red)
+                            .padding(.top, 16)
+                    }
+
+                    Button(action: handleSignIn) {
+                        if viewModel.isLoggingIn {
+                            ProgressView().tint(.white)
+                        } else {
+                            Text("Se connecter")
+                        }
+                    }
+                    .buttonStyle(.boardlyPrimary)
+                    .disabled(!viewModel.canLogin || viewModel.isLoggingIn)
+                    .opacity(viewModel.canLogin ? 1 : 0.5)
+                    .padding(.top, 28)
                 }
-                .padding(.vertical, 4)
-            }
-
-            Section {
-                TextField("Email or username", text: $viewModel.email)
-                    .textContentType(.emailAddress)
-                    .keyboardType(.emailAddress)
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
-
-                SecureField("Password", text: $viewModel.password)
-                    .textContentType(.password)
-            }
-
-            if let errorMessage = viewModel.error {
-                Section {
-                    Text(errorMessage)
-                        .foregroundStyle(.red)
-                        .font(.callout)
-                }
+                .padding(24)
             }
         }
-        .navigationTitle("Sign In")
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                signInButton
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var signInButton: some View {
-        if viewModel.isLoggingIn {
-            ProgressView()
-        } else {
-            Button("Sign In", action: handleSignIn)
-                .disabled(!viewModel.canLogin)
-        }
     }
 
     private func handleSignIn() {

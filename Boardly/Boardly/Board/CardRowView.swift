@@ -9,38 +9,58 @@ struct CardRowView: View {
     private var totalTasks: Int { tasks.count }
     private var completedTasks: Int { tasks.filter(\.isCompleted).count }
     private var hasTasks: Bool { totalTasks > 0 }
+    private var hasMeta: Bool { hasTasks || card.dueDate != nil }
 
     private var dueDateColor: Color {
-        guard let due = card.dueDate else { return .secondary }
-        if card.isDueCompleted == true { return .green }
-        return due < Date() ? .red : .orange
+        guard let due = card.dueDate else { return .boardlyTextSecondary }
+        if card.isDueCompleted == true { return .labelGreen }
+        return due < Date() ? .labelRose : .accentColor
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
             Text(card.name)
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundStyle(.primary)
+                .font(.sans(15, .semibold))
+                .foregroundStyle(Color.boardlyInk)
                 .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
 
-            if hasTasks || card.dueDate != nil {
+            if hasMeta {
                 HStack(spacing: 10) {
-                    if hasTasks {
-                        Label("\(completedTasks)/\(totalTasks)", systemImage: "checkmark.circle")
-                            .font(.caption2)
-                            .foregroundStyle(completedTasks == totalTasks ? .green : .secondary)
-                    }
                     if let due = card.dueDate {
-                        Label(due.formatted(.dateTime.month(.abbreviated).day()), systemImage: "calendar")
-                            .font(.caption2)
-                            .foregroundStyle(dueDateColor)
+                        metaChip(
+                            systemImage: "calendar",
+                            text: due.formatted(.dateTime.month(.abbreviated).day()),
+                            color: dueDateColor
+                        )
                     }
+                    if hasTasks {
+                        metaChip(
+                            systemImage: "checklist",
+                            text: "\(completedTasks)/\(totalTasks)",
+                            color: completedTasks == totalTasks ? .labelGreen : .boardlyTextSecondary
+                        )
+                    }
+                    Spacer(minLength: 0)
                 }
             }
         }
-        .padding(10)
+        .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.background.secondary, in: RoundedRectangle(cornerRadius: 8))
+        .background(Color.boardlySurface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(Color.boardlySeparator, lineWidth: 0.5)
+        )
+    }
+
+    private func metaChip(systemImage: String, text: String, color: Color) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: systemImage)
+                .font(.system(size: 10, weight: .semibold))
+            Text(text)
+                .font(.mono(11, .medium))
+        }
+        .foregroundStyle(color)
     }
 }
