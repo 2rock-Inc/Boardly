@@ -11,8 +11,15 @@ struct BoardlyApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView()
-                .environment(profileStore)
+            #if DEBUG
+            if CommandLine.arguments.contains("-mockBoard") {
+                MockBoardHarness()
+            } else {
+                RootView().environment(profileStore)
+            }
+            #else
+            RootView().environment(profileStore)
+            #endif
         }
     }
 }

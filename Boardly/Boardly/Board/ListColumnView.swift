@@ -13,32 +13,28 @@ struct ListColumnView: View {
     @FocusState private var addFieldFocused: Bool
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Header
-            HStack {
-                Text(list.name ?? "Untitled")
-                    .font(.headline)
+        VStack(alignment: .leading, spacing: 10) {
+            // Header — list name + count pill, sitting directly on the paper.
+            HStack(spacing: 8) {
+                Text(list.name ?? "Sans titre")
+                    .font(.sans(16, .bold))
+                    .foregroundStyle(Color.boardlyInk)
                     .lineLimit(1)
-                Spacer()
                 Text("\(cards.count)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 6)
+                    .font(.mono(11, .medium))
+                    .foregroundStyle(Color.boardlyTextSecondary)
+                    .padding(.horizontal, 7)
                     .padding(.vertical, 2)
-                    .background(.fill.tertiary, in: Capsule())
+                    .background(Color.boardlySurfaceSecondary, in: Capsule())
+                Spacer(minLength: 0)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.horizontal, 4)
 
-            Divider()
-
-            // Cards — VStack (not lazy) so height is always known at first layout pass
+            // Cards
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 8) {
                     ForEach(cards) { card in
-                        Button {
-                            onCardTap(card)
-                        } label: {
+                        Button { onCardTap(card) } label: {
                             CardRowView(
                                 card: card,
                                 taskLists: payload.taskLists(for: card),
@@ -48,38 +44,35 @@ struct ListColumnView: View {
                         .buttonStyle(.plain)
                     }
 
-                    // Inline add card
                     if isAddingCard {
-                        TextField("Card title", text: $newCardName)
-                            .padding(10)
-                            .background(.background.secondary, in: RoundedRectangle(cornerRadius: 8))
+                        TextField("Titre de la carte", text: $newCardName)
+                            .font(.boardlyBody)
+                            .padding(12)
+                            .background(Color.boardlySurface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .stroke(Color.accentColor, lineWidth: 1)
+                            )
                             .focused($addFieldFocused)
                             .onSubmit { submitNewCard() }
                     }
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
             }
-            .frame(maxHeight: 400)
+            .frame(maxHeight: 460)
 
-            Divider()
-
-            // Add card button
+            // Add card
             Button {
                 isAddingCard = true
                 addFieldFocused = true
             } label: {
-                Label("Add card", systemImage: "plus")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                Label("Ajouter une carte", systemImage: "plus")
+                    .font(.sans(14, .semibold))
+                    .foregroundStyle(Color.boardlyTextSecondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 4)
             }
         }
-        .background(.background)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .shadow(color: .black.opacity(0.06), radius: 4, y: 2)
         .fixedSize(horizontal: false, vertical: true)
     }
 

@@ -41,12 +41,14 @@ struct BoardView: View {
     // behaves like ZStack (centers content); @ViewBuilder var passes layout through.
     @ViewBuilder
     private var boardContent: some View {
-        if viewModel.isLoading && viewModel.payload == nil {
-            ProgressView("Loading board…")
+        if let payload = viewModel.payload {
+            boardColumns(payload)
         } else if let error = viewModel.error {
             ContentUnavailableView(error, systemImage: "exclamationmark.triangle")
-        } else if let payload = viewModel.payload {
-            boardColumns(payload)
+        } else {
+            ProgressView().tint(.accentColor)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.boardlyBackground)
         }
     }
 
@@ -66,7 +68,7 @@ struct BoardView: View {
             // scroll view floats small content to the vertical centre.
             VStack(alignment: .leading, spacing: 0) {
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(alignment: .top, spacing: 12) {
+                    HStack(alignment: .top, spacing: 16) {
                         ForEach(lists) { list in
                             ListColumnView(
                                 list: list,
@@ -77,16 +79,16 @@ struct BoardView: View {
                                     Task { await viewModel.createCard(in: list, name: name) }
                                 }
                             )
-                            .frame(width: 300)
+                            .frame(width: 280)
                         }
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 16)
                 }
                 Spacer(minLength: 0)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .background(Color(.systemGroupedBackground))
+            .background(Color.boardlyBackground)
         }
     }
 }
