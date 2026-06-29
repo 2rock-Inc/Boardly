@@ -9,120 +9,28 @@ struct CardDetailView: View {
     @State private var isEditingName = false
     @State private var editedName = ""
     @State private var editedDescription = ""
+    @State private var newTaskName = ""
+    @State private var addingTaskInListId: String?
+    @FocusState private var taskFieldFocused: Bool
     @State private var hasDueDate = false
     @State private var editedDueDate = Date()
+    @State private var showDueDateEditor = false
     @State private var didSeedEditState = false
-    @State private var newTaskName = ""
-    @State private var addingTaskInListId: String? = nil
-    @FocusState private var taskFieldFocused: Bool
 
     private var card: Card? { boardVM.payload?.card(id: cardId) }
 
     var body: some View {
-        Group {
+        ZStack(alignment: .topLeading) {
+            Color.boardlyBackground.ignoresSafeArea()
+
             if let card, let payload = boardVM.payload {
-                cardContent(card: card, payload: payload)
+                content(card: card, payload: payload)
+                closeButton
             } else {
-                ProgressView()
+                ProgressView().tint(.accentColor)
             }
         }
-        .navigationTitle(card?.name ?? "")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar(content: {
-            ToolbarItem(placement: .confirmationAction) {
-                Button("Done") { dismiss() }
-            }
-        })
-    }
-
-    @ViewBuilder
-    private func cardContent(card: Card, payload: BoardPayload) -> some View {
-        List {
-            // Name
-            Section("Title") {
-                if isEditingName {
-                    TextField("Card name", text: $editedName)
-                        .onSubmit { saveCardName(card: card) }
-                } else {
-                    Text(card.name)
-                        .onTapGesture {
-                            editedName = card.name
-                            isEditingName = true
-                        }
-                }
-            }
-
-            // Description
-            Section("Description") {
-                ZStack(alignment: .topLeading) {
-                    if editedDescription.isEmpty {
-                        Text("Add a description…")
-                            .foregroundStyle(.tertiary)
-                            .padding(.top, 4)
-                    }
-                    TextEditor(text: $editedDescription)
-                        .frame(minHeight: 80)
-                }
-                Button("Save") { saveDescription(card: card) }
-                    .disabled(editedDescription == (card.description ?? ""))
-            }
-
-            // Due date
-            Section("Due Date") {
-                Toggle("Set due date", isOn: $hasDueDate)
-                if hasDueDate {
-                    DatePicker(
-                        "Date",
-                        selection: $editedDueDate,
-                        displayedComponents: [.date, .hourAndMinute]
-                    )
-                }
-                Button("Save") { saveDueDate(card: card) }
-                    .disabled(!dueDateChanged(card: card))
-            }
-
-            // Task lists
-            let taskLists = payload.taskLists(for: card)
-            if !taskLists.isEmpty {
-                ForEach(taskLists) { taskList in
-                    taskListSection(taskList: taskList, payload: payload)
-                }
-            }
-
-            // Move card
-            Section("Move to List") {
-                let otherLists = payload.sortedLists().filter { $0.id != card.listId }
-                ForEach(otherLists) { list in
-                    Button {
-                        Task { await boardVM.moveCard(card, to: list) }
-                    } label: {
-                        Label(list.name ?? "Untitled", systemImage: "arrow.right")
-                    }
-                }
-            }
-
-            // Delete
-            Section {
-                Button(role: .destructive) {
-                    Task {
-                        await boardVM.deleteCard(card)
-                        dismiss()
-                    }
-                } label: {
-                    Label("Delete Card", systemImage: "trash")
-                }
-            }
-        }
-        // Seed the edit buffers once for this card. Doing it here (not in
-        // per-Section .onAppear) avoids the List recycling rows and silently
-        // reverting in-progress edits when the user scrolls.
-        .onAppear {
-            guard !didSeedEditState else { return }
-            didSeedEditState = true
-            editedDescription = card.description ?? ""
-            hasDueDate = card.dueDate != nil
-            editedDueDate = card.dueDate ?? Date()
-        }
+        .toolbar(.hidden, for: .navigationBar)
         .alert("Couldn’t save card", isPresented: Binding(
             get: { boardVM.error != nil },
             set: { if !$0 { boardVM.error = nil } }
@@ -133,44 +41,268 @@ struct CardDetailView: View {
         }
     }
 
+    private var closeButton: some View {
+        Button { dismiss() } label: {
+            Image(systemName: "xmark")
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(.white)
+                .frame(width: 32, height: 32)
+                .background(.black.opacity(0.3), in: Circle())
+        }
+        .padding(.leading, 16)
+        .padding(.top, 12)
+    }
+
+    // MARK: - Content
+
+    private func content(card: Card, payload: BoardPayload) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                coverHero(card: card)
+
+                VStack(alignment: .leading, spacing: 20) {
+                    let labels = labels(for: card, in: payload)
+                    if !labels.isEmpty { labelRow(labels) }
+
+                    titleField(card: card)
+                    metaSubtitle(card: card, payload: payload)
+                    quickActions(card: card)
+
+                    if showDueDateEditor || card.dueDate != nil {
+                        dueDateEditor(card: card)
+                    }
+
+                    descriptionSection(card: card)
+
+                    ForEach(payload.taskLists(for: card)) { taskList in
+                        taskListSection(taskList: taskList, payload: payload)
+                    }
+
+                    commentsSection(card: card)
+                    moveSection(card: card, payload: payload)
+                    deleteButton(card: card)
+                }
+                .padding(20)
+            }
+        }
+        .scrollDismissesKeyboard(.immediately)
+        .onAppear {
+            guard !didSeedEditState else { return }
+            didSeedEditState = true
+            editedDescription = card.description ?? ""
+            hasDueDate = card.dueDate != nil
+            editedDueDate = card.dueDate ?? Date()
+        }
+    }
+
+    // MARK: - Cover (Phase 4 wires a real cover image; placeholder hero for now)
+
+    private func coverHero(card: Card) -> some View {
+        LinearGradient(
+            colors: [Color.accentColor, Color.accentColor.opacity(0.7)],
+            startPoint: .topLeading, endPoint: .bottomTrailing
+        )
+        .frame(height: 180)
+        .overlay(alignment: .bottomTrailing) {
+            Image(systemName: "rectangle.stack")
+                .font(.system(size: 64, weight: .light))
+                .foregroundStyle(.white.opacity(0.18))
+                .padding(20)
+        }
+    }
+
+    // MARK: - Labels
+
+    private func labelRow(_ labels: [BoardlyKit.Label]) -> some View {
+        HStack(spacing: 6) {
+            ForEach(labels) { label in
+                Text(label.name ?? "•")
+                    .font(.boardlyMonoLabel)
+                    .textCase(.uppercase)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color(plankaLabel: label.color), in: Capsule())
+            }
+        }
+    }
+
+    // MARK: - Title
+
     @ViewBuilder
+    private func titleField(card: Card) -> some View {
+        if isEditingName {
+            TextField("Titre de la carte", text: $editedName, axis: .vertical)
+                .font(.boardlyTitle)
+                .foregroundStyle(Color.boardlyInk)
+                .onSubmit { saveCardName(card: card) }
+                .submitLabel(.done)
+        } else {
+            Text(card.name)
+                .font(.boardlyTitle)
+                .foregroundStyle(Color.boardlyInk)
+                .onTapGesture {
+                    editedName = card.name
+                    isEditingName = true
+                }
+        }
+    }
+
+    private func metaSubtitle(card: Card, payload: BoardPayload) -> some View {
+        let listName = payload.sortedLists().first { $0.id == card.listId }?.name ?? "—"
+        var parts = ["dans \(listName)"]
+        if let created = card.createdAt {
+            parts.append("créée \(created.formatted(.relative(presentation: .named)))")
+        }
+        return Text(parts.joined(separator: " · "))
+            .font(.boardlyMonoCaption)
+            .foregroundStyle(Color.boardlyTextSecondary)
+    }
+
+    // MARK: - Quick actions (Échéance functional; others land in Phase 4)
+
+    private func quickActions(card: Card) -> some View {
+        HStack(spacing: 8) {
+            quickAction("Échéance", systemImage: "calendar", enabled: true) {
+                withAnimation { showDueDateEditor.toggle() }
+            }
+            quickAction("Membres", systemImage: "person.2", enabled: false) {}
+            quickAction("Label", systemImage: "tag", enabled: false) {}
+            quickAction("Joindre", systemImage: "paperclip", enabled: false) {}
+        }
+    }
+
+    private func quickAction(_ title: String, systemImage: String, enabled: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 5) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 16, weight: .medium))
+                Text(title)
+                    .font(.boardlyMonoLabel)
+            }
+            .foregroundStyle(enabled ? Color.accentColor : Color.boardlyTextTertiary)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .background(Color.boardlySurface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(Color.boardlySeparator, lineWidth: 0.5)
+            )
+        }
+        .buttonStyle(.plain)
+        .disabled(!enabled)
+        .opacity(enabled ? 1 : 0.5)
+    }
+
+    // MARK: - Due date
+
+    private func dueDateEditor(card: Card) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            BoardlyFieldLabel("Échéance")
+            Toggle("Définir une échéance", isOn: $hasDueDate)
+                .font(.boardlyBody)
+                .tint(.accentColor)
+            if hasDueDate {
+                DatePicker("Date", selection: $editedDueDate, displayedComponents: [.date, .hourAndMinute])
+                    .font(.boardlyBody)
+            }
+            Button("Enregistrer l’échéance") { saveDueDate(card: card) }
+                .font(.boardlyCallout)
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                .background(Color.accentColor, in: Capsule())
+                .opacity(dueDateChanged(card: card) ? 1 : 0.4)
+                .disabled(!dueDateChanged(card: card))
+        }
+        .boardlyCard()
+    }
+
+    // MARK: - Description
+
+    private func descriptionSection(card: Card) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            BoardlyFieldLabel("Description")
+            ZStack(alignment: .topLeading) {
+                if editedDescription.isEmpty {
+                    Text("Ajouter une description…")
+                        .font(.boardlyBody)
+                        .foregroundStyle(Color.boardlyTextTertiary)
+                        .padding(.top, 8)
+                        .padding(.leading, 4)
+                }
+                TextEditor(text: $editedDescription)
+                    .font(.boardlyBody)
+                    .foregroundStyle(Color.boardlyInk)
+                    .frame(minHeight: 80)
+                    .scrollContentBackground(.hidden)
+            }
+            if editedDescription != (card.description ?? "") {
+                Button("Enregistrer") { saveDescription(card: card) }
+                    .font(.boardlyCallout)
+                    .foregroundStyle(Color.accentColor)
+            }
+        }
+        .boardlyCard()
+    }
+
+    // MARK: - Tasks
+
     private func taskListSection(taskList: TaskList, payload: BoardPayload) -> some View {
         let tasks = payload.tasks(for: taskList)
         let completed = tasks.filter(\.isCompleted).count
-        Section {
+        let progress = tasks.isEmpty ? 0 : Double(completed) / Double(tasks.count)
+
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text(taskList.name)
+                    .font(.boardlyHeadline)
+                    .foregroundStyle(Color.boardlyInk)
+                Spacer()
+                Text("\(completed)/\(tasks.count)")
+                    .font(.mono(12, .medium))
+                    .foregroundStyle(Color.boardlyTextSecondary)
+            }
+
+            if !tasks.isEmpty {
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(Color.boardlySurfaceSecondary)
+                        Capsule().fill(Color.accentColor)
+                            .frame(width: geo.size.width * progress)
+                    }
+                }
+                .frame(height: 5)
+            }
+
             ForEach(tasks) { task in
                 HStack(spacing: 12) {
-                    Button {
-                        Task { await boardVM.toggleTask(task) }
-                    } label: {
+                    Button { Task { await boardVM.toggleTask(task) } } label: {
                         Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
-                            .foregroundStyle(task.isCompleted ? .green : .secondary)
-                            .font(.title3)
+                            .foregroundStyle(task.isCompleted ? Color.labelGreen : Color.boardlyTextTertiary)
+                            .font(.system(size: 20))
                     }
                     .buttonStyle(.plain)
 
                     Text(task.name)
+                        .font(.boardlyBody)
                         .strikethrough(task.isCompleted)
-                        .foregroundStyle(task.isCompleted ? .secondary : .primary)
+                        .foregroundStyle(task.isCompleted ? Color.boardlyTextSecondary : Color.boardlyInk)
 
-                    Spacer()
+                    Spacer(minLength: 0)
                 }
                 .swipeActions(edge: .trailing) {
                     Button(role: .destructive) {
                         Task { await boardVM.deleteTask(task) }
-                    } label: {
-                        Label("Delete", systemImage: "trash")
-                    }
+                    } label: { SwiftUI.Label("Supprimer", systemImage: "trash") }
                 }
             }
 
-            // Add task inline
             if addingTaskInListId == taskList.id {
-                HStack {
-                    Image(systemName: "circle")
-                        .foregroundStyle(.tertiary)
-                        .font(.title3)
-                    TextField("New task", text: $newTaskName)
+                HStack(spacing: 12) {
+                    Image(systemName: "circle").foregroundStyle(Color.boardlyTextTertiary).font(.system(size: 20))
+                    TextField("Nouvelle tâche", text: $newTaskName)
+                        .font(.boardlyBody)
                         .focused($taskFieldFocused)
                         .onSubmit { submitTask(taskList: taskList) }
                 }
@@ -181,21 +313,84 @@ struct CardDetailView: View {
                 newTaskName = ""
                 taskFieldFocused = true
             } label: {
-                Label("Add task", systemImage: "plus")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-        } header: {
-            HStack {
-                Text(taskList.name)
-                Spacer()
-                if !tasks.isEmpty {
-                    Text("\(completed)/\(tasks.count)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+                SwiftUI.Label("Ajouter une tâche", systemImage: "plus")
+                    .font(.boardlyCallout)
+                    .foregroundStyle(Color.boardlyTextSecondary)
             }
         }
+        .boardlyCard()
+    }
+
+    // MARK: - Comments (read-only count for now; full thread arrives in Phase 4)
+
+    private func commentsSection(card: Card) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Commentaires")
+                    .font(.boardlyHeadline)
+                    .foregroundStyle(Color.boardlyInk)
+                Spacer()
+                Text("\(card.commentsTotal ?? 0)")
+                    .font(.mono(12, .medium))
+                    .foregroundStyle(Color.boardlyTextSecondary)
+            }
+            HStack(spacing: 10) {
+                Image(systemName: "bubble.left")
+                    .foregroundStyle(Color.boardlyTextTertiary)
+                Text("Les commentaires arrivent en Phase 4.")
+                    .font(.boardlyCallout)
+                    .foregroundStyle(Color.boardlyTextTertiary)
+                Spacer(minLength: 0)
+            }
+            .padding(.vertical, 4)
+        }
+        .boardlyCard()
+    }
+
+    // MARK: - Move / Delete
+
+    private func moveSection(card: Card, payload: BoardPayload) -> some View {
+        let otherLists = payload.sortedLists().filter { $0.id != card.listId }
+        return VStack(alignment: .leading, spacing: 12) {
+            BoardlyFieldLabel("Déplacer vers")
+            ForEach(otherLists) { list in
+                Button {
+                    Task { await boardVM.moveCard(card, to: list) }
+                } label: {
+                    HStack {
+                        SwiftUI.Label(list.name ?? "Sans titre", systemImage: "arrow.right")
+                            .font(.boardlyBody)
+                            .foregroundStyle(Color.boardlyInk)
+                        Spacer()
+                    }
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .boardlyCard()
+    }
+
+    private func deleteButton(card: Card) -> some View {
+        Button(role: .destructive) {
+            Task {
+                await boardVM.deleteCard(card)
+                dismiss()
+            }
+        } label: {
+            SwiftUI.Label("Supprimer la carte", systemImage: "trash")
+                .font(.sans(15, .semibold))
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(Color.labelRose, in: Capsule())
+        }
+    }
+
+    // MARK: - Helpers & actions
+
+    private func labels(for card: Card, in payload: BoardPayload) -> [BoardlyKit.Label] {
+        let ids = Set(payload.cardLabels.filter { $0.cardId == card.id }.map(\.labelId))
+        return payload.labels.filter { ids.contains($0.id) }
     }
 
     private func saveCardName(card: Card) {
@@ -214,7 +409,6 @@ struct CardDetailView: View {
     private func dueDateChanged(card: Card) -> Bool {
         if hasDueDate {
             guard let existing = card.dueDate else { return true }
-            // Tolerate sub-second drift from the DatePicker round-trip.
             return abs(existing.timeIntervalSince(editedDueDate)) >= 1
         } else {
             return card.dueDate != nil

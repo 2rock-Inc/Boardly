@@ -68,7 +68,16 @@ enum PreviewMock {
           { "id": "t11", "taskListId": "tl4", "name": "Contraste", "isCompleted": true, "position": 3 },
           { "id": "t12", "taskListId": "tl4", "name": "Doc", "isCompleted": true, "position": 4 }
         ],
-        "labels": [], "cardMemberships": [], "cardLabels": [], "users": []
+        "labels": [
+          { "id": "lb1", "boardId": "b1", "name": "Design", "color": "lagoon-blue", "position": 1 },
+          { "id": "lb2", "boardId": "b1", "name": "Priorité", "color": "berry-red", "position": 2 }
+        ],
+        "cardMemberships": [],
+        "cardLabels": [
+          { "id": "cl1", "cardId": "c1", "labelId": "lb1" },
+          { "id": "cl2", "cardId": "c1", "labelId": "lb2" }
+        ],
+        "users": []
       }
     }
     """
@@ -79,6 +88,22 @@ struct MockBoardHarness: View {
         NavigationStack {
             BoardView(client: PreviewMock.boardClient(), boardId: "b1", boardName: "Sprint Produit")
         }
+    }
+}
+
+struct MockCardHarness: View {
+    @State private var vm = BoardViewModel(client: PreviewMock.boardClient(), boardId: "b1")
+    var body: some View {
+        NavigationStack {
+            Group {
+                if vm.payload != nil {
+                    CardDetailView(cardId: "c1", boardVM: vm)
+                } else {
+                    ProgressView().tint(.accentColor)
+                }
+            }
+        }
+        .task { await vm.load() }
     }
 }
 #endif
