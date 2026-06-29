@@ -5,6 +5,10 @@ import BoardlyKit
 struct BoardlyApp: App {
     @State private var profileStore = ProfileStore()
 
+    init() {
+        BoardlyFonts.register()
+    }
+
     var body: some Scene {
         WindowGroup {
             RootView()
