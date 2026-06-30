@@ -141,6 +141,17 @@ struct MockBoardHarness: View {
     }
 }
 
+struct MockLoginHarness: View {
+    @State private var path: [OnboardingRoute] = []
+    private let profile = ServerProfile(name: "Équipe", baseURL: URL(string: "https://planka.equipe.fr")!)
+    var body: some View {
+        NavigationStack(path: $path) {
+            LoginView(profile: profile, path: $path)
+        }
+        .environment(ProfileStore())
+    }
+}
+
 struct MockProjectsHarness: View {
     @State private var path: [AppRoute] = []
     var body: some View {

@@ -68,6 +68,17 @@ struct ProfileStoreTests {
         #expect(sut.activeProfile?.id == p2.id)
     }
 
+    @Test("clearActiveProfile deactivates without removing the profile")
+    func clearActiveProfile() {
+        let sut = makeSut()
+        let profile = makeProfile()
+        sut.addProfile(profile)
+        sut.clearActiveProfile()
+        #expect(sut.activeProfileID == nil)
+        #expect(sut.activeProfile == nil)
+        #expect(sut.profiles.count == 1) // profile kept
+    }
+
     @Test("setActiveProfile ignores unknown ID")
     func setActiveProfileUnknownID() {
         let sut = makeSut()

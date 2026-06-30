@@ -29,7 +29,7 @@ struct MainView: View {
             ComingSoonView(title: "Activité", systemImage: "bell")
                 .tabItem { Label("Activité", systemImage: "bell") }
 
-            ComingSoonView(title: "Profil", systemImage: "person")
+            ProfileView(profile: profile, client: client)
                 .tabItem { Label("Profil", systemImage: "person") }
         }
         .tint(.accentColor)

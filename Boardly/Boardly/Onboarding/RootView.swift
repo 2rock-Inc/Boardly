@@ -27,5 +27,10 @@ struct RootView: View {
                 MainView(profile: profile)
             }
         }
+        .onChange(of: profileStore.activeProfileID) { _, newValue in
+            // Returning from a session (logout / switch server) — reset to the
+            // server picker rather than landing back on a stale login screen.
+            if newValue == nil { path = [] }
+        }
     }
 }
