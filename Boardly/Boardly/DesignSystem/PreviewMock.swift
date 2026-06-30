@@ -18,8 +18,18 @@ private final class MockHTTPClient: HTTPClient, @unchecked Sendable {
 
 private final class MockKeychain: KeychainStoring, @unchecked Sendable {
     func save(_ value: String, for key: String) throws {}
-    func load(for key: String) throws -> String? { "mock-token" }
+    func load(for key: String) throws -> String? { mockJWT }
     func delete(for key: String) throws {}
+
+    // A JWT-shaped token whose payload subject is "u1" (Marie Dupont), so the
+    // header avatar resolves in the mock harness.
+    private var mockJWT: String {
+        let payload = Data(#"{"subject":"u1"}"#.utf8).base64EncodedString()
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
+        return "eyJhbGciOiJIUzI1NiJ9.\(payload).signature"
+    }
 }
 
 enum PreviewMock {
@@ -43,9 +53,9 @@ enum PreviewMock {
     static let projectsJSON = """
     {
       "items": [
-        { "id": "p1", "name": "Refonte 2026", "isHidden": false },
-        { "id": "p2", "name": "Marketing", "isHidden": false },
-        { "id": "p3", "name": "Infra", "isHidden": false }
+        { "id": "p1", "name": "Refonte 2026", "isHidden": false, "isFavorite": true },
+        { "id": "p2", "name": "Marketing", "isHidden": false, "isFavorite": true },
+        { "id": "p3", "name": "Infra", "isHidden": false, "isFavorite": false }
       ],
       "included": {
         "boards": [

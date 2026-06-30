@@ -46,6 +46,13 @@ public struct PlankaClient: Sendable {
                                                metadata: ["user": emailOrUsername])
     }
 
+    /// The current user's id, recovered from the stored access token (JWT).
+    /// For display only — the server still authorizes every request.
+    public func currentUserId() -> String? {
+        guard let token = try? tokenStore.loadToken() else { return nil }
+        return PlankaJWT.userId(from: token)
+    }
+
     // MARK: - Projects
 
     public func getProjects() async throws -> ProjectsPayload {

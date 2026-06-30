@@ -72,6 +72,14 @@ extension View {
     func boardlyField() -> some View { modifier(BoardlyFieldStyle()) }
 }
 
+/// Stable (launch-independent) hash for deterministic color assignment.
+/// `String.hashValue` is seeded randomly per process, so it can't be used here.
+func boardlyStableHash(_ string: String) -> Int {
+    var hash = 5381
+    for byte in string.utf8 { hash = (hash &* 33) &+ Int(byte) }
+    return abs(hash)
+}
+
 /// Circular initials avatar, colored deterministically from the name.
 struct AvatarView: View {
     let name: String
@@ -85,7 +93,7 @@ struct AvatarView: View {
         return chars.joined().uppercased()
     }
     private var color: Color {
-        Self.palette[abs(name.hashValue) % Self.palette.count]
+        Self.palette[boardlyStableHash(name) % Self.palette.count]
     }
 
     var body: some View {
