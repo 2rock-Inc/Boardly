@@ -84,8 +84,7 @@ struct CardDetailView: View {
                 coverHero(card: card)
 
                 VStack(alignment: .leading, spacing: 20) {
-                    let cardLabels = payload.labels(for: card)
-                    if !cardLabels.isEmpty { labelRow(cardLabels) }
+                    labelRow(payload.labels(for: card))
 
                     titleField(card: card)
                     metaSubtitle(card: card, payload: payload)
@@ -168,14 +167,29 @@ struct CardDetailView: View {
     private func labelRow(_ labels: [BoardlyKit.Label]) -> some View {
         HStack(spacing: 6) {
             ForEach(labels) { label in
-                Text(label.name ?? "•")
-                    .font(.boardlyMonoLabel)
-                    .textCase(.uppercase)
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color(plankaLabel: label.color), in: Capsule())
+                Button { showLabelsSheet = true } label: {
+                    Text(label.name ?? "•")
+                        .font(.sans(12, .semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 4)
+                        .background(Color(plankaLabel: label.color), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+                }
+                .buttonStyle(.plain)
             }
+            Button { showLabelsSheet = true } label: {
+                Text("+ Label")
+                    .font(.sans(12, .semibold))
+                    .foregroundStyle(Color.boardlyTextTertiary)
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 4)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 7, style: .continuous)
+                            .stroke(Color.boardlySeparator, style: StrokeStyle(lineWidth: 1, dash: [3, 2]))
+                    )
+            }
+            .buttonStyle(.plain)
+            Spacer(minLength: 0)
         }
     }
 
@@ -220,9 +234,6 @@ struct CardDetailView: View {
             }
             quickAction("Échéance", systemImage: "calendar", enabled: true) {
                 showDueDateSheet = true
-            }
-            quickAction("Label", systemImage: "tag", enabled: true) {
-                showLabelsSheet = true
             }
             quickAction("Joindre", systemImage: "paperclip", enabled: true) {
                 showAttachmentsSheet = true
