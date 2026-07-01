@@ -81,7 +81,8 @@ struct ProjectListView: View {
                                 project: project,
                                 boards: boards,
                                 members: payload.members(for: project),
-                                onOpenBoard: { path.append(.board(id: $0.id, name: $0.name)) }
+                                onOpenBoard: { path.append(.board(id: $0.id, name: $0.name, projectName: project.name)) },
+                                onOpenProject: { path.append(.project(id: project.id, name: project.name)) }
                             )
                         }
                     }
@@ -229,6 +230,7 @@ private struct ProjectCard: View {
     let boards: [Board]
     let members: [User]
     let onOpenBoard: (Board) -> Void
+    let onOpenProject: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
@@ -239,11 +241,16 @@ private struct ProjectCard: View {
                     .lineLimit(1)
                 Spacer(minLength: 8)
                 AvatarStack(members: members)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.white.opacity(0.7))
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 13)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(projectColor(project.id))
+            .contentShape(Rectangle())
+            .onTapGesture { onOpenProject() }
 
             VStack(spacing: 0) {
                 ForEach(Array(boards.enumerated()), id: \.element.id) { index, board in

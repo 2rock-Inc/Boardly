@@ -1,101 +1,325 @@
 import SwiftUI
 import BoardlyKit
 
+enum BoardViewMode: String, CaseIterable {
+    case kanban = "Kanban"
+    case liste = "Liste"
+    case grille = "Grille"
+}
+
 struct BoardView: View {
     let client: PlankaClient
     let boardId: String
     let boardName: String
+    let projectName: String?
 
     @State private var viewModel: BoardViewModel
     @State private var selectedCardId: SelectedCard?
+    @State private var mode: BoardViewMode = .kanban
+    @State private var showAddCard = false
+    @State private var newCardTitle = ""
+    @Environment(\.dismiss) private var dismiss
 
-    init(client: PlankaClient, boardId: String, boardName: String) {
+    init(client: PlankaClient, boardId: String, boardName: String, projectName: String? = nil) {
         self.client = client
         self.boardId = boardId
         self.boardName = boardName
+        self.projectName = projectName
         _viewModel = State(initialValue: BoardViewModel(client: client, boardId: boardId))
     }
 
+    private let grid = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
+
     var body: some View {
-        boardContent
-            .navigationTitle(boardName)
-            .navigationBarTitleDisplayMode(.inline)
-            .task {
-                await viewModel.load()
-                await viewModel.startRealtime()
+        ZStack(alignment: .bottomTrailing) {
+            Color.boardlyBackground.ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                header
+                viewSelector
+                boardContent
             }
-            .onDisappear {
-                Task { await viewModel.stopRealtime() }
+
+            if viewModel.payload != nil {
+                fab
             }
-            .refreshable { await viewModel.load() }
-            .sheet(item: $selectedCardId) { selected in
-                NavigationStack {
-                    CardDetailView(cardId: selected.id, boardVM: viewModel)
-                }
+        }
+        .toolbar(.hidden, for: .navigationBar)
+        .task {
+            await viewModel.load()
+            await viewModel.startRealtime()
+        }
+        .onDisappear { Task { await viewModel.stopRealtime() } }
+        .refreshable { await viewModel.load() }
+        .sheet(item: $selectedCardId) { selected in
+            NavigationStack {
+                CardDetailView(cardId: selected.id, boardVM: viewModel)
             }
-            .alert("Error", isPresented: Binding(
-                get: { viewModel.error != nil },
-                set: { if !$0 { viewModel.error = nil } }
-            )) {
-                Button("OK") { viewModel.error = nil }
-            } message: {
-                Text(viewModel.error ?? "")
+        }
+        .alert("Nouvelle carte", isPresented: $showAddCard) {
+            TextField("Titre de la carte", text: $newCardTitle)
+            Button("Ajouter") { addCardToFirstList() }
+            Button("Annuler", role: .cancel) { newCardTitle = "" }
+        } message: {
+            if let list = viewModel.payload?.sortedLists().first {
+                Text("Ajoutée à « \(list.name ?? "—") »")
             }
+        }
+        .alert("Erreur", isPresented: Binding(
+            get: { viewModel.error != nil },
+            set: { if !$0 { viewModel.error = nil } }
+        )) {
+            Button("OK") { viewModel.error = nil }
+        } message: {
+            Text(viewModel.error ?? "")
+        }
     }
 
-    // @ViewBuilder var instead of Group{} — Group with conditional branches
-    // behaves like ZStack (centers content); @ViewBuilder var passes layout through.
+    // MARK: - Header
+
+    private var header: some View {
+        HStack(spacing: 12) {
+            Button { dismiss() } label: {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(Color.boardlyInk)
+            }
+            VStack(alignment: .leading, spacing: 1) {
+                Text(boardName)
+                    .font(.sans(20, .bold))
+                    .foregroundStyle(Color.boardlyInk)
+                    .lineLimit(1)
+                if let projectName {
+                    Text(projectName)
+                        .font(.boardlyMonoCaption)
+                        .foregroundStyle(Color.boardlyTextSecondary)
+                        .lineLimit(1)
+                }
+            }
+            Spacer(minLength: 0)
+            Image(systemName: "line.3.horizontal.decrease")
+                .foregroundStyle(Color.boardlyTextSecondary)
+            Image(systemName: "ellipsis")
+                .foregroundStyle(Color.boardlyTextSecondary)
+        }
+        .font(.system(size: 17, weight: .semibold))
+        .padding(.horizontal, 20)
+        .padding(.top, 8)
+        .padding(.bottom, 12)
+    }
+
+    private var viewSelector: some View {
+        HStack(spacing: 4) {
+            ForEach(BoardViewMode.allCases, id: \.self) { item in
+                let active = mode == item
+                Text(item.rawValue)
+                    .font(.sans(14, .semibold))
+                    .foregroundStyle(active ? Color.boardlyInk : Color.boardlyTextSecondary)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(active ? Color.boardlySurface : .clear, in: Capsule())
+                    .overlay(active ? Capsule().stroke(Color.boardlySeparator, lineWidth: 0.5) : nil)
+                    .onTapGesture {
+                        withAnimation(.easeInOut(duration: 0.15)) { mode = item }
+                    }
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(4)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 8)
+    }
+
+    // MARK: - Content
+
     @ViewBuilder
     private var boardContent: some View {
         if let payload = viewModel.payload {
-            boardColumns(payload)
+            if payload.sortedLists().isEmpty {
+                ContentUnavailableView(
+                    "Aucune liste",
+                    systemImage: "rectangle.split.3x1",
+                    description: Text("Ajoute des listes à ce board depuis l’app web.")
+                )
+            } else {
+                switch mode {
+                case .kanban: kanbanMode(payload)
+                case .liste: listeMode(payload)
+                case .grille: grilleMode(payload)
+                }
+            }
         } else if let error = viewModel.error {
             ContentUnavailableView(error, systemImage: "exclamationmark.triangle")
         } else {
             ProgressView().tint(.accentColor)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.boardlyBackground)
         }
     }
 
-    @ViewBuilder
-    private func boardColumns(_ payload: BoardPayload) -> some View {
-        let lists = payload.sortedLists()
-        if lists.isEmpty {
-            ContentUnavailableView(
-                "No Lists",
-                systemImage: "rectangle.split.3x1",
-                description: Text("Add lists to this board from the web app.")
-            )
-        } else {
-            // The ScrollView wraps only the kanban row; a Spacer OUTSIDE (in the
-            // VStack) fills the remaining height so the columns stay pinned to top.
-            // Putting the Spacer inside the ScrollView doesn't work — the horizontal
-            // scroll view floats small content to the vertical centre.
-            VStack(alignment: .leading, spacing: 0) {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(alignment: .top, spacing: 16) {
-                        ForEach(lists) { list in
-                            ListColumnView(
-                                list: list,
-                                cards: payload.cards(for: list),
-                                payload: payload,
-                                onCardTap: { card in selectedCardId = SelectedCard(id: card.id) },
-                                onCreateCard: { name in
-                                    Task { await viewModel.createCard(in: list, name: name) }
-                                }
+    // MARK: Kanban
+
+    private func kanbanMode(_ payload: BoardPayload) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(alignment: .top, spacing: 16) {
+                    ForEach(payload.sortedLists()) { list in
+                        ListColumnView(
+                            list: list,
+                            cards: payload.cards(for: list),
+                            payload: payload,
+                            onCardTap: { selectedCardId = SelectedCard(id: $0.id) },
+                            onCreateCard: { name in
+                                Task { await viewModel.createCard(in: list, name: name) }
+                            }
+                        )
+                        .frame(width: 280)
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 8)
+            }
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    }
+
+    // MARK: Liste
+
+    private func listeMode(_ payload: BoardPayload) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 22) {
+                ForEach(payload.sortedLists()) { list in
+                    let cards = payload.cards(for: list)
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack(spacing: 8) {
+                            Text(list.name ?? "Sans titre")
+                                .font(.sans(16, .bold))
+                                .foregroundStyle(Color.boardlyInk)
+                            Text("\(cards.count)")
+                                .font(.mono(11, .medium))
+                                .foregroundStyle(Color.boardlyTextSecondary)
+                                .padding(.horizontal, 7).padding(.vertical, 2)
+                                .background(Color.boardlySurfaceSecondary, in: Capsule())
+                            Spacer(minLength: 0)
+                        }
+                        ForEach(cards) { card in
+                            ListModeCardRow(
+                                card: card,
+                                tasks: payload.taskLists(for: card).flatMap { payload.tasks(for: $0) },
+                                onTap: { selectedCardId = SelectedCard(id: card.id) },
+                                onToggleTask: { task in Task { await viewModel.toggleTask(task) } }
                             )
-                            .frame(width: 280)
                         }
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 16)
                 }
-                Spacer(minLength: 0)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .background(Color.boardlyBackground)
+            .padding(20)
         }
+    }
+
+    // MARK: Grille
+
+    private func grilleMode(_ payload: BoardPayload) -> some View {
+        ScrollView {
+            LazyVGrid(columns: grid, spacing: 12) {
+                ForEach(payload.sortedLists()) { list in
+                    ForEach(payload.cards(for: list)) { card in
+                        Button { selectedCardId = SelectedCard(id: card.id) } label: {
+                            CardRowView(
+                                card: card,
+                                taskLists: payload.taskLists(for: card),
+                                tasks: payload.taskLists(for: card).flatMap { payload.tasks(for: $0) }
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+            .padding(20)
+        }
+    }
+
+    // MARK: - FAB
+
+    private var fab: some View {
+        Button {
+            newCardTitle = ""
+            showAddCard = true
+        } label: {
+            Image(systemName: "plus")
+                .font(.system(size: 24, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 56, height: 56)
+                .background(Color.accentColor, in: Circle())
+                .shadow(color: Color.accentColor.opacity(0.4), radius: 10, y: 4)
+        }
+        .padding(.trailing, 20)
+        .padding(.bottom, 20)
+    }
+
+    private func addCardToFirstList() {
+        let title = newCardTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !title.isEmpty, let list = viewModel.payload?.sortedLists().first else { return }
+        Task { await viewModel.createCard(in: list, name: title) }
+        newCardTitle = ""
+    }
+}
+
+// MARK: - List-mode card row (card + its tasks)
+
+private struct ListModeCardRow: View {
+    let card: Card
+    let tasks: [PlankaTask]
+    let onTap: () -> Void
+    let onToggleTask: (PlankaTask) -> Void
+
+    private var completed: Int { tasks.filter(\.isCompleted).count }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Button(action: onTap) {
+                HStack(spacing: 10) {
+                    Text(card.name)
+                        .font(.sans(15, .semibold))
+                        .foregroundStyle(Color.boardlyInk)
+                        .multilineTextAlignment(.leading)
+                    Spacer(minLength: 0)
+                    if let due = card.dueDate {
+                        Text(due.formatted(.dateTime.month(.abbreviated).day()))
+                            .font(.mono(11, .medium))
+                            .foregroundStyle(due < Date() ? Color.labelRose : Color.boardlyTextSecondary)
+                    }
+                    if !tasks.isEmpty {
+                        Text("\(completed)/\(tasks.count)")
+                            .font(.mono(11, .medium))
+                            .foregroundStyle(Color.boardlyTextSecondary)
+                    }
+                }
+            }
+            .buttonStyle(.plain)
+
+            if !tasks.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    ForEach(tasks) { task in
+                        Button { onToggleTask(task) } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
+                                    .foregroundStyle(task.isCompleted ? Color.labelGreen : Color.boardlyTextTertiary)
+                                    .font(.system(size: 15))
+                                Text(task.name)
+                                    .font(.boardlyCallout)
+                                    .strikethrough(task.isCompleted)
+                                    .foregroundStyle(task.isCompleted ? Color.boardlyTextSecondary : Color.boardlyInk)
+                                Spacer(minLength: 0)
+                            }
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.leading, 2)
+            }
+        }
+        .boardlyCard()
     }
 }
 

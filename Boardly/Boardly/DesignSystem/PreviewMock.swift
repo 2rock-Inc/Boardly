@@ -53,7 +53,7 @@ enum PreviewMock {
     static let projectsJSON = """
     {
       "items": [
-        { "id": "p1", "name": "Refonte 2026", "isHidden": false, "isFavorite": true },
+        { "id": "p1", "name": "Refonte 2026", "isHidden": false, "isFavorite": true, "description": "Refonte complète de l’app mobile et du back-office. Cible : livraison T2." },
         { "id": "p2", "name": "Marketing", "isHidden": false, "isFavorite": true },
         { "id": "p3", "name": "Infra", "isHidden": false, "isFavorite": false }
       ],
@@ -136,7 +136,16 @@ enum PreviewMock {
 struct MockBoardHarness: View {
     var body: some View {
         NavigationStack {
-            BoardView(client: PreviewMock.boardClient(), boardId: "b1", boardName: "Sprint Produit")
+            BoardView(client: PreviewMock.boardClient(), boardId: "b1", boardName: "Sprint Produit", projectName: "Refonte 2026")
+        }
+    }
+}
+
+struct MockProjectDetailHarness: View {
+    @State private var path: [AppRoute] = []
+    var body: some View {
+        NavigationStack(path: $path) {
+            ProjectDetailView(client: PreviewMock.projectsClient(), projectId: "p1", projectName: "Refonte 2026", path: $path)
         }
     }
 }
@@ -160,8 +169,10 @@ struct MockProjectsHarness: View {
                 ProjectListView(client: PreviewMock.projectsClient(), path: $path)
                     .navigationDestination(for: AppRoute.self) { route in
                         switch route {
-                        case .board(let id, let name):
-                            BoardView(client: PreviewMock.boardClient(), boardId: id, boardName: name)
+                        case .project(let id, let name):
+                            ProjectDetailView(client: PreviewMock.projectsClient(), projectId: id, projectName: name, path: $path)
+                        case .board(let id, let name, let projectName):
+                            BoardView(client: PreviewMock.boardClient(), boardId: id, boardName: name, projectName: projectName)
                         }
                     }
             }

@@ -16,8 +16,10 @@ struct MainView: View {
                 ProjectListView(client: client, path: $path)
                     .navigationDestination(for: AppRoute.self) { route in
                         switch route {
-                        case .board(let id, let name):
-                            BoardView(client: client, boardId: id, boardName: name)
+                        case .project(let id, let name):
+                            ProjectDetailView(client: client, projectId: id, projectName: name, path: $path)
+                        case .board(let id, let name, let projectName):
+                            BoardView(client: client, boardId: id, boardName: name, projectName: projectName)
                         }
                     }
             }
