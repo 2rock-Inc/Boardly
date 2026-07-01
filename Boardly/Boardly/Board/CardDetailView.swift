@@ -12,12 +12,10 @@ struct CardDetailView: View {
     @State private var newTaskName = ""
     @State private var addingTaskInListId: String?
     @FocusState private var taskFieldFocused: Bool
-    @State private var hasDueDate = false
-    @State private var editedDueDate = Date()
-    @State private var showDueDateEditor = false
     @State private var didSeedEditState = false
     @State private var showLabelsSheet = false
     @State private var showMembersSheet = false
+    @State private var showDueDateSheet = false
 
     private var card: Card? { boardVM.payload?.card(id: cardId) }
 
@@ -38,6 +36,9 @@ struct CardDetailView: View {
         }
         .sheet(isPresented: $showMembersSheet) {
             CardMembersSheet(cardId: cardId, boardVM: boardVM)
+        }
+        .sheet(isPresented: $showDueDateSheet) {
+            CardDueDateSheet(cardId: cardId, boardVM: boardVM)
         }
         .alert("Couldn’t save card", isPresented: Binding(
             get: { boardVM.error != nil },
@@ -86,8 +87,21 @@ struct CardDetailView: View {
 
                     quickActions(card: card)
 
-                    if showDueDateEditor || card.dueDate != nil {
-                        dueDateEditor(card: card)
+                    if let due = card.dueDate {
+                        Button { showDueDateSheet = true } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: "calendar")
+                                Text(due.formatted(.dateTime.weekday().day().month().hour().minute()))
+                                    .font(.boardlyCallout)
+                                Spacer(minLength: 0)
+                            }
+                            .foregroundStyle(due < Date() ? Color.labelRose : Color.accentColor)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 10)
+                            .background(Color.boardlySurface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Color.boardlySeparator, lineWidth: 0.5))
+                        }
+                        .buttonStyle(.plain)
                     }
 
                     descriptionSection(card: card)
@@ -108,8 +122,6 @@ struct CardDetailView: View {
             guard !didSeedEditState else { return }
             didSeedEditState = true
             editedDescription = card.description ?? ""
-            hasDueDate = card.dueDate != nil
-            editedDueDate = card.dueDate ?? Date()
         }
     }
 
@@ -185,7 +197,7 @@ struct CardDetailView: View {
                 showMembersSheet = true
             }
             quickAction("Échéance", systemImage: "calendar", enabled: true) {
-                withAnimation { showDueDateEditor.toggle() }
+                showDueDateSheet = true
             }
             quickAction("Label", systemImage: "tag", enabled: true) {
                 showLabelsSheet = true
@@ -214,30 +226,6 @@ struct CardDetailView: View {
         .buttonStyle(.plain)
         .disabled(!enabled)
         .opacity(enabled ? 1 : 0.5)
-    }
-
-    // MARK: - Due date
-
-    private func dueDateEditor(card: Card) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            BoardlyFieldLabel("Échéance")
-            Toggle("Définir une échéance", isOn: $hasDueDate)
-                .font(.boardlyBody)
-                .tint(.accentColor)
-            if hasDueDate {
-                DatePicker("Date", selection: $editedDueDate, displayedComponents: [.date, .hourAndMinute])
-                    .font(.boardlyBody)
-            }
-            Button("Enregistrer l’échéance") { saveDueDate(card: card) }
-                .font(.boardlyCallout)
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 10)
-                .background(Color.accentColor, in: Capsule())
-                .opacity(dueDateChanged(card: card) ? 1 : 0.4)
-                .disabled(!dueDateChanged(card: card))
-        }
-        .boardlyCard()
     }
 
     // MARK: - Description
@@ -421,20 +409,6 @@ struct CardDetailView: View {
 
     private func saveDescription(card: Card) {
         Task { await boardVM.updateCard(card, patch: CardPatch(description: editedDescription)) }
-    }
-
-    private func dueDateChanged(card: Card) -> Bool {
-        if hasDueDate {
-            guard let existing = card.dueDate else { return true }
-            return abs(existing.timeIntervalSince(editedDueDate)) >= 1
-        } else {
-            return card.dueDate != nil
-        }
-    }
-
-    private func saveDueDate(card: Card) {
-        let newDueDate = hasDueDate ? editedDueDate : nil
-        Task { await boardVM.updateDueDate(card, to: newDueDate) }
     }
 
     private func submitTask(taskList: TaskList) {
