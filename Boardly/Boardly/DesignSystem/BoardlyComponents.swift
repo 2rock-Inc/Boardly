@@ -72,6 +72,40 @@ extension View {
     func boardlyField() -> some View { modifier(BoardlyFieldStyle()) }
 }
 
+/// Stable (launch-independent) hash for deterministic color assignment.
+/// `String.hashValue` is seeded randomly per process, so it can't be used here.
+func boardlyStableHash(_ string: String) -> Int {
+    var hash = 5381
+    for byte in string.utf8 { hash = (hash &* 33) &+ Int(byte) }
+    return abs(hash)
+}
+
+/// Circular initials avatar, colored deterministically from the name.
+struct AvatarView: View {
+    let name: String
+    var size: CGFloat = 28
+    var bordered: Bool = true
+
+    private static let palette: [Color] = [.labelRose, .labelBlue, .labelGreen, .labelPurple, .labelTeal]
+
+    private var initials: String {
+        let chars = name.split(separator: " ").prefix(2).compactMap(\.first).map(String.init)
+        return chars.joined().uppercased()
+    }
+    private var color: Color {
+        Self.palette[boardlyStableHash(name) % Self.palette.count]
+    }
+
+    var body: some View {
+        Text(initials.isEmpty ? "?" : initials)
+            .font(.mono(size * 0.34, .semibold))
+            .foregroundStyle(.white)
+            .frame(width: size, height: size)
+            .background(color, in: Circle())
+            .overlay(bordered ? Circle().stroke(Color.boardlySurface, lineWidth: 2) : nil)
+    }
+}
+
 /// Uppercase mono field label, per the design.
 struct BoardlyFieldLabel: View {
     let text: String

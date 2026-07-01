@@ -48,6 +48,14 @@ public final class ProfileStore {
         userDefaults.set(id.uuidString, forKey: activeProfileKey)
     }
 
+    /// Deactivate the current profile (return to the server picker) without
+    /// removing it. Used by "switch server" / logout.
+    public func clearActiveProfile() {
+        BoardlyLog.tag(.profile).icon("🔄").info("Active profile cleared")
+        activeProfileID = nil
+        userDefaults.removeObject(forKey: activeProfileKey)
+    }
+
     public func makeClient(for profile: ServerProfile, httpClient: any HTTPClient = URLSessionHTTPClient()) -> PlankaClient {
         let tokenStore = TokenStore(profileID: profile.id)
         return PlankaClient(profile: profile, tokenStore: tokenStore, httpClient: httpClient)
