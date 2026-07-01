@@ -222,6 +222,41 @@ final class BoardViewModel {
         }
     }
 
+    // MARK: - Comments
+
+    /// The logged-in user, resolved from the token + board users (for authoring UI).
+    var currentUser: User? {
+        guard let uid = client.currentUserId() else { return nil }
+        return payload?.users.first { $0.id == uid }
+    }
+
+    func loadComments(cardId: String) async -> [Comment] {
+        do {
+            return try await client.getComments(cardId: cardId)
+                .sorted { ($0.createdAt ?? .distantPast) < ($1.createdAt ?? .distantPast) }
+        } catch {
+            self.error = error.localizedDescription
+            return []
+        }
+    }
+
+    func postComment(cardId: String, text: String) async -> Comment? {
+        do {
+            return try await client.createComment(cardId: cardId, text: text)
+        } catch {
+            self.error = error.localizedDescription
+            return nil
+        }
+    }
+
+    func deleteComment(id: String) async {
+        do {
+            try await client.deleteComment(id: id)
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
     // MARK: - Local state helpers
 
     private func replaceCard(_ updatedCard: Card) {

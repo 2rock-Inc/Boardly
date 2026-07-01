@@ -11,8 +11,15 @@ private final class MockHTTPClient: HTTPClient, @unchecked Sendable {
     let json: String
     init(json: String) { self.json = json }
     func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+        let path = request.url?.path ?? ""
+        let body: String
+        if path.hasSuffix("/comments"), request.httpMethod == "GET" {
+            body = PreviewMock.commentsJSON
+        } else {
+            body = json
+        }
         let resp = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
-        return (Data(json.utf8), resp)
+        return (Data(body.utf8), resp)
     }
 }
 
@@ -49,6 +56,16 @@ enum PreviewMock {
             httpClient: MockHTTPClient(json: json)
         )
     }
+
+    nonisolated static let commentsJSON = """
+    {
+      "items": [
+        { "id": "cm1", "cardId": "c1", "userId": "u2", "text": "La direction « hero produit » me parle bien, on part là-dessus pour le sprint ?", "createdAt": "2026-06-29T09:00:00.000Z" },
+        { "id": "cm2", "cardId": "c1", "userId": "u1", "text": "Oui — je prépare les specs et je partage la maquette hero dès demain.", "createdAt": "2026-06-29T11:00:00.000Z" }
+      ],
+      "included": { "users": [] }
+    }
+    """
 
     static let projectsJSON = """
     {

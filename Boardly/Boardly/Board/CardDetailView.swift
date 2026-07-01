@@ -16,6 +16,8 @@ struct CardDetailView: View {
     @State private var showLabelsSheet = false
     @State private var showMembersSheet = false
     @State private var showDueDateSheet = false
+    @State private var comments: [Comment] = []
+    @State private var newComment = ""
 
     private var card: Card? { boardVM.payload?.card(id: cardId) }
 
@@ -31,6 +33,10 @@ struct CardDetailView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
+        .safeAreaInset(edge: .bottom) {
+            if card != nil { commentInputBar }
+        }
+        .task { comments = await boardVM.loadComments(cardId: cardId) }
         .sheet(isPresented: $showLabelsSheet) {
             CardLabelsSheet(cardId: cardId, boardVM: boardVM)
         }
@@ -335,26 +341,68 @@ struct CardDetailView: View {
 
     private func commentsSection(card: Card) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Commentaires")
+            HStack(spacing: 8) {
+                Image(systemName: "bubble.left")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Color.boardlyTextSecondary)
+                Text("Commentaires · \(comments.count)")
                     .font(.boardlyHeadline)
                     .foregroundStyle(Color.boardlyInk)
-                Spacer()
-                Text("\(card.commentsTotal ?? 0)")
-                    .font(.mono(12, .medium))
-                    .foregroundStyle(Color.boardlyTextSecondary)
-            }
-            HStack(spacing: 10) {
-                Image(systemName: "bubble.left")
-                    .foregroundStyle(Color.boardlyTextTertiary)
-                Text("Les commentaires arrivent en Phase 4.")
-                    .font(.boardlyCallout)
-                    .foregroundStyle(Color.boardlyTextTertiary)
                 Spacer(minLength: 0)
             }
-            .padding(.vertical, 4)
+
+            if comments.isEmpty {
+                Text("Aucun commentaire pour l’instant.")
+                    .font(.boardlyCallout)
+                    .foregroundStyle(Color.boardlyTextTertiary)
+            } else {
+                ForEach(comments) { comment in
+                    CommentBubble(
+                        comment: comment,
+                        author: boardVM.payload?.users.first { $0.id == comment.userId },
+                        onDelete: {
+                            comments.removeAll { $0.id == comment.id }
+                            Task { await boardVM.deleteComment(id: comment.id) }
+                        }
+                    )
+                }
+            }
         }
-        .boardlyCard()
+    }
+
+    private var commentInputBar: some View {
+        HStack(spacing: 10) {
+            if let user = boardVM.currentUser {
+                AvatarView(name: user.name, size: 32, bordered: false)
+            }
+            TextField("Ajouter un commentaire…", text: $newComment, axis: .vertical)
+                .font(.boardlyBody)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 9)
+                .background(Color.boardlySurfaceSecondary, in: Capsule())
+            Button { sendComment() } label: {
+                Image(systemName: "paperplane.fill")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 40, height: 40)
+                    .background(Color.accentColor, in: Circle())
+            }
+            .disabled(newComment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(.ultraThinMaterial)
+    }
+
+    private func sendComment() {
+        let text = newComment.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
+        newComment = ""
+        Task {
+            if let comment = await boardVM.postComment(cardId: cardId, text: text) {
+                comments.append(comment)
+            }
+        }
     }
 
     // MARK: - Move / Delete
@@ -418,5 +466,43 @@ struct CardDetailView: View {
         }
         newTaskName = ""
         addingTaskInListId = nil
+    }
+}
+
+private struct CommentBubble: View {
+    let comment: Comment
+    let author: User?
+    let onDelete: () -> Void
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            AvatarView(name: author?.name ?? "?", size: 32, bordered: false)
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 6) {
+                    Text(author?.name ?? "Utilisateur")
+                        .font(.sans(14, .semibold))
+                        .foregroundStyle(Color.boardlyInk)
+                    if let date = comment.createdAt {
+                        Text("· \(date.formatted(.relative(presentation: .named)))")
+                            .font(.boardlyMonoCaption)
+                            .foregroundStyle(Color.boardlyTextTertiary)
+                    }
+                    Spacer(minLength: 0)
+                }
+                Text(comment.text)
+                    .font(.boardlyBody)
+                    .foregroundStyle(Color.boardlyInk)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.boardlySurface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Color.boardlySeparator, lineWidth: 0.5))
+        .contextMenu {
+            Button(role: .destructive, action: onDelete) {
+                SwiftUI.Label("Supprimer", systemImage: "trash")
+            }
+        }
     }
 }

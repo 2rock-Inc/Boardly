@@ -209,6 +209,32 @@ public struct PlankaClient: Sendable {
         return response.item
     }
 
+    // MARK: - Comments
+
+    public func getComments(cardId: String) async throws -> [Comment] {
+        struct Response: Decodable { let items: [Comment] }
+        let request = try buildRequest(method: "GET", path: "/cards/\(cardId)/comments")
+        let response: Response = try await execute(request)
+        return response.items
+    }
+
+    public func createComment(cardId: String, text: String) async throws -> Comment {
+        struct Body: Encodable { let text: String }
+        struct Response: Decodable { let item: Comment }
+        let body = try JSONEncoder().encode(Body(text: text))
+        let request = try buildRequest(method: "POST", path: "/cards/\(cardId)/comments", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    @discardableResult
+    public func deleteComment(id: String) async throws -> Comment {
+        struct Response: Decodable { let item: Comment }
+        let request = try buildRequest(method: "DELETE", path: "/comments/\(id)")
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
     // MARK: - Auth (continued)
 
     public func logout() async throws {
