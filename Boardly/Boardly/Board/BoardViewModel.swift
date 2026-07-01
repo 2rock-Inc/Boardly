@@ -294,6 +294,35 @@ final class BoardViewModel {
         }
     }
 
+    // MARK: - Activity
+
+    func loadActions(cardId: String) async -> [Action] {
+        do {
+            return try await client.getCardActions(cardId: cardId)
+                .sorted { ($0.createdAt ?? .distantPast) > ($1.createdAt ?? .distantPast) }
+        } catch {
+            self.error = error.localizedDescription
+            return []
+        }
+    }
+
+    // MARK: - Stopwatch
+
+    func toggleStopwatch(_ card: Card) async {
+        let sw = card.stopwatchValue
+        do {
+            let updated: Card
+            if let sw, sw.isRunning {
+                updated = try await client.updateStopwatch(cardId: card.id, total: sw.elapsed(), startedAt: nil)
+            } else {
+                updated = try await client.updateStopwatch(cardId: card.id, total: sw?.total ?? 0, startedAt: Date())
+            }
+            replaceCard(updated)
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
     // MARK: - Local state helpers
 
     private func replaceCard(_ updatedCard: Card) {

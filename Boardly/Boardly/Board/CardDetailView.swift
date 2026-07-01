@@ -19,6 +19,7 @@ struct CardDetailView: View {
     @State private var showAttachmentsSheet = false
     @State private var comments: [Comment] = []
     @State private var newComment = ""
+    @State private var actions: [Action] = []
 
     private var card: Card? { boardVM.payload?.card(id: cardId) }
 
@@ -37,7 +38,10 @@ struct CardDetailView: View {
         .safeAreaInset(edge: .bottom) {
             if card != nil { commentInputBar }
         }
-        .task { comments = await boardVM.loadComments(cardId: cardId) }
+        .task {
+            comments = await boardVM.loadComments(cardId: cardId)
+            actions = await boardVM.loadActions(cardId: cardId)
+        }
         .sheet(isPresented: $showLabelsSheet) {
             CardLabelsSheet(cardId: cardId, boardVM: boardVM)
         }
@@ -114,6 +118,8 @@ struct CardDetailView: View {
                         .buttonStyle(.plain)
                     }
 
+                    chronoSection(card: card)
+
                     descriptionSection(card: card)
 
                     let cardAttachments = payload.attachments(for: card)
@@ -126,6 +132,7 @@ struct CardDetailView: View {
                     }
 
                     commentsSection(card: card)
+                    if !actions.isEmpty { activitySection(payload: payload) }
                     moveSection(card: card, payload: payload)
                     deleteButton(card: card)
                 }
@@ -374,6 +381,79 @@ struct CardDetailView: View {
     }
 
     // MARK: - Comments (read-only count for now; full thread arrives in Phase 4)
+
+    private func chronoSection(card: Card) -> some View {
+        let sw = card.stopwatchValue
+        let running = sw?.isRunning ?? false
+        return HStack(spacing: 12) {
+            Image(systemName: "stopwatch")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(Color.accentColor)
+            Text("Chrono")
+                .font(.boardlyHeadline)
+                .foregroundStyle(Color.boardlyInk)
+            Spacer(minLength: 0)
+            TimelineView(.periodic(from: .now, by: 1)) { context in
+                Text(formatDuration(sw?.elapsed(now: context.date) ?? 0))
+                    .font(.mono(16, .medium))
+                    .foregroundStyle(running ? Color.accentColor : Color.boardlyTextSecondary)
+            }
+            Button { Task { await boardVM.toggleStopwatch(card) } } label: {
+                Image(systemName: running ? "pause.circle.fill" : "play.circle.fill")
+                    .font(.system(size: 30))
+                    .foregroundStyle(Color.accentColor)
+            }
+        }
+        .boardlyCard()
+    }
+
+    private func formatDuration(_ seconds: Int) -> String {
+        String(format: "%02d:%02d:%02d", seconds / 3600, (seconds % 3600) / 60, seconds % 60)
+    }
+
+    private func activitySection(payload: BoardPayload) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Image(systemName: "clock.arrow.circlepath")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Color.boardlyTextSecondary)
+                Text("Activité")
+                    .font(.boardlyHeadline)
+                    .foregroundStyle(Color.boardlyInk)
+                Spacer(minLength: 0)
+            }
+            ForEach(actions) { action in
+                let author = payload.users.first { $0.id == action.userId }
+                HStack(alignment: .top, spacing: 10) {
+                    AvatarView(name: author?.name ?? "?", size: 28, bordered: false)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(actionText(action, author: author))
+                            .font(.boardlyCallout)
+                            .foregroundStyle(Color.boardlyInk)
+                        if let date = action.createdAt {
+                            Text(date.formatted(.relative(presentation: .named)))
+                                .font(.boardlyMonoCaption)
+                                .foregroundStyle(Color.boardlyTextTertiary)
+                        }
+                    }
+                    Spacer(minLength: 0)
+                }
+            }
+        }
+    }
+
+    private func actionText(_ action: Action, author: User?) -> String {
+        let who = author?.name ?? "Quelqu’un"
+        switch action.type {
+        case "createCard": return "\(who) a créé la carte"
+        case "moveCard": return "\(who) a déplacé la carte"
+        case "addMemberToCard": return "\(who) a ajouté un membre"
+        case "removeMemberFromCard": return "\(who) a retiré un membre"
+        case "completeTask": return "\(who) a terminé une tâche"
+        case "uncompleteTask": return "\(who) a rouvert une tâche"
+        default: return "\(who) a mis à jour la carte"
+        }
+    }
 
     private func commentsSection(card: Card) -> some View {
         VStack(alignment: .leading, spacing: 12) {

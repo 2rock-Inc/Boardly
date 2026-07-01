@@ -15,6 +15,8 @@ private final class MockHTTPClient: HTTPClient, @unchecked Sendable {
         let body: String
         if path.hasSuffix("/comments"), request.httpMethod == "GET" {
             body = PreviewMock.commentsJSON
+        } else if path.hasSuffix("/actions"), request.httpMethod == "GET" {
+            body = PreviewMock.actionsJSON
         } else {
             body = json
         }
@@ -56,6 +58,16 @@ enum PreviewMock {
             httpClient: MockHTTPClient(json: json)
         )
     }
+
+    nonisolated static let actionsJSON = """
+    {
+      "items": [
+        { "id": "ac1", "cardId": "c1", "userId": "u1", "type": "createCard", "data": {}, "createdAt": "2026-06-28T09:00:00.000Z" },
+        { "id": "ac2", "cardId": "c1", "userId": "u2", "type": "completeTask", "data": {}, "createdAt": "2026-06-29T10:00:00.000Z" }
+      ],
+      "included": { "users": [] }
+    }
+    """
 
     nonisolated static let commentsJSON = """
     {
@@ -109,7 +121,7 @@ enum PreviewMock {
           { "id": "l3", "boardId": "b1", "type": "active", "name": "Terminé", "position": 3 }
         ],
         "cards": [
-          { "id": "c1", "boardId": "b1", "listId": "l1", "name": "Nouvelle page d’accueil — exploration visuelle", "position": 1, "dueDate": "2026-10-12T09:00:00.000Z" },
+          { "id": "c1", "boardId": "b1", "listId": "l1", "name": "Nouvelle page d’accueil — exploration visuelle", "position": 1, "dueDate": "2026-10-12T09:00:00.000Z", "stopwatch": { "total": 5040, "startedAt": null } },
           { "id": "c2", "boardId": "b1", "listId": "l1", "name": "Composant carte réutilisable en SwiftUI", "position": 2 },
           { "id": "c3", "boardId": "b1", "listId": "l1", "name": "Lister les écrans à refondre", "position": 3 },
           { "id": "c4", "boardId": "b1", "listId": "l2", "name": "Système de couleurs & tokens Pine Teal", "position": 1, "dueDate": "2026-06-29T09:00:00.000Z" },

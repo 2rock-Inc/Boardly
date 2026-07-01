@@ -209,6 +209,38 @@ public struct PlankaClient: Sendable {
         return response.item
     }
 
+    // MARK: - Activity
+
+    public func getCardActions(cardId: String) async throws -> [Action] {
+        struct Response: Decodable { let items: [Action] }
+        let request = try buildRequest(method: "GET", path: "/cards/\(cardId)/actions")
+        let response: Response = try await execute(request)
+        return response.items
+    }
+
+    // MARK: - Stopwatch
+
+    @discardableResult
+    public func updateStopwatch(cardId: String, total: Int, startedAt: Date?) async throws -> Card {
+        struct Stopwatch: Encodable {
+            let total: Int
+            let startedAt: String?
+            func encode(to encoder: any Encoder) throws {
+                var c = encoder.container(keyedBy: CodingKeys.self)
+                try c.encode(total, forKey: .total)
+                try c.encode(startedAt, forKey: .startedAt) // explicit null when nil (stopped)
+            }
+            enum CodingKeys: String, CodingKey { case total, startedAt }
+        }
+        struct Body: Encodable { let stopwatch: Stopwatch }
+        struct Response: Decodable { let item: Card }
+        let started = startedAt.map { ISO8601Formatters.fractional.string(from: $0) }
+        let body = try JSONEncoder().encode(Body(stopwatch: Stopwatch(total: total, startedAt: started)))
+        let request = try buildRequest(method: "PATCH", path: "/cards/\(cardId)", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
     // MARK: - Comments
 
     public func getComments(cardId: String) async throws -> [Comment] {
