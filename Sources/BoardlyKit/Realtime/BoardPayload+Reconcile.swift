@@ -73,17 +73,11 @@ extension BoardPayload {
     }
 
     private func with(cards: [Card]? = nil, lists: [PlankaList]? = nil, tasks: [PlankaTask]? = nil) -> BoardPayload {
-        BoardPayload(
-            board: board,
-            lists: lists ?? self.lists,
-            cards: cards ?? self.cards,
-            taskLists: taskLists,
-            tasks: tasks ?? self.tasks,
-            labels: labels,
-            cardMemberships: cardMemberships,
-            cardLabels: cardLabels,
-            users: users
-        )
+        var copy = self
+        if let cards { copy.cards = cards }
+        if let lists { copy.lists = lists }
+        if let tasks { copy.tasks = tasks }
+        return copy
     }
 }
 

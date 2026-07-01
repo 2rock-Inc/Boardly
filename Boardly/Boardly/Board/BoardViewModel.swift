@@ -66,17 +66,9 @@ final class BoardViewModel {
         let position = payload.nextCardPosition(in: list)
         do {
             let card = try await client.createCard(listId: list.id, name: name, position: position)
-            self.payload = BoardPayload(
-                board: payload.board,
-                lists: payload.lists,
-                cards: payload.cards + [card],
-                taskLists: payload.taskLists,
-                tasks: payload.tasks,
-                labels: payload.labels,
-                cardMemberships: payload.cardMemberships,
-                cardLabels: payload.cardLabels,
-                users: payload.users
-            )
+            var updated = payload
+            updated.cards.append(card)
+            self.payload = updated
         } catch {
             self.error = error.localizedDescription
         }
@@ -100,17 +92,9 @@ final class BoardViewModel {
         guard let payload else { return }
         do {
             try await client.deleteCard(id: card.id)
-            self.payload = BoardPayload(
-                board: payload.board,
-                lists: payload.lists,
-                cards: payload.cards.filter { $0.id != card.id },
-                taskLists: payload.taskLists,
-                tasks: payload.tasks,
-                labels: payload.labels,
-                cardMemberships: payload.cardMemberships,
-                cardLabels: payload.cardLabels,
-                users: payload.users
-            )
+            var updated = payload
+            updated.cards.removeAll { $0.id == card.id }
+            self.payload = updated
         } catch {
             self.error = error.localizedDescription
         }
@@ -139,17 +123,9 @@ final class BoardViewModel {
                 name: name,
                 position: position
             )
-            self.payload = BoardPayload(
-                board: payload.board,
-                lists: payload.lists,
-                cards: payload.cards,
-                taskLists: payload.taskLists,
-                tasks: payload.tasks + [task],
-                labels: payload.labels,
-                cardMemberships: payload.cardMemberships,
-                cardLabels: payload.cardLabels,
-                users: payload.users
-            )
+            var updated = payload
+            updated.tasks.append(task)
+            self.payload = updated
         } catch {
             self.error = error.localizedDescription
         }
@@ -159,17 +135,9 @@ final class BoardViewModel {
         guard let payload else { return }
         do {
             try await client.deleteTask(id: task.id)
-            self.payload = BoardPayload(
-                board: payload.board,
-                lists: payload.lists,
-                cards: payload.cards,
-                taskLists: payload.taskLists,
-                tasks: payload.tasks.filter { $0.id != task.id },
-                labels: payload.labels,
-                cardMemberships: payload.cardMemberships,
-                cardLabels: payload.cardLabels,
-                users: payload.users
-            )
+            var updated = payload
+            updated.tasks.removeAll { $0.id == task.id }
+            self.payload = updated
         } catch {
             self.error = error.localizedDescription
         }
@@ -192,33 +160,15 @@ final class BoardViewModel {
 
     // MARK: - Local state helpers
 
-    private func replaceCard(_ updated: Card) {
-        guard let payload else { return }
-        self.payload = BoardPayload(
-            board: payload.board,
-            lists: payload.lists,
-            cards: payload.cards.map { $0.id == updated.id ? updated : $0 },
-            taskLists: payload.taskLists,
-            tasks: payload.tasks,
-            labels: payload.labels,
-            cardMemberships: payload.cardMemberships,
-            cardLabels: payload.cardLabels,
-            users: payload.users
-        )
+    private func replaceCard(_ updatedCard: Card) {
+        guard var copy = payload else { return }
+        copy.cards = copy.cards.map { $0.id == updatedCard.id ? updatedCard : $0 }
+        payload = copy
     }
 
-    private func replaceTask(_ updated: PlankaTask) {
-        guard let payload else { return }
-        self.payload = BoardPayload(
-            board: payload.board,
-            lists: payload.lists,
-            cards: payload.cards,
-            taskLists: payload.taskLists,
-            tasks: payload.tasks.map { $0.id == updated.id ? updated : $0 },
-            labels: payload.labels,
-            cardMemberships: payload.cardMemberships,
-            cardLabels: payload.cardLabels,
-            users: payload.users
-        )
+    private func replaceTask(_ updatedTask: PlankaTask) {
+        guard var copy = payload else { return }
+        copy.tasks = copy.tasks.map { $0.id == updatedTask.id ? updatedTask : $0 }
+        payload = copy
     }
 }
