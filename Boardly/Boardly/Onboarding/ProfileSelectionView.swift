@@ -70,29 +70,33 @@ struct ProfileSelectionView: View {
                     .padding(.top, 8)
 
                 ForEach(profileStore.profiles) { profile in
-                    Button {
-                        profileStore.setActiveProfile(id: profile.id)
-                        path.append(.login(profileID: profile.id))
-                    } label: {
-                        ProfileRowView(profile: profile)
-                    }
-                    .buttonStyle(.plain)
-                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        Button(role: .destructive) {
-                            profileStore.removeProfile(id: profile.id)
-                        } label: {
-                            Label("Remove", systemImage: "trash")
-                        }
-                    }
+                    ProfileRowView(
+                        profile: profile,
+                        onSelect: { selectServer(profile) },
+                        onDelete: { profileStore.removeProfile(id: profile.id) }
+                    )
                 }
             }
             .padding(20)
+        }
+    }
+
+    // A saved server keeps its token: go straight in if we have one, otherwise
+    // route to login. (Selecting must not activate a profile with no token, or
+    // the app would drop into a session it can't authenticate.)
+    private func selectServer(_ profile: ServerProfile) {
+        if profileStore.tokenStore(for: profile).hasToken() {
+            profileStore.setActiveProfile(id: profile.id)
+        } else {
+            path.append(.login(profileID: profile.id))
         }
     }
 }
 
 private struct ProfileRowView: View {
     let profile: ServerProfile
+    let onSelect: () -> Void
+    let onDelete: () -> Void
 
     var body: some View {
         HStack(spacing: 14) {
@@ -114,10 +118,20 @@ private struct ProfileRowView: View {
 
             Spacer(minLength: 0)
 
-            Image(systemName: "chevron.right")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(Color.boardlyTextTertiary)
+            Menu {
+                Button(role: .destructive, action: onDelete) {
+                    Label("Supprimer le serveur", systemImage: "trash")
+                }
+            } label: {
+                Image(systemName: "ellipsis")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(Color.boardlyTextTertiary)
+                    .frame(width: 32, height: 40)
+                    .contentShape(Rectangle())
+            }
         }
         .boardlyCard()
+        .contentShape(Rectangle())
+        .onTapGesture { onSelect() }
     }
 }

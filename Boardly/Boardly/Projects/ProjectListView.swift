@@ -142,19 +142,19 @@ struct ProjectListView: View {
     }
 
     private var searchField: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 15, weight: .medium))
+                .font(.system(size: 16, weight: .medium))
                 .foregroundStyle(Color.boardlyTextTertiary)
             TextField("Rechercher un projet, un board…", text: $query)
                 .font(.boardlyBody)
                 .foregroundStyle(Color.boardlyInk)
                 .autocorrectionDisabled()
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 11)
-        .background(Color.boardlySurface, in: Capsule())
-        .overlay(Capsule().stroke(Color.boardlySeparator, lineWidth: 1))
+        .padding(.horizontal, 16)
+        .padding(.vertical, 15)
+        .background(Color.boardlySurface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .shadow(color: .black.opacity(0.05), radius: 6, y: 2)
     }
 
     private var emptyState: some View {

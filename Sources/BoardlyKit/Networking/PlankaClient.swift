@@ -167,7 +167,13 @@ public struct PlankaClient: Sendable {
     public func logout() async throws {
         BoardlyLog.tag(.auth).icon("🔓").info("Logout")
         let request = try buildRequest(method: "DELETE", path: "/access-tokens/me")
-        try await executeVoid(request)
+        // Best-effort server-side revoke; the local token is cleared regardless
+        // so an expired/invalid token (which 401s here) still logs the user out.
+        do {
+            try await executeVoid(request)
+        } catch {
+            BoardlyLog.tag(.auth).icon("⚠️").warning("Logout request failed; clearing local token anyway")
+        }
         try tokenStore.clearToken()
         BoardlyLog.tag(.auth).icon("✅").info("Logout succeeded")
     }
