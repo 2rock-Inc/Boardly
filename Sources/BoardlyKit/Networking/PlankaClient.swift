@@ -235,6 +235,38 @@ public struct PlankaClient: Sendable {
         return response.item
     }
 
+    // MARK: - Attachments
+
+    public func uploadFileAttachment(cardId: String, fileName: String, mimeType: String, data: Data) async throws -> Attachment {
+        struct Response: Decodable { let item: Attachment }
+        let request = try buildMultipartRequest(
+            path: "/cards/\(cardId)/attachments",
+            fields: ["type": "file", "name": fileName],
+            file: (fieldName: "file", fileName: fileName, mimeType: mimeType, data: data)
+        )
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    public func addLinkAttachment(cardId: String, url: String, name: String) async throws -> Attachment {
+        struct Response: Decodable { let item: Attachment }
+        let request = try buildMultipartRequest(
+            path: "/cards/\(cardId)/attachments",
+            fields: ["type": "link", "url": url, "name": name],
+            file: nil
+        )
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    @discardableResult
+    public func deleteAttachment(id: String) async throws -> Attachment {
+        struct Response: Decodable { let item: Attachment }
+        let request = try buildRequest(method: "DELETE", path: "/attachments/\(id)")
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
     // MARK: - Auth (continued)
 
     public func logout() async throws {
@@ -279,6 +311,47 @@ public struct PlankaClient: Sendable {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
 
+        return request
+    }
+
+    private func buildMultipartRequest(
+        path: String,
+        fields: [String: String],
+        file: (fieldName: String, fileName: String, mimeType: String, data: Data)?
+    ) throws -> URLRequest {
+        guard var components = URLComponents(url: profile.baseURL, resolvingAgainstBaseURL: false) else {
+            throw PlankaAPIError.invalidURL
+        }
+        let basePath = components.path.hasSuffix("/") ? String(components.path.dropLast()) : components.path
+        components.path = basePath + "/api" + path
+        guard let url = components.url else { throw PlankaAPIError.invalidURL }
+
+        let boundary = "Boundary-\(UUID().uuidString)"
+        var body = Data()
+        func append(_ string: String) { body.append(Data(string.utf8)) }
+
+        for (key, value) in fields {
+            append("--\(boundary)\r\n")
+            append("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n")
+            append("\(value)\r\n")
+        }
+        if let file {
+            append("--\(boundary)\r\n")
+            append("Content-Disposition: form-data; name=\"\(file.fieldName)\"; filename=\"\(file.fileName)\"\r\n")
+            append("Content-Type: \(file.mimeType)\r\n\r\n")
+            body.append(file.data)
+            append("\r\n")
+        }
+        append("--\(boundary)--\r\n")
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.httpBody = body
+        if let token = try? tokenStore.loadToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
         return request
     }
 

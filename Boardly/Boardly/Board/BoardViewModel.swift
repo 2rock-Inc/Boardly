@@ -257,6 +257,43 @@ final class BoardViewModel {
         }
     }
 
+    // MARK: - Attachments
+
+    func uploadAttachment(cardId: String, fileName: String, mimeType: String, data: Data) async {
+        do {
+            let attachment = try await client.uploadFileAttachment(
+                cardId: cardId, fileName: fileName, mimeType: mimeType, data: data
+            )
+            guard var copy = payload else { return }
+            copy.attachments.append(attachment)
+            payload = copy
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
+    func addLinkAttachment(cardId: String, url: String, name: String) async {
+        do {
+            let attachment = try await client.addLinkAttachment(cardId: cardId, url: url, name: name)
+            guard var copy = payload else { return }
+            copy.attachments.append(attachment)
+            payload = copy
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
+    func removeAttachment(_ attachment: Attachment) async {
+        do {
+            try await client.deleteAttachment(id: attachment.id)
+            guard var copy = payload else { return }
+            copy.attachments.removeAll { $0.id == attachment.id }
+            payload = copy
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
     // MARK: - Local state helpers
 
     private func replaceCard(_ updatedCard: Card) {

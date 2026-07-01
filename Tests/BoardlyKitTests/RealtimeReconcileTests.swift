@@ -179,6 +179,16 @@ struct RealtimeReconcileTests {
         #expect(result.members(for: result.card(id: "c1")!).map(\.id) == ["u1"])
     }
 
+    @Test("attachment create then delete")
+    func attachmentLifecycle() {
+        var payload = makePayload(cards: [makeCard("c1")])
+        payload = payload.applying(event("attachmentCreate",
+            #"{"item":{"id":"at1","cardId":"c1","type":"file","data":{"url":"x"},"name":"f.png"}}"#))
+        #expect(payload.attachments.count == 1)
+        payload = payload.applying(event("attachmentDelete", #"{"item":{"id":"at1"}}"#))
+        #expect(payload.attachments.isEmpty)
+    }
+
     @Test("resynced replaces the whole payload")
     func resyncedReplaces() {
         let payload = makePayload(cards: [makeCard("c1")])

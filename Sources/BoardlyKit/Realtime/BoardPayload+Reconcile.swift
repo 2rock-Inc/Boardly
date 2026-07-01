@@ -49,6 +49,13 @@ extension BoardPayload {
             var copy = self; copy.cardMemberships = upsert(cardMemberships, membership); return copy
         case .cardMembershipDeleted(let id):
             var copy = self; copy.cardMemberships.removeAll { $0.id == id }; return copy
+
+        case .attachmentCreated(let attachment):
+            var copy = self; copy.attachments = upsert(attachments, attachment); return copy
+        case .attachmentUpdated(let attachment):
+            var copy = self; copy.attachments = attachments.map { $0.id == attachment.id ? attachment : $0 }; return copy
+        case .attachmentDeleted(let id):
+            var copy = self; copy.attachments.removeAll { $0.id == id }; return copy
         }
     }
 

@@ -142,6 +142,9 @@ enum PreviewMock {
         "cardMemberships": [
           { "id": "cm1", "cardId": "c1", "userId": "u1", "role": "editor" }
         ],
+        "attachments": [
+          { "id": "at1", "cardId": "c1", "type": "file", "data": { "url": "x" }, "name": "maquette-accueil.png" }
+        ],
         "cardLabels": [
           { "id": "cl1", "cardId": "c1", "labelId": "lb1" },
           { "id": "cl2", "cardId": "c1", "labelId": "lb2" }

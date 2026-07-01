@@ -16,6 +16,7 @@ struct CardDetailView: View {
     @State private var showLabelsSheet = false
     @State private var showMembersSheet = false
     @State private var showDueDateSheet = false
+    @State private var showAttachmentsSheet = false
     @State private var comments: [Comment] = []
     @State private var newComment = ""
 
@@ -45,6 +46,9 @@ struct CardDetailView: View {
         }
         .sheet(isPresented: $showDueDateSheet) {
             CardDueDateSheet(cardId: cardId, boardVM: boardVM)
+        }
+        .sheet(isPresented: $showAttachmentsSheet) {
+            CardAttachmentsSheet(cardId: cardId, boardVM: boardVM)
         }
         .alert("Couldn’t save card", isPresented: Binding(
             get: { boardVM.error != nil },
@@ -111,6 +115,11 @@ struct CardDetailView: View {
                     }
 
                     descriptionSection(card: card)
+
+                    let cardAttachments = payload.attachments(for: card)
+                    if !cardAttachments.isEmpty {
+                        attachmentsSection(cardAttachments)
+                    }
 
                     ForEach(payload.taskLists(for: card)) { taskList in
                         taskListSection(taskList: taskList, payload: payload)
@@ -208,7 +217,9 @@ struct CardDetailView: View {
             quickAction("Label", systemImage: "tag", enabled: true) {
                 showLabelsSheet = true
             }
-            quickAction("Joindre", systemImage: "paperclip", enabled: false) {}
+            quickAction("Joindre", systemImage: "paperclip", enabled: true) {
+                showAttachmentsSheet = true
+            }
         }
     }
 
@@ -263,6 +274,31 @@ struct CardDetailView: View {
     }
 
     // MARK: - Tasks
+
+    private func attachmentsSection(_ attachments: [Attachment]) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            BoardlyFieldLabel("Pièces jointes")
+            VStack(spacing: 0) {
+                ForEach(Array(attachments.enumerated()), id: \.element.id) { index, attachment in
+                    HStack(spacing: 12) {
+                        Image(systemName: attachment.type == "link" ? "link" : "paperclip")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundStyle(Color.accentColor)
+                            .frame(width: 32, height: 32)
+                            .background(Color.boardlySurfaceSecondary, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        Text(attachment.name)
+                            .font(.boardlyCallout)
+                            .foregroundStyle(Color.boardlyInk)
+                            .lineLimit(1)
+                        Spacer(minLength: 0)
+                    }
+                    .padding(.vertical, 6)
+                    if index < attachments.count - 1 { Divider() }
+                }
+            }
+        }
+        .boardlyCard()
+    }
 
     private func taskListSection(taskList: TaskList, payload: BoardPayload) -> some View {
         let tasks = payload.tasks(for: taskList)
