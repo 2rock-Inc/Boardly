@@ -122,12 +122,23 @@ enum PreviewMock {
           { "id": "lb1", "boardId": "b1", "name": "Design", "color": "lagoon-blue", "position": 1 },
           { "id": "lb2", "boardId": "b1", "name": "Priorité", "color": "berry-red", "position": 2 }
         ],
-        "cardMemberships": [],
+        "cardMemberships": [
+          { "id": "cm1", "cardId": "c1", "userId": "u1", "role": "editor" }
+        ],
         "cardLabels": [
           { "id": "cl1", "cardId": "c1", "labelId": "lb1" },
           { "id": "cl2", "cardId": "c1", "labelId": "lb2" }
         ],
-        "users": []
+        "users": [
+          { "id": "u1", "role": "admin", "name": "Marie Dupont", "username": "marie.dupont", "isDeactivated": false },
+          { "id": "u2", "role": "member", "name": "Paul Lemaire", "username": "paul.l", "isDeactivated": false },
+          { "id": "u3", "role": "member", "name": "Emma Morel", "username": "emma.m", "isDeactivated": false }
+        ],
+        "boardMemberships": [
+          { "id": "bm1", "projectId": "p1", "boardId": "b1", "userId": "u1", "role": "editor" },
+          { "id": "bm2", "projectId": "p1", "boardId": "b1", "userId": "u2", "role": "editor" },
+          { "id": "bm3", "projectId": "p1", "boardId": "b1", "userId": "u3", "role": "editor" }
+        ]
       }
     }
     """
@@ -138,6 +149,16 @@ struct MockBoardHarness: View {
         NavigationStack {
             BoardView(client: PreviewMock.boardClient(), boardId: "b1", boardName: "Sprint Produit", projectName: "Refonte 2026")
         }
+    }
+}
+
+struct MockMembersSheetHarness: View {
+    @State private var vm = BoardViewModel(client: PreviewMock.boardClient(), boardId: "b1")
+    @State private var show = false
+    var body: some View {
+        Color.boardlyBackground.ignoresSafeArea()
+            .task { await vm.load(); show = true }
+            .sheet(isPresented: $show) { CardMembersSheet(cardId: "c1", boardVM: vm) }
     }
 }
 

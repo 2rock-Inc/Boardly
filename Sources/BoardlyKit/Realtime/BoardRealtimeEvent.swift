@@ -65,6 +65,13 @@ public enum BoardRealtimeEvent: Sendable {
     case taskCreated(PlankaTask)
     case taskUpdated(PartialTask)
     case taskDeleted(id: String)
+    case labelCreated(Label)
+    case labelUpdated(Label)
+    case labelDeleted(id: String)
+    case cardLabelCreated(CardLabel)
+    case cardLabelDeleted(id: String)
+    case cardMembershipCreated(CardMembership)
+    case cardMembershipDeleted(id: String)
 }
 
 extension BoardRealtimeEvent {
@@ -73,6 +80,9 @@ extension BoardRealtimeEvent {
         "cardCreate", "cardUpdate", "cardDelete",
         "listCreate", "listUpdate", "listDelete",
         "taskCreate", "taskUpdate", "taskDelete",
+        "labelCreate", "labelUpdate", "labelDelete",
+        "cardLabelCreate", "cardLabelDelete",
+        "cardMembershipCreate", "cardMembershipDelete",
     ]
 
     /// Parse a PLANKA socket event from its name and the JSON of its `{ item: … }`
@@ -99,6 +109,13 @@ extension BoardRealtimeEvent {
         case "taskCreate": return item(PlankaTask.self).map(BoardRealtimeEvent.taskCreated)
         case "taskUpdate": return item(PartialTask.self).map(BoardRealtimeEvent.taskUpdated)
         case "taskDelete": return id().map { .taskDeleted(id: $0) }
+        case "labelCreate": return item(Label.self).map(BoardRealtimeEvent.labelCreated)
+        case "labelUpdate": return item(Label.self).map(BoardRealtimeEvent.labelUpdated)
+        case "labelDelete": return id().map { .labelDeleted(id: $0) }
+        case "cardLabelCreate": return item(CardLabel.self).map(BoardRealtimeEvent.cardLabelCreated)
+        case "cardLabelDelete": return id().map { .cardLabelDeleted(id: $0) }
+        case "cardMembershipCreate": return item(CardMembership.self).map(BoardRealtimeEvent.cardMembershipCreated)
+        case "cardMembershipDelete": return id().map { .cardMembershipDeleted(id: $0) }
         default: return nil
         }
     }

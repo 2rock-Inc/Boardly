@@ -22,6 +22,8 @@ struct BoardlyApp: App {
                 MockLoginHarness()
             } else if CommandLine.arguments.contains("-mockProjectDetail") {
                 MockProjectDetailHarness()
+            } else if CommandLine.arguments.contains("-mockMembersSheet") {
+                MockMembersSheetHarness()
             } else {
                 RootView().environment(profileStore)
             }

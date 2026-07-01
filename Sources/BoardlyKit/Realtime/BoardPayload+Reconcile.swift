@@ -32,6 +32,23 @@ extension BoardPayload {
             return with(tasks: applyTaskUpdate(partial))
         case .taskDeleted(let id):
             return with(tasks: tasks.filter { $0.id != id })
+
+        case .labelCreated(let label):
+            var copy = self; copy.labels = upsert(labels, label); return copy
+        case .labelUpdated(let label):
+            var copy = self; copy.labels = labels.map { $0.id == label.id ? label : $0 }; return copy
+        case .labelDeleted(let id):
+            var copy = self; copy.labels.removeAll { $0.id == id }; return copy
+
+        case .cardLabelCreated(let cardLabel):
+            var copy = self; copy.cardLabels = upsert(cardLabels, cardLabel); return copy
+        case .cardLabelDeleted(let id):
+            var copy = self; copy.cardLabels.removeAll { $0.id == id }; return copy
+
+        case .cardMembershipCreated(let membership):
+            var copy = self; copy.cardMemberships = upsert(cardMemberships, membership); return copy
+        case .cardMembershipDeleted(let id):
+            var copy = self; copy.cardMemberships.removeAll { $0.id == id }; return copy
         }
     }
 

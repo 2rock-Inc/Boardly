@@ -162,6 +162,53 @@ public struct PlankaClient: Sendable {
         return response.item
     }
 
+    // MARK: - Labels
+
+    public func createLabel(boardId: String, name: String, color: String, position: Double) async throws -> Label {
+        struct Body: Encodable { let name: String; let color: String; let position: Double }
+        struct Response: Decodable { let item: Label }
+        let body = try JSONEncoder().encode(Body(name: name, color: color, position: position))
+        let request = try buildRequest(method: "POST", path: "/boards/\(boardId)/labels", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    public func addCardLabel(cardId: String, labelId: String) async throws -> CardLabel {
+        struct Body: Encodable { let labelId: String }
+        struct Response: Decodable { let item: CardLabel }
+        let body = try JSONEncoder().encode(Body(labelId: labelId))
+        let request = try buildRequest(method: "POST", path: "/cards/\(cardId)/card-labels", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    @discardableResult
+    public func removeCardLabel(cardId: String, labelId: String) async throws -> CardLabel {
+        struct Response: Decodable { let item: CardLabel }
+        let request = try buildRequest(method: "DELETE", path: "/cards/\(cardId)/card-labels/labelId:\(labelId)")
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    // MARK: - Card members
+
+    public func addCardMember(cardId: String, userId: String) async throws -> CardMembership {
+        struct Body: Encodable { let userId: String }
+        struct Response: Decodable { let item: CardMembership }
+        let body = try JSONEncoder().encode(Body(userId: userId))
+        let request = try buildRequest(method: "POST", path: "/cards/\(cardId)/card-memberships", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    @discardableResult
+    public func removeCardMember(cardId: String, userId: String) async throws -> CardMembership {
+        struct Response: Decodable { let item: CardMembership }
+        let request = try buildRequest(method: "DELETE", path: "/cards/\(cardId)/card-memberships/userId:\(userId)")
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
     // MARK: - Auth (continued)
 
     public func logout() async throws {

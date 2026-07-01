@@ -16,6 +16,8 @@ struct CardDetailView: View {
     @State private var editedDueDate = Date()
     @State private var showDueDateEditor = false
     @State private var didSeedEditState = false
+    @State private var showLabelsSheet = false
+    @State private var showMembersSheet = false
 
     private var card: Card? { boardVM.payload?.card(id: cardId) }
 
@@ -31,6 +33,12 @@ struct CardDetailView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
+        .sheet(isPresented: $showLabelsSheet) {
+            CardLabelsSheet(cardId: cardId, boardVM: boardVM)
+        }
+        .sheet(isPresented: $showMembersSheet) {
+            CardMembersSheet(cardId: cardId, boardVM: boardVM)
+        }
         .alert("Couldn’t save card", isPresented: Binding(
             get: { boardVM.error != nil },
             set: { if !$0 { boardVM.error = nil } }
@@ -61,11 +69,21 @@ struct CardDetailView: View {
                 coverHero(card: card)
 
                 VStack(alignment: .leading, spacing: 20) {
-                    let labels = labels(for: card, in: payload)
-                    if !labels.isEmpty { labelRow(labels) }
+                    let cardLabels = payload.labels(for: card)
+                    if !cardLabels.isEmpty { labelRow(cardLabels) }
 
                     titleField(card: card)
                     metaSubtitle(card: card, payload: payload)
+
+                    let cardMembers = payload.members(for: card)
+                    if !cardMembers.isEmpty {
+                        HStack(spacing: -8) {
+                            ForEach(cardMembers) { user in
+                                AvatarView(name: user.name, size: 30)
+                            }
+                        }
+                    }
+
                     quickActions(card: card)
 
                     if showDueDateEditor || card.dueDate != nil {
@@ -163,11 +181,15 @@ struct CardDetailView: View {
 
     private func quickActions(card: Card) -> some View {
         HStack(spacing: 8) {
+            quickAction("Membres", systemImage: "person.2", enabled: true) {
+                showMembersSheet = true
+            }
             quickAction("Échéance", systemImage: "calendar", enabled: true) {
                 withAnimation { showDueDateEditor.toggle() }
             }
-            quickAction("Membres", systemImage: "person.2", enabled: false) {}
-            quickAction("Label", systemImage: "tag", enabled: false) {}
+            quickAction("Label", systemImage: "tag", enabled: true) {
+                showLabelsSheet = true
+            }
             quickAction("Joindre", systemImage: "paperclip", enabled: false) {}
         }
     }
@@ -387,11 +409,6 @@ struct CardDetailView: View {
     }
 
     // MARK: - Helpers & actions
-
-    private func labels(for card: Card, in payload: BoardPayload) -> [BoardlyKit.Label] {
-        let ids = Set(payload.cardLabels.filter { $0.cardId == card.id }.map(\.labelId))
-        return payload.labels.filter { ids.contains($0.id) }
-    }
 
     private func saveCardName(card: Card) {
         let name = editedName.trimmingCharacters(in: .whitespacesAndNewlines)

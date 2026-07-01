@@ -158,6 +158,70 @@ final class BoardViewModel {
         await updateCard(card, patch: patch)
     }
 
+    // MARK: - Labels
+
+    func addLabel(_ label: Label, to card: Card) async {
+        do {
+            let cardLabel = try await client.addCardLabel(cardId: card.id, labelId: label.id)
+            guard var copy = payload else { return }
+            if !copy.cardLabels.contains(where: { $0.id == cardLabel.id }) {
+                copy.cardLabels.append(cardLabel)
+            }
+            payload = copy
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
+    func removeLabel(_ label: Label, from card: Card) async {
+        do {
+            try await client.removeCardLabel(cardId: card.id, labelId: label.id)
+            guard var copy = payload else { return }
+            copy.cardLabels.removeAll { $0.cardId == card.id && $0.labelId == label.id }
+            payload = copy
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
+    func createLabel(name: String, color: String) async {
+        guard var copy = payload else { return }
+        let position = (copy.labels.map { $0.position ?? 0 }.max() ?? 0) + 65536
+        do {
+            let label = try await client.createLabel(boardId: boardId, name: name, color: color, position: position)
+            copy.labels.append(label)
+            payload = copy
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
+    // MARK: - Members
+
+    func addMember(_ user: User, to card: Card) async {
+        do {
+            let membership = try await client.addCardMember(cardId: card.id, userId: user.id)
+            guard var copy = payload else { return }
+            if !copy.cardMemberships.contains(where: { $0.id == membership.id }) {
+                copy.cardMemberships.append(membership)
+            }
+            payload = copy
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
+    func removeMember(_ user: User, from card: Card) async {
+        do {
+            try await client.removeCardMember(cardId: card.id, userId: user.id)
+            guard var copy = payload else { return }
+            copy.cardMemberships.removeAll { $0.cardId == card.id && $0.userId == user.id }
+            payload = copy
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
     // MARK: - Local state helpers
 
     private func replaceCard(_ updatedCard: Card) {
