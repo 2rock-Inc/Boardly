@@ -24,21 +24,32 @@ struct OIDCSession: Identifiable {
     let redirectPrefix: String
     let nonce: String
 
-    init?(oidc: Bootstrap.OIDCConfig) {
+    /// Parse the advertised authorization URL. `baseURL` is the profile's server
+    /// URL, used to derive the redirect target when PLANKA keeps `redirect_uri`
+    /// server-side (i.e. it isn't present in the authorization URL).
+    init?(oidc: Bootstrap.OIDCConfig, baseURL: URL) {
         guard let url = URL(string: oidc.authorizationUrl),
               let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
               let nonce = components.queryItems?.first(where: { $0.name == "nonce" })?.value,
-              !nonce.isEmpty,
-              let redirect = components.queryItems?.first(where: { $0.name == "redirect_uri" })?.value,
-              let redirectComponents = URLComponents(string: redirect),
-              let scheme = redirectComponents.scheme,
-              let host = redirectComponents.host
+              !nonce.isEmpty
         else { return nil }
 
         self.authorizationURL = url
         self.nonce = nonce
-        let port = redirectComponents.port.map { ":\($0)" } ?? ""
-        self.redirectPrefix = "\(scheme)://\(host)\(port)\(redirectComponents.path)"
+
+        // Prefer the redirect_uri carried in the URL; otherwise fall back to
+        // PLANKA's default callback path on the instance's base URL.
+        if let redirect = components.queryItems?.first(where: { $0.name == "redirect_uri" })?.value,
+           let rc = URLComponents(string: redirect), let scheme = rc.scheme, let host = rc.host {
+            let port = rc.port.map { ":\($0)" } ?? ""
+            self.redirectPrefix = "\(scheme)://\(host)\(port)\(rc.path)"
+        } else if let scheme = baseURL.scheme, let host = baseURL.host {
+            let port = baseURL.port.map { ":\($0)" } ?? ""
+            let basePath = baseURL.path.hasSuffix("/") ? String(baseURL.path.dropLast()) : baseURL.path
+            self.redirectPrefix = "\(scheme)://\(host)\(port)\(basePath)/oidc-callback"
+        } else {
+            return nil
+        }
     }
 }
 

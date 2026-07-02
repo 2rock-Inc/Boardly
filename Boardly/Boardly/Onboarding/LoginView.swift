@@ -52,11 +52,21 @@ final class LoginViewModel {
     }
 
     /// Begin the OIDC/SSO leg by presenting the web flow (parsed from the
-    /// instance's advertised authorization URL).
-    func startSSO() {
+    /// instance's advertised authorization URL). `baseURL` lets us derive the
+    /// redirect target when the instance keeps `redirect_uri` server-side.
+    func startSSO(baseURL: URL) {
         error = nil
-        guard let oidc, let session = OIDCSession(oidc: oidc) else {
+        guard let oidc else {
             error = OIDCError.notConfigured.errorDescription
+            return
+        }
+        guard let session = OIDCSession(oidc: oidc, baseURL: baseURL) else {
+            #if DEBUG
+            // Surface the raw URL so we can see which parameter is missing.
+            error = "OIDC: nonce introuvable. authorizationUrl = \(oidc.authorizationUrl)"
+            #else
+            error = OIDCError.notConfigured.errorDescription
+            #endif
             return
         }
         oidcSession = session
@@ -238,6 +248,6 @@ struct LoginView: View {
     }
 
     private func handleSSO() {
-        viewModel.startSSO()
+        viewModel.startSSO(baseURL: profile.baseURL)
     }
 }
