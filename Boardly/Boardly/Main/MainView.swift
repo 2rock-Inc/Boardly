@@ -5,6 +5,7 @@ struct MainView: View {
     let profile: ServerProfile
     @Environment(ProfileStore.self) private var profileStore
     @State private var path: [AppRoute] = []
+    @State private var notificationsVM: NotificationsViewModel?
 
     private var client: PlankaClient {
         profileStore.makeClient(for: profile)
@@ -28,13 +29,24 @@ struct MainView: View {
             ComingSoonView(title: "Recherche", systemImage: "magnifyingglass")
                 .tabItem { Label("Recherche", systemImage: "magnifyingglass") }
 
-            ComingSoonView(title: "Activité", systemImage: "bell")
-                .tabItem { Label("Activité", systemImage: "bell") }
+            Group {
+                if let notificationsVM {
+                    ActivityView(viewModel: notificationsVM)
+                } else {
+                    Color.boardlyBackground.ignoresSafeArea()
+                }
+            }
+            .tabItem { Label("Activité", systemImage: "bell") }
+            .badge(notificationsVM?.unreadCount ?? 0)
 
             ProfileView(profile: profile, client: client)
                 .tabItem { Label("Profil", systemImage: "person") }
         }
         .tint(.accentColor)
+        .task {
+            if notificationsVM == nil { notificationsVM = NotificationsViewModel(client: client) }
+            await notificationsVM?.load()
+        }
     }
 }
 
