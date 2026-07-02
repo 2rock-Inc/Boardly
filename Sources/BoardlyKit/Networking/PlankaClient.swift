@@ -299,6 +299,22 @@ public struct PlankaClient: Sendable {
         return response.item
     }
 
+    // MARK: - Images
+
+    /// Fetch image bytes (e.g. a card cover). The Bearer token is attached only
+    /// when the image is hosted on this profile's own instance, so we never leak
+    /// the token to a third-party host referenced by an attachment.
+    public func imageData(url: URL) async -> Data? {
+        var request = URLRequest(url: url)
+        if url.host == profile.baseURL.host, let token = try? tokenStore.loadToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        guard let (data, response) = try? await httpClient.data(for: request),
+              let http = response as? HTTPURLResponse, (200 ... 299).contains(http.statusCode)
+        else { return nil }
+        return data
+    }
+
     // MARK: - Auth (continued)
 
     public func logout() async throws {

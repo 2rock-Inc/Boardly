@@ -49,10 +49,14 @@ struct BoardView: View {
         }
         .toolbar(.hidden, for: .navigationBar)
         .task {
-            await viewModel.load()
-            await viewModel.startRealtime()
+            if viewModel.payload == nil { await viewModel.load() }
+            viewModel.startRealtime()
         }
-        .onDisappear { Task { await viewModel.stopRealtime() } }
+        .onDisappear {
+            // Only tear down when actually leaving the board — not when pushing
+            // the card detail (which keeps this view in the stack).
+            if selectedCardId == nil { Task { await viewModel.stopRealtime() } }
+        }
         .refreshable { await viewModel.load() }
         .navigationDestination(item: $selectedCardId) { selected in
             CardDetailView(cardId: selected.id, boardVM: viewModel)

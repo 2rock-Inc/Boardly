@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import BoardlyKit
 
 struct CardDetailView: View {
@@ -18,6 +19,7 @@ struct CardDetailView: View {
     @State private var showDueDateSheet = false
     @State private var showAttachmentsSheet = false
     @State private var comments: [Comment] = []
+    @State private var commentsLoaded = false
     @State private var newComment = ""
     @State private var actions: [Action] = []
     @State private var topInset: CGFloat = 0
@@ -47,7 +49,10 @@ struct CardDetailView: View {
             if card != nil { commentInputBar }
         }
         .task {
-            comments = await boardVM.loadComments(cardId: cardId)
+            if let loaded = await boardVM.loadComments(cardId: cardId) {
+                comments = loaded
+                commentsLoaded = true
+            }
             actions = await boardVM.loadActions(cardId: cardId)
         }
         .sheet(isPresented: $showLabelsSheet) {
@@ -155,20 +160,7 @@ struct CardDetailView: View {
     // MARK: - Cover (shown only when the card has a cover attachment)
 
     private func coverHero(url: URL?) -> some View {
-        AsyncImage(url: url) { phase in
-            switch phase {
-            case .success(let image):
-                image.resizable().scaledToFill()
-            default:
-                LinearGradient(
-                    colors: [Color.accentColor, Color.accentColor.opacity(0.7)],
-                    startPoint: .topLeading, endPoint: .bottomTrailing
-                )
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .frame(height: 180 + topInset)
-        .clipped()
+        CoverImageView(url: url, height: 180 + topInset) { await boardVM.loadImage(url: $0) }
     }
 
     /// The card's cover image URL, resolved from its cover attachment (if set).
@@ -240,12 +232,17 @@ struct CardDetailView: View {
         let listName = payload.sortedLists().first { $0.id == card.listId }?.name ?? "—"
         let creator = card.creatorUserId.flatMap { id in payload.users.first { $0.id == id } }
 
-        var md = "dans **\(listName)**"
-        if let creator { md += " · créée par \(creator.name)" }
+        // Build with AttributedString (plain runs) so untrusted list/user names are
+        // never parsed as markdown; only the list name is bolded programmatically.
+        var text = AttributedString("dans ")
+        var name = AttributedString(listName)
+        name.font = .sans(13, .bold)
+        text.append(name)
+        if let creator { text.append(AttributedString(" · créée par \(creator.name)")) }
         if let created = card.createdAt {
-            md += " · \(created.formatted(.relative(presentation: .named)))"
+            text.append(AttributedString(" · \(created.formatted(.relative(presentation: .named)))"))
         }
-        return Text(LocalizedStringKey(md))
+        return Text(text)
             .font(.sans(13, .regular))
             .foregroundStyle(Color.boardlyTextSecondary)
     }
@@ -485,18 +482,19 @@ struct CardDetailView: View {
     }
 
     private func commentsSection(card: Card) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
+        let count = commentsLoaded ? comments.count : (card.commentsTotal ?? 0)
+        return VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
                 Image(systemName: "bubble.left")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Color.boardlyTextSecondary)
-                Text("Commentaires · \(comments.count)")
+                Text("Commentaires · \(count)")
                     .font(.boardlyHeadline)
                     .foregroundStyle(Color.boardlyInk)
                 Spacer(minLength: 0)
             }
 
-            if comments.isEmpty {
+            if commentsLoaded && comments.isEmpty {
                 Text("Aucun commentaire pour l’instant.")
                     .font(.boardlyCallout)
                     .foregroundStyle(Color.boardlyTextTertiary)
@@ -506,8 +504,11 @@ struct CardDetailView: View {
                         comment: comment,
                         author: boardVM.payload?.users.first { $0.id == comment.userId },
                         onDelete: {
-                            comments.removeAll { $0.id == comment.id }
-                            Task { await boardVM.deleteComment(id: comment.id) }
+                            Task {
+                                if await boardVM.deleteComment(id: comment.id, cardId: cardId) {
+                                    comments.removeAll { $0.id == comment.id }
+                                }
+                            }
                         }
                     )
                 }
@@ -542,10 +543,10 @@ struct CardDetailView: View {
     private func sendComment() {
         let text = newComment.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
-        newComment = ""
         Task {
             if let comment = await boardVM.postComment(cardId: cardId, text: text) {
                 comments.append(comment)
+                newComment = "" // clear only once the post succeeds — keep the text on failure
             }
         }
     }
@@ -611,6 +612,33 @@ struct CardDetailView: View {
         }
         newTaskName = ""
         addingTaskInListId = nil
+    }
+}
+
+private struct CoverImageView: View {
+    let url: URL?
+    let height: CGFloat
+    let load: (URL) async -> Data?
+    @State private var image: UIImage?
+
+    var body: some View {
+        Group {
+            if let image {
+                Image(uiImage: image).resizable().scaledToFill()
+            } else {
+                LinearGradient(
+                    colors: [Color.accentColor, Color.accentColor.opacity(0.7)],
+                    startPoint: .topLeading, endPoint: .bottomTrailing
+                )
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: height)
+        .clipped()
+        .task(id: url) {
+            guard let url else { return }
+            image = await load(url).flatMap(UIImage.init(data:))
+        }
     }
 }
 

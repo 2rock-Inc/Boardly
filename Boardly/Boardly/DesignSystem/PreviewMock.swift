@@ -11,6 +11,10 @@ private final class MockHTTPClient: HTTPClient, @unchecked Sendable {
     let json: String
     init(json: String) { self.json = json }
     func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+        // External URLs (e.g. cover images) → hit the real network so previews render them.
+        if let host = request.url?.host, host != "mock.local" {
+            return try await URLSession.shared.data(for: request)
+        }
         let path = request.url?.path ?? ""
         let body: String
         if path.hasSuffix("/comments"), request.httpMethod == "GET" {

@@ -95,4 +95,22 @@ public struct BoardPayload: Sendable {
         let ids = Set(boardMemberships.map(\.userId))
         return users.filter { ids.contains($0.id) }
     }
+
+    /// Update a card's comment count locally (keeps the board card badge in sync
+    /// after the detail view adds/removes a comment).
+    public mutating func setCommentsTotal(cardId: String, _ total: Int) {
+        cards = cards.map { $0.id == cardId ? $0.withCommentsTotal(total) : $0 }
+    }
+}
+
+extension Card {
+    func withCommentsTotal(_ total: Int) -> Card {
+        Card(
+            id: id, boardId: boardId, listId: listId, creatorUserId: creatorUserId,
+            prevListId: prevListId, coverAttachmentId: coverAttachmentId, type: type,
+            position: position, name: name, description: description, dueDate: dueDate,
+            isDueCompleted: isDueCompleted, stopwatch: stopwatch, commentsTotal: total,
+            isClosed: isClosed, listChangedAt: listChangedAt, createdAt: createdAt, updatedAt: updatedAt
+        )
+    }
 }

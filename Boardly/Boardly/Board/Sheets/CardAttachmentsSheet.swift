@@ -130,7 +130,10 @@ struct CardAttachmentsSheet: View {
 
     private func handlePhoto(_ item: PhotosPickerItem?) async {
         guard let item, let data = try? await item.loadTransferable(type: Data.self) else { return }
-        await boardVM.uploadAttachment(cardId: cardId, fileName: "photo.jpg", mimeType: "image/jpeg", data: data)
+        let type = item.supportedContentTypes.first
+        let ext = type?.preferredFilenameExtension ?? "jpg"
+        let mime = type?.preferredMIMEType ?? "image/jpeg"
+        await boardVM.uploadAttachment(cardId: cardId, fileName: "photo.\(ext)", mimeType: mime, data: data)
         dismiss()
     }
 

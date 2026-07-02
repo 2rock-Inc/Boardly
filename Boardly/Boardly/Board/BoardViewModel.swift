@@ -11,6 +11,7 @@ final class BoardViewModel {
     private let client: PlankaClient
     let boardId: String
     private var realtime: BoardRealtimeClient?
+    private var realtimeTask: Task<Void, Never>?
 
     init(client: PlankaClient, boardId: String) {
         self.client = client
@@ -20,8 +21,9 @@ final class BoardViewModel {
     // MARK: - Real-time sync
 
     /// Open the live socket for this board and apply incoming events to `payload`.
-    /// Runs until the stream finishes (i.e. `stopRealtime()` is called).
-    func startRealtime() async {
+    /// Non-blocking: the event loop runs in a stored Task tied to the view model's
+    /// lifetime (not the view's), so pushing the card detail doesn't tear it down.
+    func startRealtime() {
         guard realtime == nil else { return }
         let tokenStore = TokenStore(profileID: client.profile.id)
         guard let token = try? tokenStore.loadToken() else { return }
@@ -32,18 +34,22 @@ final class BoardViewModel {
             token: token
         )
         realtime = rt
-
-        for await event in await rt.start() {
-            if let current = payload {
-                payload = current.applying(event)
-            } else if case .resynced(let fresh) = event {
-                payload = fresh
+        realtimeTask = Task { [weak self] in
+            for await event in await rt.start() {
+                guard let self else { break }
+                if let current = self.payload {
+                    self.payload = current.applying(event)
+                } else if case .resynced(let fresh) = event {
+                    self.payload = fresh
+                }
             }
         }
     }
 
-    /// Tear down the socket. Must be called when leaving the board.
+    /// Tear down the socket. Must be called only when actually leaving the board.
     func stopRealtime() async {
+        realtimeTask?.cancel()
+        realtimeTask = nil
         await realtime?.stop()
         realtime = nil
     }
@@ -230,31 +236,51 @@ final class BoardViewModel {
         return payload?.users.first { $0.id == uid }
     }
 
-    func loadComments(cardId: String) async -> [Comment] {
+    /// Returns nil on failure (so the UI can distinguish "empty" from "couldn't load").
+    func loadComments(cardId: String) async -> [Comment]? {
         do {
             return try await client.getComments(cardId: cardId)
                 .sorted { ($0.createdAt ?? .distantPast) < ($1.createdAt ?? .distantPast) }
-        } catch {
-            self.error = error.localizedDescription
-            return []
-        }
-    }
-
-    func postComment(cardId: String, text: String) async -> Comment? {
-        do {
-            return try await client.createComment(cardId: cardId, text: text)
         } catch {
             self.error = error.localizedDescription
             return nil
         }
     }
 
-    func deleteComment(id: String) async {
+    func postComment(cardId: String, text: String) async -> Comment? {
         do {
-            try await client.deleteComment(id: id)
+            let comment = try await client.createComment(cardId: cardId, text: text)
+            adjustCommentsTotal(cardId: cardId, by: 1)
+            return comment
         } catch {
             self.error = error.localizedDescription
+            return nil
         }
+    }
+
+    /// Deletes a comment; returns true on success so the caller only removes it
+    /// from local state when the server confirms.
+    func deleteComment(id: String, cardId: String) async -> Bool {
+        do {
+            try await client.deleteComment(id: id)
+            adjustCommentsTotal(cardId: cardId, by: -1)
+            return true
+        } catch {
+            self.error = error.localizedDescription
+            return false
+        }
+    }
+
+    private func adjustCommentsTotal(cardId: String, by delta: Int) {
+        guard var copy = payload, let card = copy.card(id: cardId) else { return }
+        copy.setCommentsTotal(cardId: cardId, max(0, (card.commentsTotal ?? 0) + delta))
+        payload = copy
+    }
+
+    // MARK: - Images
+
+    func loadImage(url: URL) async -> Data? {
+        await client.imageData(url: url)
     }
 
     // MARK: - Attachments

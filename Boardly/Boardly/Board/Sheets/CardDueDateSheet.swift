@@ -55,10 +55,20 @@ struct CardDueDateSheet: View {
     }
 
     private func save() {
+        guard let card = boardVM.payload?.card(id: cardId) else { dismiss(); return }
         let newDue = hasDueDate ? date : nil
-        if let card = boardVM.payload?.card(id: cardId) {
+        if changed(current: card.dueDate, new: newDue) {
             Task { await boardVM.updateDueDate(card, to: newDue) }
         }
         dismiss()
+    }
+
+    // Avoid a redundant PATCH (and a spurious activity entry) on a no-op save.
+    private func changed(current: Date?, new: Date?) -> Bool {
+        switch (current, new) {
+        case (nil, nil): return false
+        case (nil, _), (_, nil): return true
+        case let (a?, b?): return abs(a.timeIntervalSince(b)) >= 1
+        }
     }
 }
