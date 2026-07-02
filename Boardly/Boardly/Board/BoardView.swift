@@ -35,8 +35,11 @@ struct BoardView: View {
             Color.boardlyBackground.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                header
-                viewSelector
+                VStack(spacing: 0) {
+                    header
+                    viewSelector
+                }
+                .background(Color.boardlySurface.ignoresSafeArea(edges: .top))
                 boardContent
             }
 
@@ -46,15 +49,17 @@ struct BoardView: View {
         }
         .toolbar(.hidden, for: .navigationBar)
         .task {
-            await viewModel.load()
-            await viewModel.startRealtime()
+            if viewModel.payload == nil { await viewModel.load() }
+            viewModel.startRealtime()
         }
-        .onDisappear { Task { await viewModel.stopRealtime() } }
+        .onDisappear {
+            // Only tear down when actually leaving the board — not when pushing
+            // the card detail (which keeps this view in the stack).
+            if selectedCardId == nil { Task { await viewModel.stopRealtime() } }
+        }
         .refreshable { await viewModel.load() }
-        .sheet(item: $selectedCardId) { selected in
-            NavigationStack {
-                CardDetailView(cardId: selected.id, boardVM: viewModel)
-            }
+        .navigationDestination(item: $selectedCardId) { selected in
+            CardDetailView(cardId: selected.id, boardVM: viewModel)
         }
         .alert("Nouvelle carte", isPresented: $showAddCard) {
             TextField("Titre de la carte", text: $newCardTitle)
@@ -109,25 +114,30 @@ struct BoardView: View {
     }
 
     private var viewSelector: some View {
-        HStack(spacing: 4) {
-            ForEach(BoardViewMode.allCases, id: \.self) { item in
-                let active = mode == item
-                Text(item.rawValue)
-                    .font(.sans(14, .semibold))
-                    .foregroundStyle(active ? Color.boardlyInk : Color.boardlyTextSecondary)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(active ? Color.boardlySurface : .clear, in: Capsule())
-                    .overlay(active ? Capsule().stroke(Color.boardlySeparator, lineWidth: 0.5) : nil)
-                    .onTapGesture {
-                        withAnimation(.easeInOut(duration: 0.15)) { mode = item }
-                    }
+        HStack(spacing: 0) {
+            HStack(spacing: 4) {
+                ForEach(BoardViewMode.allCases, id: \.self) { item in
+                    let active = mode == item
+                    Text(item.rawValue)
+                        .font(.sans(14, .semibold))
+                        .foregroundStyle(active ? Color.boardlyInk : Color.boardlyTextSecondary)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 7)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .fill(active ? Color.boardlySurface : .clear)
+                        )
+                        .onTapGesture {
+                            withAnimation(.easeInOut(duration: 0.15)) { mode = item }
+                        }
+                }
             }
+            .padding(4)
+            .background(Color.boardlySurfaceSecondary, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
             Spacer(minLength: 0)
         }
-        .padding(4)
         .padding(.horizontal, 16)
-        .padding(.bottom, 8)
+        .padding(.bottom, 12)
     }
 
     // MARK: - Content
@@ -228,7 +238,9 @@ struct BoardView: View {
                             CardRowView(
                                 card: card,
                                 taskLists: payload.taskLists(for: card),
-                                tasks: payload.taskLists(for: card).flatMap { payload.tasks(for: $0) }
+                                tasks: payload.taskLists(for: card).flatMap { payload.tasks(for: $0) },
+                                labels: payload.labels(for: card),
+                                members: payload.members(for: card)
                             )
                         }
                         .buttonStyle(.plain)
@@ -323,6 +335,6 @@ private struct ListModeCardRow: View {
     }
 }
 
-private struct SelectedCard: Identifiable {
+private struct SelectedCard: Identifiable, Hashable {
     let id: String
 }

@@ -38,7 +38,9 @@ struct ListColumnView: View {
                             CardRowView(
                                 card: card,
                                 taskLists: payload.taskLists(for: card),
-                                tasks: payload.taskLists(for: card).flatMap { payload.tasks(for: $0) }
+                                tasks: payload.taskLists(for: card).flatMap { payload.tasks(for: $0) },
+                                labels: payload.labels(for: card),
+                                members: payload.members(for: card)
                             )
                         }
                         .buttonStyle(.plain)

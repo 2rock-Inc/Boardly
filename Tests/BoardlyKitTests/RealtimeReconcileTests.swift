@@ -29,9 +29,24 @@ private func makeTask(_ id: String, taskList: String = "tl1", name: String = "Ta
                name: name, isCompleted: completed, createdAt: nil, updatedAt: nil)
 }
 
-private func makePayload(cards: [Card] = [], lists: [PlankaList] = [], tasks: [PlankaTask] = []) -> BoardPayload {
+private func makeLabel(_ id: String, name: String = "Label") -> Label {
+    Label(id: id, boardId: "b1", position: 1, name: name, color: "lagoon-blue", createdAt: nil, updatedAt: nil)
+}
+
+private func makeUser(_ id: String, name: String = "User") -> User {
+    User(id: id, email: nil, role: "member", name: name, username: nil, avatar: nil, gravatarUrl: nil,
+         phone: nil, organization: nil, language: nil, apiKeyPrefix: nil, subscribeToOwnCards: nil,
+         subscribeToCardWhenCommenting: nil, turnOffRecentCardHighlighting: nil, enableFavoritesByDefault: nil,
+         defaultEditorMode: nil, defaultHomeView: nil, defaultProjectsOrder: nil, isSsoUser: nil,
+         isDeactivated: false, isDefaultAdmin: nil, createdAt: nil, updatedAt: nil)
+}
+
+private func makePayload(
+    cards: [Card] = [], lists: [PlankaList] = [], tasks: [PlankaTask] = [],
+    labels: [Label] = [], cardLabels: [CardLabel] = [], cardMemberships: [CardMembership] = [], users: [User] = []
+) -> BoardPayload {
     BoardPayload(board: makeBoard(), lists: lists, cards: cards, taskLists: [], tasks: tasks,
-                 labels: [], cardMemberships: [], cardLabels: [], users: [])
+                 labels: labels, cardMemberships: cardMemberships, cardLabels: cardLabels, users: users)
 }
 
 private func event(_ name: String, _ json: String) -> BoardRealtimeEvent {
@@ -130,6 +145,48 @@ struct RealtimeReconcileTests {
         let t1 = result.tasks.first { $0.id == "t1" }
         #expect(t1?.isCompleted == true)
         #expect(t1?.name == "Step")
+    }
+
+    @Test("cardLabelCreate assigns a label to the card")
+    func cardLabelAssign() {
+        let payload = makePayload(cards: [makeCard("c1")], labels: [makeLabel("lb1", name: "Design")])
+        let result = payload.applying(event("cardLabelCreate", #"{"item":{"id":"cl1","cardId":"c1","labelId":"lb1"}}"#))
+        let card = result.card(id: "c1")!
+        #expect(result.labels(for: card).map(\.id) == ["lb1"])
+    }
+
+    @Test("cardLabelDelete unassigns the label")
+    func cardLabelUnassign() {
+        let payload = makePayload(
+            cards: [makeCard("c1")], labels: [makeLabel("lb1")],
+            cardLabels: [CardLabel(id: "cl1", cardId: "c1", labelId: "lb1", createdAt: nil, updatedAt: nil)]
+        )
+        let result = payload.applying(event("cardLabelDelete", #"{"item":{"id":"cl1"}}"#))
+        #expect(result.labels(for: result.card(id: "c1")!).isEmpty)
+    }
+
+    @Test("labelDelete removes the label board-wide")
+    func labelDelete() {
+        let payload = makePayload(labels: [makeLabel("lb1"), makeLabel("lb2")])
+        let result = payload.applying(event("labelDelete", #"{"item":{"id":"lb1"}}"#))
+        #expect(result.labels.map(\.id) == ["lb2"])
+    }
+
+    @Test("cardMembershipCreate assigns a member")
+    func cardMemberAssign() {
+        let payload = makePayload(cards: [makeCard("c1")], users: [makeUser("u1", name: "Marie")])
+        let result = payload.applying(event("cardMembershipCreate", #"{"item":{"id":"cm1","cardId":"c1","userId":"u1"}}"#))
+        #expect(result.members(for: result.card(id: "c1")!).map(\.id) == ["u1"])
+    }
+
+    @Test("attachment create then delete")
+    func attachmentLifecycle() {
+        var payload = makePayload(cards: [makeCard("c1")])
+        payload = payload.applying(event("attachmentCreate",
+            #"{"item":{"id":"at1","cardId":"c1","type":"file","data":{"url":"x"},"name":"f.png"}}"#))
+        #expect(payload.attachments.count == 1)
+        payload = payload.applying(event("attachmentDelete", #"{"item":{"id":"at1"}}"#))
+        #expect(payload.attachments.isEmpty)
     }
 
     @Test("resynced replaces the whole payload")

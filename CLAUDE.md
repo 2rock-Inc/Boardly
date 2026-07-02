@@ -74,6 +74,8 @@ Items marked `[Phase 1]` do not exist yet — they are created in the first impl
 - Real-time: subscribe to the board's Socket.IO event stream while it is open to keep lists/cards/tasks in sync live; pull-to-refresh remains as a manual fallback/recovery mechanism (e.g. after reconnecting)
 - The Socket.IO connection is per server profile and must be torn down when leaving a board or switching profiles — never kept alive across profiles
 
+> ⚠️ **Known deviation to revisit (Phase 4):** the Projects list shows "N cartes" per board by fetching each board's payload concurrently (`ProjectListViewModel.loadCardCounts`) — one request per board, which contradicts the rule above. Kept intentionally for design fidelity, but flagged for a dedicated **performance investigation** (measure request burst / latency on large instances, then either derive counts from a lighter endpoint or drop them). Do not copy this pattern elsewhere.
+
 ---
 
 ## Logging

@@ -10,6 +10,8 @@ extension BoardPayload {
         let cardMemberships: [CardMembership]?
         let cardLabels: [CardLabel]?
         let users: [User]?
+        let attachments: [Attachment]?
+        let boardMemberships: [BoardMembership]?
     }
 
     private struct Response: Decodable {
@@ -31,7 +33,9 @@ extension BoardPayload {
             labels: inc.labels ?? [],
             cardMemberships: inc.cardMemberships ?? [],
             cardLabels: inc.cardLabels ?? [],
-            users: inc.users ?? []
+            users: inc.users ?? [],
+            attachments: inc.attachments ?? [],
+            boardMemberships: inc.boardMemberships ?? []
         )
     }
 }

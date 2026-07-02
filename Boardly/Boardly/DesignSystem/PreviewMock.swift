@@ -11,8 +11,23 @@ private final class MockHTTPClient: HTTPClient, @unchecked Sendable {
     let json: String
     init(json: String) { self.json = json }
     func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+        // External URLs (e.g. cover images) → hit the real network so previews render them.
+        if let host = request.url?.host, host != "mock.local" {
+            return try await URLSession.shared.data(for: request)
+        }
+        let path = request.url?.path ?? ""
+        let body: String
+        if path.hasSuffix("/comments"), request.httpMethod == "GET" {
+            body = PreviewMock.commentsJSON
+        } else if path.hasSuffix("/actions"), request.httpMethod == "GET" {
+            body = PreviewMock.actionsJSON
+        } else if path.contains("/boards/"), request.httpMethod == "GET", json == PreviewMock.projectsJSON {
+            body = PreviewMock.boardJSON // per-board fetch from the projects list
+        } else {
+            body = json
+        }
         let resp = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
-        return (Data(json.utf8), resp)
+        return (Data(body.utf8), resp)
     }
 }
 
@@ -50,7 +65,27 @@ enum PreviewMock {
         )
     }
 
-    static let projectsJSON = """
+    nonisolated static let actionsJSON = """
+    {
+      "items": [
+        { "id": "ac1", "cardId": "c1", "userId": "u1", "type": "createCard", "data": {}, "createdAt": "2026-06-28T09:00:00.000Z" },
+        { "id": "ac2", "cardId": "c1", "userId": "u2", "type": "completeTask", "data": {}, "createdAt": "2026-06-29T10:00:00.000Z" }
+      ],
+      "included": { "users": [] }
+    }
+    """
+
+    nonisolated static let commentsJSON = """
+    {
+      "items": [
+        { "id": "cm1", "cardId": "c1", "userId": "u2", "text": "La direction « hero produit » me parle bien, on part là-dessus pour le sprint ?", "createdAt": "2026-06-29T09:00:00.000Z" },
+        { "id": "cm2", "cardId": "c1", "userId": "u1", "text": "Oui — je prépare les specs et je partage la maquette hero dès demain.", "createdAt": "2026-06-29T11:00:00.000Z" }
+      ],
+      "included": { "users": [] }
+    }
+    """
+
+    nonisolated static let projectsJSON = """
     {
       "items": [
         { "id": "p1", "name": "Refonte 2026", "isHidden": false, "isFavorite": true, "description": "Refonte complète de l’app mobile et du back-office. Cible : livraison T2." },
@@ -59,10 +94,10 @@ enum PreviewMock {
       ],
       "included": {
         "boards": [
-          { "id": "b1", "projectId": "p1", "name": "Sprint Produit", "position": 1 },
-          { "id": "b2", "projectId": "p1", "name": "Recherche & specs", "position": 2 },
-          { "id": "b3", "projectId": "p2", "name": "Campagne Été", "position": 1 },
-          { "id": "b4", "projectId": "p3", "name": "Todo", "position": 1 }
+          { "id": "b1", "projectId": "p1", "name": "Sprint Produit", "position": 1, "updatedAt": "2026-07-02T04:30:00.000Z" },
+          { "id": "b2", "projectId": "p1", "name": "Recherche & specs", "position": 2, "updatedAt": "2026-07-01T09:00:00.000Z" },
+          { "id": "b3", "projectId": "p2", "name": "Campagne Été", "position": 1, "updatedAt": "2026-07-02T02:00:00.000Z" },
+          { "id": "b4", "projectId": "p3", "name": "Todo", "position": 1, "updatedAt": "2026-06-30T12:00:00.000Z" }
         ],
         "users": [
           { "id": "u1", "role": "admin", "name": "Marie Dupont", "isDeactivated": false },
@@ -82,7 +117,7 @@ enum PreviewMock {
     }
     """
 
-    static let boardJSON = """
+    nonisolated static let boardJSON = """
     {
       "item": { "id": "b1", "projectId": "p1", "name": "Sprint Produit" },
       "included": {
@@ -92,7 +127,7 @@ enum PreviewMock {
           { "id": "l3", "boardId": "b1", "type": "active", "name": "Terminé", "position": 3 }
         ],
         "cards": [
-          { "id": "c1", "boardId": "b1", "listId": "l1", "name": "Nouvelle page d’accueil — exploration visuelle", "position": 1, "dueDate": "2026-10-12T09:00:00.000Z" },
+          { "id": "c1", "boardId": "b1", "listId": "l1", "name": "Nouvelle page d’accueil — exploration visuelle", "position": 1, "dueDate": "2026-10-12T09:00:00.000Z", "commentsTotal": 2, "creatorUserId": "u1", "createdAt": "2026-06-29T09:00:00.000Z", "coverAttachmentId": "at1", "stopwatch": { "total": 5040, "startedAt": null } },
           { "id": "c2", "boardId": "b1", "listId": "l1", "name": "Composant carte réutilisable en SwiftUI", "position": 2 },
           { "id": "c3", "boardId": "b1", "listId": "l1", "name": "Lister les écrans à refondre", "position": 3 },
           { "id": "c4", "boardId": "b1", "listId": "l2", "name": "Système de couleurs & tokens Pine Teal", "position": 1, "dueDate": "2026-06-29T09:00:00.000Z" },
@@ -122,12 +157,26 @@ enum PreviewMock {
           { "id": "lb1", "boardId": "b1", "name": "Design", "color": "lagoon-blue", "position": 1 },
           { "id": "lb2", "boardId": "b1", "name": "Priorité", "color": "berry-red", "position": 2 }
         ],
-        "cardMemberships": [],
+        "cardMemberships": [
+          { "id": "cm1", "cardId": "c1", "userId": "u1", "role": "editor" }
+        ],
+        "attachments": [
+          { "id": "at1", "cardId": "c1", "type": "file", "data": { "url": "https://picsum.photos/id/1062/900/500" }, "name": "maquette-accueil.png" }
+        ],
         "cardLabels": [
           { "id": "cl1", "cardId": "c1", "labelId": "lb1" },
           { "id": "cl2", "cardId": "c1", "labelId": "lb2" }
         ],
-        "users": []
+        "users": [
+          { "id": "u1", "role": "admin", "name": "Marie Dupont", "username": "marie.dupont", "isDeactivated": false },
+          { "id": "u2", "role": "member", "name": "Paul Lemaire", "username": "paul.l", "isDeactivated": false },
+          { "id": "u3", "role": "member", "name": "Emma Morel", "username": "emma.m", "isDeactivated": false }
+        ],
+        "boardMemberships": [
+          { "id": "bm1", "projectId": "p1", "boardId": "b1", "userId": "u1", "role": "editor" },
+          { "id": "bm2", "projectId": "p1", "boardId": "b1", "userId": "u2", "role": "editor" },
+          { "id": "bm3", "projectId": "p1", "boardId": "b1", "userId": "u3", "role": "editor" }
+        ]
       }
     }
     """
@@ -138,6 +187,16 @@ struct MockBoardHarness: View {
         NavigationStack {
             BoardView(client: PreviewMock.boardClient(), boardId: "b1", boardName: "Sprint Produit", projectName: "Refonte 2026")
         }
+    }
+}
+
+struct MockMembersSheetHarness: View {
+    @State private var vm = BoardViewModel(client: PreviewMock.boardClient(), boardId: "b1")
+    @State private var show = false
+    var body: some View {
+        Color.boardlyBackground.ignoresSafeArea()
+            .task { await vm.load(); show = true }
+            .sheet(isPresented: $show) { CardMembersSheet(cardId: "c1", boardVM: vm) }
     }
 }
 

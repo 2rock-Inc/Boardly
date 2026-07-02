@@ -58,7 +58,7 @@ struct LoginView: View {
                     BoardlyFieldLabel("Serveur").padding(.bottom, 6)
                     HStack(spacing: 10) {
                         Image(systemName: "globe")
-                            .foregroundStyle(Color.boardlyTextTertiary)
+                            .foregroundStyle(Color.accentColor)
                             .frame(width: 20)
                         Text(profile.baseURL.host ?? profile.baseURL.absoluteString)
                             .font(.mono(15, .regular))
@@ -133,7 +133,7 @@ struct LoginView: View {
 
                     // SSO (OIDC — Phase 5, not yet wired)
                     Button {} label: {
-                        Label("Continuer avec le SSO", systemImage: "arrow.right.to.line")
+                        Label("Continuer avec le SSO", systemImage: "rectangle.portrait.and.arrow.right")
                     }
                     .buttonStyle(.boardlySecondary)
                 }

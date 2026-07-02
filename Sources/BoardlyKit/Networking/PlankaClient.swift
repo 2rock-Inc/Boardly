@@ -162,6 +162,168 @@ public struct PlankaClient: Sendable {
         return response.item
     }
 
+    // MARK: - Labels
+
+    public func createLabel(boardId: String, name: String, color: String, position: Double) async throws -> Label {
+        struct Body: Encodable { let name: String; let color: String; let position: Double }
+        struct Response: Decodable { let item: Label }
+        let body = try JSONEncoder().encode(Body(name: name, color: color, position: position))
+        let request = try buildRequest(method: "POST", path: "/boards/\(boardId)/labels", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    public func addCardLabel(cardId: String, labelId: String) async throws -> CardLabel {
+        struct Body: Encodable { let labelId: String }
+        struct Response: Decodable { let item: CardLabel }
+        let body = try JSONEncoder().encode(Body(labelId: labelId))
+        let request = try buildRequest(method: "POST", path: "/cards/\(cardId)/card-labels", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    @discardableResult
+    public func removeCardLabel(cardId: String, labelId: String) async throws -> CardLabel {
+        struct Response: Decodable { let item: CardLabel }
+        let request = try buildRequest(method: "DELETE", path: "/cards/\(cardId)/card-labels/labelId:\(labelId)")
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    // MARK: - Card members
+
+    public func addCardMember(cardId: String, userId: String) async throws -> CardMembership {
+        struct Body: Encodable { let userId: String }
+        struct Response: Decodable { let item: CardMembership }
+        let body = try JSONEncoder().encode(Body(userId: userId))
+        let request = try buildRequest(method: "POST", path: "/cards/\(cardId)/card-memberships", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    @discardableResult
+    public func removeCardMember(cardId: String, userId: String) async throws -> CardMembership {
+        struct Response: Decodable { let item: CardMembership }
+        let request = try buildRequest(method: "DELETE", path: "/cards/\(cardId)/card-memberships/userId:\(userId)")
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    // MARK: - Activity
+
+    public func getCardActions(cardId: String) async throws -> [Action] {
+        struct Response: Decodable { let items: [Action] }
+        let request = try buildRequest(method: "GET", path: "/cards/\(cardId)/actions")
+        let response: Response = try await execute(request)
+        return response.items
+    }
+
+    // MARK: - Stopwatch
+
+    @discardableResult
+    public func updateStopwatch(cardId: String, total: Int, startedAt: Date?) async throws -> Card {
+        struct Stopwatch: Encodable {
+            let total: Int
+            let startedAt: String?
+            func encode(to encoder: any Encoder) throws {
+                var c = encoder.container(keyedBy: CodingKeys.self)
+                try c.encode(total, forKey: .total)
+                try c.encode(startedAt, forKey: .startedAt) // explicit null when nil (stopped)
+            }
+            enum CodingKeys: String, CodingKey { case total, startedAt }
+        }
+        struct Body: Encodable { let stopwatch: Stopwatch }
+        struct Response: Decodable { let item: Card }
+        let started = startedAt.map { ISO8601Formatters.fractional.string(from: $0) }
+        let body = try JSONEncoder().encode(Body(stopwatch: Stopwatch(total: total, startedAt: started)))
+        let request = try buildRequest(method: "PATCH", path: "/cards/\(cardId)", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    // MARK: - Comments
+
+    public func getComments(cardId: String) async throws -> [Comment] {
+        struct Response: Decodable { let items: [Comment] }
+        let request = try buildRequest(method: "GET", path: "/cards/\(cardId)/comments")
+        let response: Response = try await execute(request)
+        return response.items
+    }
+
+    public func createComment(cardId: String, text: String) async throws -> Comment {
+        struct Body: Encodable { let text: String }
+        struct Response: Decodable { let item: Comment }
+        let body = try JSONEncoder().encode(Body(text: text))
+        let request = try buildRequest(method: "POST", path: "/cards/\(cardId)/comments", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    @discardableResult
+    public func deleteComment(id: String) async throws -> Comment {
+        struct Response: Decodable { let item: Comment }
+        let request = try buildRequest(method: "DELETE", path: "/comments/\(id)")
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    // MARK: - Attachments
+
+    public func uploadFileAttachment(cardId: String, fileName: String, mimeType: String, data: Data) async throws -> Attachment {
+        struct Response: Decodable { let item: Attachment }
+        let request = try buildMultipartRequest(
+            path: "/cards/\(cardId)/attachments",
+            fields: ["type": "file", "name": fileName],
+            file: (fieldName: "file", fileName: fileName, mimeType: mimeType, data: data)
+        )
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    public func addLinkAttachment(cardId: String, url: String, name: String) async throws -> Attachment {
+        struct Response: Decodable { let item: Attachment }
+        let request = try buildMultipartRequest(
+            path: "/cards/\(cardId)/attachments",
+            fields: ["type": "link", "url": url, "name": name],
+            file: nil
+        )
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    @discardableResult
+    public func deleteAttachment(id: String) async throws -> Attachment {
+        struct Response: Decodable { let item: Attachment }
+        let request = try buildRequest(method: "DELETE", path: "/attachments/\(id)")
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    // MARK: - Images
+
+    /// Fetch image bytes (e.g. a card cover). The Bearer token is attached only
+    /// when the image is hosted on this profile's own instance, so we never leak
+    /// the token to a third-party host referenced by an attachment.
+    public func imageData(url: URL) async -> Data? {
+        var request = URLRequest(url: url)
+        // Attach the token only for the exact same origin AND over TLS — never
+        // send the Bearer to a different host/port/scheme or over plaintext http.
+        if isSameSecureOrigin(url), let token = try? tokenStore.loadToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        guard let (data, response) = try? await httpClient.data(for: request),
+              let http = response as? HTTPURLResponse, (200 ... 299).contains(http.statusCode)
+        else { return nil }
+        return data
+    }
+
+    private func isSameSecureOrigin(_ url: URL) -> Bool {
+        url.scheme?.lowercased() == "https"
+            && url.scheme?.lowercased() == profile.baseURL.scheme?.lowercased()
+            && url.host?.lowercased() == profile.baseURL.host?.lowercased()
+            && url.port == profile.baseURL.port
+    }
+
     // MARK: - Auth (continued)
 
     public func logout() async throws {
@@ -206,6 +368,47 @@ public struct PlankaClient: Sendable {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
 
+        return request
+    }
+
+    private func buildMultipartRequest(
+        path: String,
+        fields: [String: String],
+        file: (fieldName: String, fileName: String, mimeType: String, data: Data)?
+    ) throws -> URLRequest {
+        guard var components = URLComponents(url: profile.baseURL, resolvingAgainstBaseURL: false) else {
+            throw PlankaAPIError.invalidURL
+        }
+        let basePath = components.path.hasSuffix("/") ? String(components.path.dropLast()) : components.path
+        components.path = basePath + "/api" + path
+        guard let url = components.url else { throw PlankaAPIError.invalidURL }
+
+        let boundary = "Boundary-\(UUID().uuidString)"
+        var body = Data()
+        func append(_ string: String) { body.append(Data(string.utf8)) }
+
+        for (key, value) in fields {
+            append("--\(boundary)\r\n")
+            append("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n")
+            append("\(value)\r\n")
+        }
+        if let file {
+            append("--\(boundary)\r\n")
+            append("Content-Disposition: form-data; name=\"\(file.fieldName)\"; filename=\"\(file.fileName)\"\r\n")
+            append("Content-Type: \(file.mimeType)\r\n\r\n")
+            body.append(file.data)
+            append("\r\n")
+        }
+        append("--\(boundary)--\r\n")
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.httpBody = body
+        if let token = try? tokenStore.loadToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
         return request
     }
 

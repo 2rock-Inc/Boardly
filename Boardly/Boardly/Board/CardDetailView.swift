@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import BoardlyKit
 
 struct CardDetailView: View {
@@ -12,10 +13,16 @@ struct CardDetailView: View {
     @State private var newTaskName = ""
     @State private var addingTaskInListId: String?
     @FocusState private var taskFieldFocused: Bool
-    @State private var hasDueDate = false
-    @State private var editedDueDate = Date()
-    @State private var showDueDateEditor = false
     @State private var didSeedEditState = false
+    @State private var showLabelsSheet = false
+    @State private var showMembersSheet = false
+    @State private var showDueDateSheet = false
+    @State private var showAttachmentsSheet = false
+    @State private var comments: [Comment] = []
+    @State private var commentsLoaded = false
+    @State private var newComment = ""
+    @State private var actions: [Action] = []
+    @State private var topInset: CGFloat = 0
 
     private var card: Card? { boardVM.payload?.card(id: cardId) }
 
@@ -31,6 +38,35 @@ struct CardDetailView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
+        .background {
+            GeometryReader { proxy in
+                Color.clear
+                    .onAppear { topInset = proxy.safeAreaInsets.top }
+                    .onChange(of: proxy.safeAreaInsets.top) { _, new in topInset = new }
+            }
+        }
+        .safeAreaInset(edge: .bottom) {
+            if card != nil { commentInputBar }
+        }
+        .task {
+            if let loaded = await boardVM.loadComments(cardId: cardId) {
+                comments = loaded
+                commentsLoaded = true
+            }
+            actions = await boardVM.loadActions(cardId: cardId)
+        }
+        .sheet(isPresented: $showLabelsSheet) {
+            CardLabelsSheet(cardId: cardId, boardVM: boardVM)
+        }
+        .sheet(isPresented: $showMembersSheet) {
+            CardMembersSheet(cardId: cardId, boardVM: boardVM)
+        }
+        .sheet(isPresented: $showDueDateSheet) {
+            CardDueDateSheet(cardId: cardId, boardVM: boardVM)
+        }
+        .sheet(isPresented: $showAttachmentsSheet) {
+            CardAttachmentsSheet(cardId: cardId, boardVM: boardVM)
+        }
         .alert("Couldn’t save card", isPresented: Binding(
             get: { boardVM.error != nil },
             set: { if !$0 { boardVM.error = nil } }
@@ -43,11 +79,12 @@ struct CardDetailView: View {
 
     private var closeButton: some View {
         Button { dismiss() } label: {
-            Image(systemName: "xmark")
-                .font(.system(size: 14, weight: .bold))
-                .foregroundStyle(.white)
-                .frame(width: 32, height: 32)
-                .background(.black.opacity(0.3), in: Circle())
+            Image(systemName: "chevron.left")
+                .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(Color.boardlyInk)
+                .frame(width: 34, height: 34)
+                .background(.white.opacity(0.9), in: Circle())
+                .shadow(color: .black.opacity(0.12), radius: 4, y: 2)
         }
         .padding(.leading, 16)
         .padding(.top, 12)
@@ -56,59 +93,87 @@ struct CardDetailView: View {
     // MARK: - Content
 
     private func content(card: Card, payload: BoardPayload) -> some View {
-        ScrollView {
+        let hasCover = card.coverAttachmentId != nil
+        return ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                coverHero(card: card)
+                if hasCover {
+                    coverHero(url: coverImageURL(card: card, payload: payload))
+                }
 
                 VStack(alignment: .leading, spacing: 20) {
-                    let labels = labels(for: card, in: payload)
-                    if !labels.isEmpty { labelRow(labels) }
+                    labelRow(payload.labels(for: card))
 
-                    titleField(card: card)
-                    metaSubtitle(card: card, payload: payload)
-                    quickActions(card: card)
-
-                    if showDueDateEditor || card.dueDate != nil {
-                        dueDateEditor(card: card)
+                    VStack(alignment: .leading, spacing: 5) {
+                        titleField(card: card)
+                        metaSubtitle(card: card, payload: payload)
                     }
 
+                    quickActions(card: card)
+
+                    if let due = card.dueDate {
+                        Button { showDueDateSheet = true } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: "calendar")
+                                Text(due.formatted(.dateTime.weekday().day().month().hour().minute()))
+                                    .font(.boardlyCallout)
+                                Spacer(minLength: 0)
+                            }
+                            .foregroundStyle(due < Date() ? Color.labelRose : Color.accentColor)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 10)
+                            .background(Color.boardlySurface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Color.boardlySeparator, lineWidth: 0.5))
+                        }
+                        .buttonStyle(.plain)
+                    }
+
+                    chronoSection(card: card)
+
                     descriptionSection(card: card)
+
+                    let cardAttachments = payload.attachments(for: card)
+                    if !cardAttachments.isEmpty {
+                        attachmentsSection(cardAttachments)
+                    }
 
                     ForEach(payload.taskLists(for: card)) { taskList in
                         taskListSection(taskList: taskList, payload: payload)
                     }
 
                     commentsSection(card: card)
+                    if !actions.isEmpty { activitySection(payload: payload) }
                     moveSection(card: card, payload: payload)
                     deleteButton(card: card)
                 }
                 .padding(20)
             }
         }
+        .ignoresSafeArea(edges: hasCover ? .top : [])
         .scrollDismissesKeyboard(.immediately)
         .onAppear {
             guard !didSeedEditState else { return }
             didSeedEditState = true
             editedDescription = card.description ?? ""
-            hasDueDate = card.dueDate != nil
-            editedDueDate = card.dueDate ?? Date()
         }
     }
 
-    // MARK: - Cover (Phase 4 wires a real cover image; placeholder hero for now)
+    // MARK: - Cover (shown only when the card has a cover attachment)
 
-    private func coverHero(card: Card) -> some View {
-        LinearGradient(
-            colors: [Color.accentColor, Color.accentColor.opacity(0.7)],
-            startPoint: .topLeading, endPoint: .bottomTrailing
-        )
-        .frame(height: 180)
-        .overlay(alignment: .bottomTrailing) {
-            Image(systemName: "rectangle.stack")
-                .font(.system(size: 64, weight: .light))
-                .foregroundStyle(.white.opacity(0.18))
-                .padding(20)
-        }
+    private func coverHero(url: URL?) -> some View {
+        CoverImageView(url: url, height: 180 + topInset) { await boardVM.loadImage(url: $0) }
+    }
+
+    /// The card's cover image URL, resolved from its cover attachment (if set).
+    private func coverImageURL(card: Card, payload: BoardPayload) -> URL? {
+        guard let coverId = card.coverAttachmentId,
+              let attachment = payload.attachments.first(where: { $0.id == coverId }),
+              let data = try? JSONEncoder().encode(attachment.data),
+              let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+        else { return nil }
+        let urlString = (obj["url"] as? String)
+            ?? ((obj["image"] as? [String: Any])?["url"] as? String)
+            ?? ((obj["thumbnailUrls"] as? [String: Any])?["outside360"] as? String)
+        return urlString.flatMap(URL.init(string:))
     }
 
     // MARK: - Labels
@@ -116,14 +181,29 @@ struct CardDetailView: View {
     private func labelRow(_ labels: [BoardlyKit.Label]) -> some View {
         HStack(spacing: 6) {
             ForEach(labels) { label in
-                Text(label.name ?? "•")
-                    .font(.boardlyMonoLabel)
-                    .textCase(.uppercase)
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color(plankaLabel: label.color), in: Capsule())
+                Button { showLabelsSheet = true } label: {
+                    Text(label.name ?? "•")
+                        .font(.sans(12, .semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 4)
+                        .background(Color(plankaLabel: label.color), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+                }
+                .buttonStyle(.plain)
             }
+            Button { showLabelsSheet = true } label: {
+                Text("+ Label")
+                    .font(.sans(12, .semibold))
+                    .foregroundStyle(Color.boardlyTextTertiary)
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 4)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 7, style: .continuous)
+                            .stroke(Color.boardlySeparator, style: StrokeStyle(lineWidth: 1, dash: [3, 2]))
+                    )
+            }
+            .buttonStyle(.plain)
+            Spacer(minLength: 0)
         }
     }
 
@@ -150,12 +230,20 @@ struct CardDetailView: View {
 
     private func metaSubtitle(card: Card, payload: BoardPayload) -> some View {
         let listName = payload.sortedLists().first { $0.id == card.listId }?.name ?? "—"
-        var parts = ["dans \(listName)"]
+        let creator = card.creatorUserId.flatMap { id in payload.users.first { $0.id == id } }
+
+        // Build with AttributedString (plain runs) so untrusted list/user names are
+        // never parsed as markdown; only the list name is bolded programmatically.
+        var text = AttributedString("dans ")
+        var name = AttributedString(listName)
+        name.font = .sans(13, .bold)
+        text.append(name)
+        if let creator { text.append(AttributedString(" · créée par \(creator.name)")) }
         if let created = card.createdAt {
-            parts.append("créée \(created.formatted(.relative(presentation: .named)))")
+            text.append(AttributedString(" · \(created.formatted(.relative(presentation: .named)))"))
         }
-        return Text(parts.joined(separator: " · "))
-            .font(.boardlyMonoCaption)
+        return Text(text)
+            .font(.sans(13, .regular))
             .foregroundStyle(Color.boardlyTextSecondary)
     }
 
@@ -163,59 +251,31 @@ struct CardDetailView: View {
 
     private func quickActions(card: Card) -> some View {
         HStack(spacing: 8) {
-            quickAction("Échéance", systemImage: "calendar", enabled: true) {
-                withAnimation { showDueDateEditor.toggle() }
-            }
-            quickAction("Membres", systemImage: "person.2", enabled: false) {}
-            quickAction("Label", systemImage: "tag", enabled: false) {}
-            quickAction("Joindre", systemImage: "paperclip", enabled: false) {}
+            quickAction("Membres", systemImage: "person.2") { showMembersSheet = true }
+            quickAction("Échéance", systemImage: "calendar") { showDueDateSheet = true }
+            quickAction("Joindre", systemImage: "paperclip") { showAttachmentsSheet = true }
         }
     }
 
-    private func quickAction(_ title: String, systemImage: String, enabled: Bool, action: @escaping () -> Void) -> some View {
+    private func quickAction(_ title: String, systemImage: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            VStack(spacing: 5) {
+            HStack(spacing: 6) {
                 Image(systemName: systemImage)
-                    .font(.system(size: 16, weight: .medium))
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(Color.accentColor)
                 Text(title)
-                    .font(.boardlyMonoLabel)
+                    .font(.sans(14, .semibold))
+                    .foregroundStyle(Color.boardlyInk)
             }
-            .foregroundStyle(enabled ? Color.accentColor : Color.boardlyTextTertiary)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
+            .padding(.vertical, 10)
             .background(Color.boardlySurface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(Color.boardlySeparator, lineWidth: 0.5)
+                    .stroke(Color.boardlySeparator, lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
-        .disabled(!enabled)
-        .opacity(enabled ? 1 : 0.5)
-    }
-
-    // MARK: - Due date
-
-    private func dueDateEditor(card: Card) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            BoardlyFieldLabel("Échéance")
-            Toggle("Définir une échéance", isOn: $hasDueDate)
-                .font(.boardlyBody)
-                .tint(.accentColor)
-            if hasDueDate {
-                DatePicker("Date", selection: $editedDueDate, displayedComponents: [.date, .hourAndMinute])
-                    .font(.boardlyBody)
-            }
-            Button("Enregistrer l’échéance") { saveDueDate(card: card) }
-                .font(.boardlyCallout)
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 10)
-                .background(Color.accentColor, in: Capsule())
-                .opacity(dueDateChanged(card: card) ? 1 : 0.4)
-                .disabled(!dueDateChanged(card: card))
-        }
-        .boardlyCard()
     }
 
     // MARK: - Description
@@ -247,6 +307,31 @@ struct CardDetailView: View {
     }
 
     // MARK: - Tasks
+
+    private func attachmentsSection(_ attachments: [Attachment]) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            BoardlyFieldLabel("Pièces jointes")
+            VStack(spacing: 0) {
+                ForEach(Array(attachments.enumerated()), id: \.element.id) { index, attachment in
+                    HStack(spacing: 12) {
+                        Image(systemName: attachment.type == "link" ? "link" : "paperclip")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundStyle(Color.accentColor)
+                            .frame(width: 32, height: 32)
+                            .background(Color.boardlySurfaceSecondary, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        Text(attachment.name)
+                            .font(.boardlyCallout)
+                            .foregroundStyle(Color.boardlyInk)
+                            .lineLimit(1)
+                        Spacer(minLength: 0)
+                    }
+                    .padding(.vertical, 6)
+                    if index < attachments.count - 1 { Divider() }
+                }
+            }
+        }
+        .boardlyCard()
+    }
 
     private func taskListSection(taskList: TaskList, payload: BoardPayload) -> some View {
         let tasks = payload.tasks(for: taskList)
@@ -323,28 +408,147 @@ struct CardDetailView: View {
 
     // MARK: - Comments (read-only count for now; full thread arrives in Phase 4)
 
-    private func commentsSection(card: Card) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Commentaires")
-                    .font(.boardlyHeadline)
-                    .foregroundStyle(Color.boardlyInk)
-                Spacer()
-                Text("\(card.commentsTotal ?? 0)")
-                    .font(.mono(12, .medium))
-                    .foregroundStyle(Color.boardlyTextSecondary)
+    private func chronoSection(card: Card) -> some View {
+        let sw = card.stopwatchValue
+        let running = sw?.isRunning ?? false
+        return HStack(spacing: 12) {
+            Image(systemName: "stopwatch")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(Color.accentColor)
+            Text("Chrono")
+                .font(.boardlyHeadline)
+                .foregroundStyle(Color.boardlyInk)
+            Spacer(minLength: 0)
+            TimelineView(.periodic(from: .now, by: 1)) { context in
+                Text(formatDuration(sw?.elapsed(now: context.date) ?? 0))
+                    .font(.mono(16, .medium))
+                    .foregroundStyle(running ? Color.accentColor : Color.boardlyTextSecondary)
             }
-            HStack(spacing: 10) {
-                Image(systemName: "bubble.left")
-                    .foregroundStyle(Color.boardlyTextTertiary)
-                Text("Les commentaires arrivent en Phase 4.")
-                    .font(.boardlyCallout)
-                    .foregroundStyle(Color.boardlyTextTertiary)
-                Spacer(minLength: 0)
+            Button { Task { await boardVM.toggleStopwatch(card) } } label: {
+                Image(systemName: running ? "pause.circle.fill" : "play.circle.fill")
+                    .font(.system(size: 30))
+                    .foregroundStyle(Color.accentColor)
             }
-            .padding(.vertical, 4)
         }
         .boardlyCard()
+    }
+
+    private func formatDuration(_ seconds: Int) -> String {
+        String(format: "%02d:%02d:%02d", seconds / 3600, (seconds % 3600) / 60, seconds % 60)
+    }
+
+    private func activitySection(payload: BoardPayload) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Image(systemName: "clock.arrow.circlepath")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Color.boardlyTextSecondary)
+                Text("Activité")
+                    .font(.boardlyHeadline)
+                    .foregroundStyle(Color.boardlyInk)
+                Spacer(minLength: 0)
+            }
+            ForEach(actions) { action in
+                let author = payload.users.first { $0.id == action.userId }
+                HStack(alignment: .top, spacing: 10) {
+                    AvatarView(name: author?.name ?? "?", size: 28, bordered: false)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(actionText(action, author: author))
+                            .font(.boardlyCallout)
+                            .foregroundStyle(Color.boardlyInk)
+                        if let date = action.createdAt {
+                            Text(date.formatted(.relative(presentation: .named)))
+                                .font(.boardlyMonoCaption)
+                                .foregroundStyle(Color.boardlyTextTertiary)
+                        }
+                    }
+                    Spacer(minLength: 0)
+                }
+            }
+        }
+    }
+
+    private func actionText(_ action: Action, author: User?) -> String {
+        let who = author?.name ?? "Quelqu’un"
+        switch action.type {
+        case "createCard": return "\(who) a créé la carte"
+        case "moveCard": return "\(who) a déplacé la carte"
+        case "addMemberToCard": return "\(who) a ajouté un membre"
+        case "removeMemberFromCard": return "\(who) a retiré un membre"
+        case "completeTask": return "\(who) a terminé une tâche"
+        case "uncompleteTask": return "\(who) a rouvert une tâche"
+        default: return "\(who) a mis à jour la carte"
+        }
+    }
+
+    private func commentsSection(card: Card) -> some View {
+        let count = commentsLoaded ? comments.count : (card.commentsTotal ?? 0)
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Image(systemName: "bubble.left")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Color.boardlyTextSecondary)
+                Text("Commentaires · \(count)")
+                    .font(.boardlyHeadline)
+                    .foregroundStyle(Color.boardlyInk)
+                Spacer(minLength: 0)
+            }
+
+            if commentsLoaded && comments.isEmpty {
+                Text("Aucun commentaire pour l’instant.")
+                    .font(.boardlyCallout)
+                    .foregroundStyle(Color.boardlyTextTertiary)
+            } else {
+                ForEach(comments) { comment in
+                    CommentBubble(
+                        comment: comment,
+                        author: boardVM.payload?.users.first { $0.id == comment.userId },
+                        onDelete: {
+                            Task {
+                                if await boardVM.deleteComment(id: comment.id, cardId: cardId) {
+                                    comments.removeAll { $0.id == comment.id }
+                                }
+                            }
+                        }
+                    )
+                }
+            }
+        }
+    }
+
+    private var commentInputBar: some View {
+        HStack(spacing: 10) {
+            if let user = boardVM.currentUser {
+                AvatarView(name: user.name, size: 32, bordered: false)
+            }
+            TextField("Ajouter un commentaire…", text: $newComment, axis: .vertical)
+                .font(.boardlyBody)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 9)
+                .background(Color.boardlySurfaceSecondary, in: Capsule())
+            Button { sendComment() } label: {
+                Image(systemName: "paperplane.fill")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 40, height: 40)
+                    .background(Color.accentColor, in: Circle())
+            }
+            .disabled(newComment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(.ultraThinMaterial)
+    }
+
+    private func sendComment() {
+        let text = newComment.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
+        Task {
+            if let comment = await boardVM.postComment(cardId: cardId, text: text) {
+                comments.append(comment)
+                newComment = "" // clear only once the post succeeds — keep the text on failure
+            }
+        }
     }
 
     // MARK: - Move / Delete
@@ -388,11 +592,6 @@ struct CardDetailView: View {
 
     // MARK: - Helpers & actions
 
-    private func labels(for card: Card, in payload: BoardPayload) -> [BoardlyKit.Label] {
-        let ids = Set(payload.cardLabels.filter { $0.cardId == card.id }.map(\.labelId))
-        return payload.labels.filter { ids.contains($0.id) }
-    }
-
     private func saveCardName(card: Card) {
         let name = editedName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty, name != card.name else { isEditingName = false; return }
@@ -406,20 +605,6 @@ struct CardDetailView: View {
         Task { await boardVM.updateCard(card, patch: CardPatch(description: editedDescription)) }
     }
 
-    private func dueDateChanged(card: Card) -> Bool {
-        if hasDueDate {
-            guard let existing = card.dueDate else { return true }
-            return abs(existing.timeIntervalSince(editedDueDate)) >= 1
-        } else {
-            return card.dueDate != nil
-        }
-    }
-
-    private func saveDueDate(card: Card) {
-        let newDueDate = hasDueDate ? editedDueDate : nil
-        Task { await boardVM.updateDueDate(card, to: newDueDate) }
-    }
-
     private func submitTask(taskList: TaskList) {
         let name = newTaskName.trimmingCharacters(in: .whitespacesAndNewlines)
         if !name.isEmpty {
@@ -427,5 +612,70 @@ struct CardDetailView: View {
         }
         newTaskName = ""
         addingTaskInListId = nil
+    }
+}
+
+private struct CoverImageView: View {
+    let url: URL?
+    let height: CGFloat
+    let load: (URL) async -> Data?
+    @State private var image: UIImage?
+
+    var body: some View {
+        Group {
+            if let image {
+                Image(uiImage: image).resizable().scaledToFill()
+            } else {
+                LinearGradient(
+                    colors: [Color.accentColor, Color.accentColor.opacity(0.7)],
+                    startPoint: .topLeading, endPoint: .bottomTrailing
+                )
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: height)
+        .clipped()
+        .task(id: url) {
+            guard let url else { return }
+            image = await load(url).flatMap(UIImage.init(data:))
+        }
+    }
+}
+
+private struct CommentBubble: View {
+    let comment: Comment
+    let author: User?
+    let onDelete: () -> Void
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            AvatarView(name: author?.name ?? "?", size: 32, bordered: false)
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 6) {
+                    Text(author?.name ?? "Utilisateur")
+                        .font(.sans(14, .semibold))
+                        .foregroundStyle(Color.boardlyInk)
+                    if let date = comment.createdAt {
+                        Text("· \(date.formatted(.relative(presentation: .named)))")
+                            .font(.boardlyMonoCaption)
+                            .foregroundStyle(Color.boardlyTextTertiary)
+                    }
+                    Spacer(minLength: 0)
+                }
+                Text(comment.text)
+                    .font(.boardlyBody)
+                    .foregroundStyle(Color.boardlyInk)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.boardlySurface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Color.boardlySeparator, lineWidth: 0.5))
+        .contextMenu {
+            Button(role: .destructive, action: onDelete) {
+                SwiftUI.Label("Supprimer", systemImage: "trash")
+            }
+        }
     }
 }

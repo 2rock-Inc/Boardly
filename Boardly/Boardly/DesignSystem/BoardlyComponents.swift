@@ -106,6 +106,46 @@ struct AvatarView: View {
     }
 }
 
+/// Bottom-sheet header: Annuler / title / OK, with a grabber.
+struct SheetHeader: View {
+    let title: String
+    var cancelLabel = "Annuler"
+    var doneLabel = "OK"
+    let onCancel: () -> Void
+    let onDone: () -> Void
+
+    var body: some View {
+        HStack {
+            Button(cancelLabel, action: onCancel)
+                .foregroundStyle(Color.boardlyTextSecondary)
+            Spacer()
+            Text(title)
+                .font(.sans(16, .bold))
+                .foregroundStyle(Color.boardlyInk)
+            Spacer()
+            Button(doneLabel, action: onDone)
+                .foregroundStyle(Color.accentColor)
+        }
+        .font(.sans(16, .semibold))
+        .padding(.horizontal, 20)
+        .padding(.top, 20)
+        .padding(.bottom, 14)
+        .overlay(alignment: .top) {
+            Capsule().fill(Color.boardlySeparator).frame(width: 36, height: 5).padding(.top, 8)
+        }
+    }
+}
+
+/// Check (filled accent) / ring toggle used in selection sheets.
+struct SelectionToggle: View {
+    let isOn: Bool
+    var body: some View {
+        Image(systemName: isOn ? "checkmark.circle.fill" : "circle")
+            .font(.system(size: 22))
+            .foregroundStyle(isOn ? Color.accentColor : Color.boardlyTextTertiary)
+    }
+}
+
 /// Uppercase mono field label, per the design.
 struct BoardlyFieldLabel: View {
     let text: String

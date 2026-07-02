@@ -32,6 +32,30 @@ extension BoardPayload {
             return with(tasks: applyTaskUpdate(partial))
         case .taskDeleted(let id):
             return with(tasks: tasks.filter { $0.id != id })
+
+        case .labelCreated(let label):
+            var copy = self; copy.labels = upsert(labels, label); return copy
+        case .labelUpdated(let label):
+            var copy = self; copy.labels = labels.map { $0.id == label.id ? label : $0 }; return copy
+        case .labelDeleted(let id):
+            var copy = self; copy.labels.removeAll { $0.id == id }; return copy
+
+        case .cardLabelCreated(let cardLabel):
+            var copy = self; copy.cardLabels = upsert(cardLabels, cardLabel); return copy
+        case .cardLabelDeleted(let id):
+            var copy = self; copy.cardLabels.removeAll { $0.id == id }; return copy
+
+        case .cardMembershipCreated(let membership):
+            var copy = self; copy.cardMemberships = upsert(cardMemberships, membership); return copy
+        case .cardMembershipDeleted(let id):
+            var copy = self; copy.cardMemberships.removeAll { $0.id == id }; return copy
+
+        case .attachmentCreated(let attachment):
+            var copy = self; copy.attachments = upsert(attachments, attachment); return copy
+        case .attachmentUpdated(let attachment):
+            var copy = self; copy.attachments = attachments.map { $0.id == attachment.id ? attachment : $0 }; return copy
+        case .attachmentDeleted(let id):
+            var copy = self; copy.attachments.removeAll { $0.id == id }; return copy
         }
     }
 
@@ -73,17 +97,11 @@ extension BoardPayload {
     }
 
     private func with(cards: [Card]? = nil, lists: [PlankaList]? = nil, tasks: [PlankaTask]? = nil) -> BoardPayload {
-        BoardPayload(
-            board: board,
-            lists: lists ?? self.lists,
-            cards: cards ?? self.cards,
-            taskLists: taskLists,
-            tasks: tasks ?? self.tasks,
-            labels: labels,
-            cardMemberships: cardMemberships,
-            cardLabels: cardLabels,
-            users: users
-        )
+        var copy = self
+        if let cards { copy.cards = cards }
+        if let lists { copy.lists = lists }
+        if let tasks { copy.tasks = tasks }
+        return copy
     }
 }
 
