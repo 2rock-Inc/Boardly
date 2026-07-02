@@ -12,19 +12,24 @@ struct BoardView: View {
     let boardId: String
     let boardName: String
     let projectName: String?
+    /// When set (e.g. arriving from search), the board opens this card once loaded.
+    let focusCardId: String?
 
     @State private var viewModel: BoardViewModel
     @State private var selectedCardId: SelectedCard?
+    @State private var didFocusCard = false
     @State private var mode: BoardViewMode = .kanban
     @State private var showAddCard = false
     @State private var newCardTitle = ""
     @Environment(\.dismiss) private var dismiss
 
-    init(client: PlankaClient, boardId: String, boardName: String, projectName: String? = nil) {
+    init(client: PlankaClient, boardId: String, boardName: String,
+         projectName: String? = nil, focusCardId: String? = nil) {
         self.client = client
         self.boardId = boardId
         self.boardName = boardName
         self.projectName = projectName
+        self.focusCardId = focusCardId
         _viewModel = State(initialValue: BoardViewModel(client: client, boardId: boardId))
     }
 
@@ -50,6 +55,16 @@ struct BoardView: View {
         .toolbar(.hidden, for: .navigationBar)
         .task {
             if viewModel.payload == nil { await viewModel.load() }
+            // The view may have been dismissed while the load was in flight; don't
+            // resurrect realtime (or open a card) on a board the user already left.
+            guard !Task.isCancelled else { return }
+            // Deep-open the focused card at most once, and only if it still exists
+            // on this board (it may have been deleted/moved since indexing).
+            if let focusCardId, !didFocusCard,
+               viewModel.payload?.cards.contains(where: { $0.id == focusCardId }) == true {
+                didFocusCard = true
+                selectedCardId = SelectedCard(id: focusCardId)
+            }
             viewModel.startRealtime()
         }
         .onDisappear {

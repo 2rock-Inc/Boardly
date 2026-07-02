@@ -23,14 +23,15 @@ struct MainView: View {
                         switch route {
                         case .project(let id, let name):
                             ProjectDetailView(client: client, projectId: id, projectName: name, path: $path)
-                        case .board(let id, let name, let projectName):
-                            BoardView(client: client, boardId: id, boardName: name, projectName: projectName)
+                        case .board(let id, let name, let projectName, let focusCardId):
+                            BoardView(client: client, boardId: id, boardName: name,
+                                      projectName: projectName, focusCardId: focusCardId)
                         }
                     }
             }
             .tabItem { Label("Projets", systemImage: "house") }
 
-            ComingSoonView(title: "Recherche", systemImage: "magnifyingglass")
+            SearchView(client: client)
                 .tabItem { Label("Recherche", systemImage: "magnifyingglass") }
 
             Group {

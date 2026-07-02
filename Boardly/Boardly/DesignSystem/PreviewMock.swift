@@ -266,6 +266,12 @@ struct MockActivityHarness: View {
     }
 }
 
+struct MockSearchHarness: View {
+    var body: some View {
+        SearchView(client: PreviewMock.projectsClient(), initialQuery: "accueil")
+    }
+}
+
 struct MockProfileHarness: View {
     var body: some View {
         ProfileView(
@@ -286,8 +292,8 @@ struct MockProjectsHarness: View {
                         switch route {
                         case .project(let id, let name):
                             ProjectDetailView(client: PreviewMock.projectsClient(), projectId: id, projectName: name, path: $path)
-                        case .board(let id, let name, let projectName):
-                            BoardView(client: PreviewMock.boardClient(), boardId: id, boardName: name, projectName: projectName)
+                        case .board(let id, let name, let projectName, let focusCardId):
+                            BoardView(client: PreviewMock.boardClient(), boardId: id, boardName: name, projectName: projectName, focusCardId: focusCardId)
                         }
                     }
             }
