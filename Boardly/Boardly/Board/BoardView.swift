@@ -54,10 +54,8 @@ struct BoardView: View {
         }
         .onDisappear { Task { await viewModel.stopRealtime() } }
         .refreshable { await viewModel.load() }
-        .sheet(item: $selectedCardId) { selected in
-            NavigationStack {
-                CardDetailView(cardId: selected.id, boardVM: viewModel)
-            }
+        .navigationDestination(item: $selectedCardId) { selected in
+            CardDetailView(cardId: selected.id, boardVM: viewModel)
         }
         .alert("Nouvelle carte", isPresented: $showAddCard) {
             TextField("Titre de la carte", text: $newCardTitle)
@@ -333,6 +331,6 @@ private struct ListModeCardRow: View {
     }
 }
 
-private struct SelectedCard: Identifiable {
+private struct SelectedCard: Identifiable, Hashable {
     let id: String
 }

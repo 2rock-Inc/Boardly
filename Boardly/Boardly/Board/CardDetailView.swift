@@ -66,11 +66,12 @@ struct CardDetailView: View {
 
     private var closeButton: some View {
         Button { dismiss() } label: {
-            Image(systemName: "xmark")
-                .font(.system(size: 14, weight: .bold))
-                .foregroundStyle(.white)
-                .frame(width: 32, height: 32)
-                .background(.black.opacity(0.3), in: Circle())
+            Image(systemName: "chevron.left")
+                .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(Color.boardlyInk)
+                .frame(width: 34, height: 34)
+                .background(.white.opacity(0.9), in: Circle())
+                .shadow(color: .black.opacity(0.12), radius: 4, y: 2)
         }
         .padding(.leading, 16)
         .padding(.top, 12)
@@ -232,7 +233,6 @@ struct CardDetailView: View {
             quickAction("Membres", systemImage: "person.2") { showMembersSheet = true }
             quickAction("Échéance", systemImage: "calendar") { showDueDateSheet = true }
             quickAction("Joindre", systemImage: "paperclip") { showAttachmentsSheet = true }
-            Spacer(minLength: 0)
         }
     }
 
@@ -246,10 +246,13 @@ struct CardDetailView: View {
                     .font(.sans(14, .semibold))
                     .foregroundStyle(Color.boardlyInk)
             }
-            .padding(.horizontal, 13)
-            .padding(.vertical, 8)
-            .background(Color.boardlySurface, in: Capsule())
-            .overlay(Capsule().stroke(Color.boardlySeparator, lineWidth: 1))
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+            .background(Color.boardlySurface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(Color.boardlySeparator, lineWidth: 1)
+            )
         }
         .buttonStyle(.plain)
     }
