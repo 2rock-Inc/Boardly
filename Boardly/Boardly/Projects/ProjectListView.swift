@@ -6,6 +6,7 @@ import BoardlyKit
 final class ProjectListViewModel {
     var payload: ProjectsPayload?
     var currentUser: User?
+    var cardCounts: [String: Int] = [:]
     var isLoading = true
     var error: String?
 
@@ -17,8 +18,26 @@ final class ProjectListViewModel {
             let payload = try await client.getProjects()
             self.payload = payload
             resolveCurrentUser(in: payload, client: client)
+            await loadCardCounts(payload: payload, client: client)
         } catch {
             self.error = error.localizedDescription
+        }
+    }
+
+    // Per-board card counts for the list rows (design shows "N cartes"); the
+    // /projects payload has no counts, so fetch each board concurrently.
+    private func loadCardCounts(payload: ProjectsPayload, client: PlankaClient) async {
+        await withTaskGroup(of: (String, Int)?.self) { group in
+            for board in payload.boards {
+                let id = board.id
+                group.addTask {
+                    guard let board = try? await client.getBoard(id: id) else { return nil }
+                    return (id, board.cards.count)
+                }
+            }
+            for await result in group {
+                if let (id, count) = result { cardCounts[id] = count }
+            }
         }
     }
 
@@ -52,6 +71,7 @@ struct ProjectListView: View {
             }
         }
         .navigationTitle("")
+        .toolbar(.hidden, for: .navigationBar)
         .task { await viewModel.load(using: client) }
     }
 
@@ -81,6 +101,7 @@ struct ProjectListView: View {
                                 project: project,
                                 boards: boards,
                                 members: payload.members(for: project),
+                                cardCounts: viewModel.cardCounts,
                                 onOpenBoard: { path.append(.board(id: $0.id, name: $0.name, projectName: project.name)) },
                                 onOpenProject: { path.append(.project(id: project.id, name: project.name)) }
                             )
@@ -229,6 +250,7 @@ private struct ProjectCard: View {
     let project: Project
     let boards: [Board]
     let members: [User]
+    let cardCounts: [String: Int]
     let onOpenBoard: (Board) -> Void
     let onOpenProject: () -> Void
 
@@ -241,9 +263,6 @@ private struct ProjectCard: View {
                     .lineLimit(1)
                 Spacer(minLength: 8)
                 AvatarStack(members: members)
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.7))
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 13)
@@ -255,7 +274,7 @@ private struct ProjectCard: View {
             VStack(spacing: 0) {
                 ForEach(Array(boards.enumerated()), id: \.element.id) { index, board in
                     Button { onOpenBoard(board) } label: {
-                        BoardRow(board: board)
+                        BoardRow(board: board, cardCount: cardCounts[board.id])
                     }
                     .buttonStyle(.plain)
                     if index < boards.count - 1 {
@@ -275,10 +294,20 @@ private struct ProjectCard: View {
 
 private struct BoardRow: View {
     let board: Board
+    let cardCount: Int?
 
     private static let dotColors: [Color] = [.labelTeal, .labelBlue, .labelGreen, .labelPurple, .labelRose]
     private var dotColor: Color {
         Self.dotColors[boardlyStableHash(board.id) % Self.dotColors.count]
+    }
+
+    private var meta: String {
+        var parts: [String] = []
+        if let cardCount { parts.append("\(cardCount) carte\(cardCount > 1 ? "s" : "")") }
+        if let updated = board.updatedAt {
+            parts.append("maj \(updated.formatted(.relative(presentation: .named)))")
+        }
+        return parts.joined(separator: " · ")
     }
 
     var body: some View {
@@ -286,17 +315,25 @@ private struct BoardRow: View {
             RoundedRectangle(cornerRadius: 3, style: .continuous)
                 .fill(dotColor)
                 .frame(width: 8, height: 8)
-            Text(board.name)
-                .font(.sans(15, .semibold))
-                .foregroundStyle(Color.boardlyInk)
-                .lineLimit(1)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(board.name)
+                    .font(.sans(15, .semibold))
+                    .foregroundStyle(Color.boardlyInk)
+                    .lineLimit(1)
+                if !meta.isEmpty {
+                    Text(meta)
+                        .font(.boardlyMonoCaption)
+                        .foregroundStyle(Color.boardlyTextSecondary)
+                        .lineLimit(1)
+                }
+            }
             Spacer(minLength: 0)
             Image(systemName: "chevron.right")
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(Color.boardlyTextTertiary)
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 14)
+        .padding(.vertical, 12)
         .contentShape(Rectangle())
     }
 }

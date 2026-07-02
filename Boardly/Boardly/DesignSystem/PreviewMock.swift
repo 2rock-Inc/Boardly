@@ -17,6 +17,8 @@ private final class MockHTTPClient: HTTPClient, @unchecked Sendable {
             body = PreviewMock.commentsJSON
         } else if path.hasSuffix("/actions"), request.httpMethod == "GET" {
             body = PreviewMock.actionsJSON
+        } else if path.contains("/boards/"), request.httpMethod == "GET", json == PreviewMock.projectsJSON {
+            body = PreviewMock.boardJSON // per-board fetch from the projects list
         } else {
             body = json
         }
@@ -79,7 +81,7 @@ enum PreviewMock {
     }
     """
 
-    static let projectsJSON = """
+    nonisolated static let projectsJSON = """
     {
       "items": [
         { "id": "p1", "name": "Refonte 2026", "isHidden": false, "isFavorite": true, "description": "Refonte complète de l’app mobile et du back-office. Cible : livraison T2." },
@@ -88,10 +90,10 @@ enum PreviewMock {
       ],
       "included": {
         "boards": [
-          { "id": "b1", "projectId": "p1", "name": "Sprint Produit", "position": 1 },
-          { "id": "b2", "projectId": "p1", "name": "Recherche & specs", "position": 2 },
-          { "id": "b3", "projectId": "p2", "name": "Campagne Été", "position": 1 },
-          { "id": "b4", "projectId": "p3", "name": "Todo", "position": 1 }
+          { "id": "b1", "projectId": "p1", "name": "Sprint Produit", "position": 1, "updatedAt": "2026-07-02T04:30:00.000Z" },
+          { "id": "b2", "projectId": "p1", "name": "Recherche & specs", "position": 2, "updatedAt": "2026-07-01T09:00:00.000Z" },
+          { "id": "b3", "projectId": "p2", "name": "Campagne Été", "position": 1, "updatedAt": "2026-07-02T02:00:00.000Z" },
+          { "id": "b4", "projectId": "p3", "name": "Todo", "position": 1, "updatedAt": "2026-06-30T12:00:00.000Z" }
         ],
         "users": [
           { "id": "u1", "role": "admin", "name": "Marie Dupont", "isDeactivated": false },
@@ -111,7 +113,7 @@ enum PreviewMock {
     }
     """
 
-    static let boardJSON = """
+    nonisolated static let boardJSON = """
     {
       "item": { "id": "b1", "projectId": "p1", "name": "Sprint Produit" },
       "included": {
@@ -121,7 +123,7 @@ enum PreviewMock {
           { "id": "l3", "boardId": "b1", "type": "active", "name": "Terminé", "position": 3 }
         ],
         "cards": [
-          { "id": "c1", "boardId": "b1", "listId": "l1", "name": "Nouvelle page d’accueil — exploration visuelle", "position": 1, "dueDate": "2026-10-12T09:00:00.000Z", "stopwatch": { "total": 5040, "startedAt": null } },
+          { "id": "c1", "boardId": "b1", "listId": "l1", "name": "Nouvelle page d’accueil — exploration visuelle", "position": 1, "dueDate": "2026-10-12T09:00:00.000Z", "commentsTotal": 2, "stopwatch": { "total": 5040, "startedAt": null } },
           { "id": "c2", "boardId": "b1", "listId": "l1", "name": "Composant carte réutilisable en SwiftUI", "position": 2 },
           { "id": "c3", "boardId": "b1", "listId": "l1", "name": "Lister les écrans à refondre", "position": 3 },
           { "id": "c4", "boardId": "b1", "listId": "l2", "name": "Système de couleurs & tokens Pine Teal", "position": 1, "dueDate": "2026-06-29T09:00:00.000Z" },

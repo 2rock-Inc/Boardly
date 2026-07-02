@@ -157,9 +157,9 @@ private struct BoardGridCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Rectangle().fill(accent).frame(height: 5)
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 14) {
                 Text(stat.board.name)
-                    .font(.sans(15, .bold))
+                    .font(.sans(16, .bold))
                     .foregroundStyle(Color.boardlyInk)
                     .lineLimit(2)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -170,7 +170,8 @@ private struct BoardGridCard: View {
                     .font(.mono(11, .medium))
                     .foregroundStyle(Color.boardlyTextSecondary)
             }
-            .padding(14)
+            .padding(18)
+            .frame(maxWidth: .infinity, minHeight: 132, alignment: .topLeading)
         }
         .background(Color.boardlySurface)
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
@@ -207,7 +208,7 @@ private struct NewBoardCard: View {
                 .font(.boardlyCallout)
                 .foregroundStyle(Color.boardlyTextSecondary)
         }
-        .frame(maxWidth: .infinity, minHeight: 120)
+        .frame(maxWidth: .infinity, minHeight: 132)
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
