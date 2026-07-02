@@ -187,7 +187,7 @@ struct ProjectDetailView: View {
         if let project = viewModel.project,
            project.backgroundType == "image",
            let image = viewModel.currentBackgroundImage,
-           let url = resolvedBackgroundURL(image.url) {
+           let url = client.resourceURL(image.url) {
             BackgroundImageView(url: url) { await client.imageData(url: $0) }
         } else if let project = viewModel.project,
                   project.backgroundType == "gradient",
@@ -196,17 +196,6 @@ struct ProjectDetailView: View {
         } else {
             projectColor(projectId)
         }
-    }
-
-    /// Resolve a background-image URL. Absolute URLs are used as-is; relative ones
-    /// are appended to the profile's base URL *preserving its path*, so subpath-
-    /// hosted instances (e.g. https://example.com/planka) don't drop the subpath.
-    private func resolvedBackgroundURL(_ raw: String) -> URL? {
-        if let url = URL(string: raw), url.scheme != nil { return url }
-        let base = client.profile.baseURL.absoluteString
-        let trimmedBase = base.hasSuffix("/") ? String(base.dropLast()) : base
-        let path = raw.hasPrefix("/") ? raw : "/\(raw)"
-        return URL(string: trimmedBase + path)
     }
 
     @ViewBuilder
