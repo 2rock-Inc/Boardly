@@ -4,8 +4,12 @@ import BoardlyKit
 struct MainView: View {
     let profile: ServerProfile
     @Environment(ProfileStore.self) private var profileStore
+    @Environment(\.scenePhase) private var scenePhase
     @State private var path: [AppRoute] = []
     @State private var notificationsVM: NotificationsViewModel?
+
+    /// How often the unread badge is refreshed while the app is foreground.
+    private let notificationPollInterval: Duration = .seconds(60)
 
     private var client: PlankaClient {
         profileStore.makeClient(for: profile)
@@ -46,6 +50,15 @@ struct MainView: View {
         .task {
             if notificationsVM == nil { notificationsVM = NotificationsViewModel(client: client) }
             await notificationsVM?.load()
+            // Poll so the unread badge stays fresh while the app is open (Phase 5
+            // is pull-based; a Socket.IO live feed can replace this later).
+            while !Task.isCancelled {
+                try? await Task.sleep(for: notificationPollInterval)
+                await notificationsVM?.load()
+            }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { Task { await notificationsVM?.load() } }
         }
     }
 }

@@ -356,6 +356,19 @@ public struct PlankaClient: Sendable {
             && url.port == profile.baseURL.port
     }
 
+    /// Resolve a (possibly relative) resource URL returned by PLANKA — e.g. a
+    /// background-image or attachment `url` — against this profile's base URL.
+    /// Absolute URLs pass through unchanged; relative ones are appended to the base
+    /// URL **preserving any hosting subpath** (e.g. `https://example.com/planka`),
+    /// so subpath-hosted instances don't drop the subpath.
+    public func resourceURL(_ raw: String) -> URL? {
+        if let url = URL(string: raw), url.scheme != nil { return url }
+        let base = profile.baseURL.absoluteString
+        let trimmedBase = base.hasSuffix("/") ? String(base.dropLast()) : base
+        let suffix = raw.hasPrefix("/") ? raw : "/\(raw)"
+        return URL(string: trimmedBase + suffix)
+    }
+
     // MARK: - Notifications
 
     /// The current user's unread notifications, with creator users sideloaded.
