@@ -136,7 +136,14 @@ private struct OIDCWebAuthView: UIViewRepresentable {
     }
 
     func makeUIView(context: Context) -> WKWebView {
-        let webView = WKWebView()
+        // Ephemeral data store: the IdP session cookie lives only for the duration
+        // of this flow and is never persisted. This prevents a shared/kiosk device
+        // from silently re-authenticating a *previous* user after logout (the app
+        // clears the Keychain token, but a persistent web session would otherwise
+        // survive and hand back a fresh code for the old identity).
+        let configuration = WKWebViewConfiguration()
+        configuration.websiteDataStore = .nonPersistent()
+        let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = context.coordinator
         webView.load(URLRequest(url: session.requestURL))
         return webView

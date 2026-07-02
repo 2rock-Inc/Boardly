@@ -166,7 +166,7 @@ private struct WebhookSheet: View {
                 VStack(alignment: .leading, spacing: 16) {
                     field("Nom", text: $name, placeholder: "Mon webhook")
                     field("URL", text: $url, placeholder: "https://…", url: true)
-                    field("Token d’accès (optionnel)", text: $accessToken, placeholder: "secret")
+                    field("Token d’accès (optionnel)", text: $accessToken, placeholder: "secret", secure: true)
                     field("Événements (séparés par des virgules, vide = tous)",
                           text: $events, placeholder: "cardCreate, cardUpdate")
                 }
@@ -176,14 +176,22 @@ private struct WebhookSheet: View {
         .background(Color.boardlyBackground)
     }
 
-    private func field(_ label: String, text: Binding<String>, placeholder: String, url: Bool = false) -> some View {
+    @ViewBuilder
+    private func field(_ label: String, text: Binding<String>, placeholder: String,
+                       url: Bool = false, secure: Bool = false) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             BoardlyFieldLabel(label)
-            TextField(placeholder, text: text)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-                .keyboardType(url ? .URL : .default)
-                .boardlyField()
+            Group {
+                if secure {
+                    SecureField(placeholder, text: text)
+                } else {
+                    TextField(placeholder, text: text)
+                        .keyboardType(url ? .URL : .default)
+                }
+            }
+            .textInputAutocapitalization(.never)
+            .autocorrectionDisabled()
+            .boardlyField()
         }
     }
 }
