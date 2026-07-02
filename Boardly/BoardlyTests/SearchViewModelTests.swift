@@ -82,6 +82,59 @@ struct SearchViewModelTests {
         #expect(vm.hasQuery == false)
         #expect(vm.hasAnyResult == false)
     }
+
+    @Test("a failed index is not cached — a later call rebuilds it")
+    func retriesAfterFailure() async {
+        let stub = FlakyStubHTTP()
+        let profile = ServerProfile(name: "T", baseURL: URL(string: "https://mock.local")!)
+        let client = PlankaClient(
+            profile: profile,
+            tokenStore: TokenStore(profileID: profile.id, keychainStore: EphemeralKeychain()),
+            httpClient: stub
+        )
+        let vm = SearchViewModel(client: client)
+
+        await vm.loadIfNeeded() // getProjects fails once
+        vm.query = "accueil"
+        #expect(vm.error != nil)
+        #expect(vm.hasAnyResult == false)
+
+        vm.error = nil
+        await vm.loadIfNeeded() // retry succeeds — index was not cached
+        #expect(vm.cardResults.map(\.card.id) == ["c1"])
+    }
+}
+
+/// Fails the first `GET /projects`, then serves normally.
+private final class FlakyStubHTTP: HTTPClient, @unchecked Sendable {
+    private var projectsFailed = false
+
+    func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+        let path = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)?.path ?? ""
+        if path.hasSuffix("/api/projects"), !projectsFailed {
+            projectsFailed = true
+            let resp = HTTPURLResponse(url: request.url!, statusCode: 500, httpVersion: nil, headerFields: nil)!
+            return (Data("{}".utf8), resp)
+        }
+        let json: String
+        if path.hasSuffix("/api/projects") {
+            json = """
+            {"items":[{"id":"p1","name":"Refonte 2026","isHidden":false}],
+             "included":{"boards":[{"id":"b1","projectId":"p1","name":"Sprint Produit","position":1}]}}
+            """
+        } else if path.contains("/api/boards/") {
+            json = """
+            {"item":{"id":"b1","projectId":"p1","name":"Sprint Produit"},
+             "included":{"lists":[{"id":"l1","boardId":"b1","type":"active","name":"À faire","position":1}],
+             "cards":[{"id":"c1","boardId":"b1","listId":"l1","type":"active","position":1,"name":"Nouvelle page d’accueil"}],
+             "taskLists":[],"tasks":[]}}
+            """
+        } else {
+            json = "{}"
+        }
+        let resp = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+        return (Data(json.utf8), resp)
+    }
 }
 
 /// Minimal in-memory Keychain for tests that never need a token.

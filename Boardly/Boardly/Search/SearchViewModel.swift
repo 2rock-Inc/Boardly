@@ -60,26 +60,31 @@ final class SearchViewModel {
             let projectName = Dictionary(
                 payload.projects.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
 
-            let cards = await indexCards(boards: payload.boards, projectName: projectName)
+            let (cards, complete) = await indexCards(boards: payload.boards, projectName: projectName)
             cardHits = cards
             let countByBoard = Dictionary(grouping: cards, by: \.boardId).mapValues(\.count)
             boardHits = payload.boards.map {
                 BoardHit(board: $0, projectName: projectName[$0.projectId] ?? "",
                          cardCount: countByBoard[$0.id] ?? 0)
             }
-            indexed = true
+            // Only cache the index as done when every board loaded — otherwise a
+            // transient per-board failure would leave cards permanently unfindable
+            // for the session; leaving `indexed == false` lets a later call rebuild.
+            indexed = complete
         } catch {
             self.error = "Impossible d’indexer la recherche."
         }
     }
 
-    private func indexCards(boards: [Board], projectName: [String: String]) async -> [CardHit] {
-        await withTaskGroup(of: [CardHit].self) { group in
+    /// Fan out over boards. Returns the indexed cards and whether *every* board
+    /// loaded (a `nil` per-board result marks a failure).
+    private func indexCards(boards: [Board], projectName: [String: String]) async -> (cards: [CardHit], complete: Bool) {
+        await withTaskGroup(of: [CardHit]?.self) { group in
             for board in boards {
                 let boardName = board.name
                 let project = projectName[board.projectId] ?? ""
                 group.addTask { [client] in
-                    guard let payload = try? await client.getBoard(id: board.id) else { return [] }
+                    guard let payload = try? await client.getBoard(id: board.id) else { return nil }
                     let listName = Dictionary(
                         payload.lists.map { ($0.id, $0.name ?? "") }, uniquingKeysWith: { first, _ in first })
                     return payload.cards.map { card in
@@ -89,8 +94,11 @@ final class SearchViewModel {
                 }
             }
             var all: [CardHit] = []
-            for await hits in group { all.append(contentsOf: hits) }
-            return all
+            var complete = true
+            for await result in group {
+                if let hits = result { all.append(contentsOf: hits) } else { complete = false }
+            }
+            return (all, complete)
         }
     }
 

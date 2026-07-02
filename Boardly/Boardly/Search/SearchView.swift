@@ -94,7 +94,9 @@ struct SearchView: View {
 
     @ViewBuilder
     private var results: some View {
-        if !viewModel.hasQuery {
+        if let error = viewModel.error, !viewModel.isIndexing {
+            errorState(error)
+        } else if !viewModel.hasQuery {
             idle
         } else if !viewModel.hasAnyResult {
             emptyResults
@@ -224,12 +226,13 @@ struct SearchView: View {
         [a, b].filter { !$0.isEmpty }.joined(separator: " · ")
     }
 
-    /// Highlight the matched substring (case/diacritic-insensitive) on the original text.
+    /// Highlight the matched substring (case/diacritic-insensitive) on the original
+    /// text. Uses the trimmed query so it matches what filtering matched on.
     private func highlighted(_ text: String) -> AttributedString {
         var attributed = AttributedString(text)
-        guard !viewModel.query.isEmpty,
-              let range = text.range(of: viewModel.query,
-                                     options: [.caseInsensitive, .diacriticInsensitive]),
+        let query = viewModel.query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty,
+              let range = text.range(of: query, options: [.caseInsensitive, .diacriticInsensitive]),
               let attrRange = Range(range, in: attributed)
         else { return attributed }
         attributed[attrRange].backgroundColor = Color.yellow.opacity(0.4)
@@ -267,6 +270,23 @@ struct SearchView: View {
             Text("pour « \(viewModel.query) »")
                 .font(.boardlyCallout)
                 .foregroundStyle(Color.boardlyTextSecondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.top, 60)
+    }
+
+    private func errorState(_ message: String) -> some View {
+        VStack(spacing: 12) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 34, weight: .light))
+                .foregroundStyle(Color.labelRose)
+            Text(message)
+                .font(.boardlyBody)
+                .foregroundStyle(Color.boardlyTextSecondary)
+                .multilineTextAlignment(.center)
+            Button("Réessayer") { Task { await viewModel.loadIfNeeded() } }
+                .buttonStyle(.boardlySecondary)
+                .fixedSize()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.top, 60)
