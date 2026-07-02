@@ -85,6 +85,7 @@ public struct PlankaClient: Sendable {
             let boards: [Board]?
             let users: [User]?
             let boardMemberships: [BoardMembership]?
+            let backgroundImages: [BackgroundImage]?
         }
         struct Response: Decodable {
             let items: [Project]
@@ -96,7 +97,8 @@ public struct PlankaClient: Sendable {
             projects: response.items,
             boards: response.included.boards ?? [],
             users: response.included.users ?? [],
-            boardMemberships: response.included.boardMemberships ?? []
+            boardMemberships: response.included.boardMemberships ?? [],
+            backgroundImages: response.included.backgroundImages ?? []
         )
     }
 
