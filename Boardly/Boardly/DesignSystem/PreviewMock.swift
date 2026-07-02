@@ -17,7 +17,9 @@ private final class MockHTTPClient: HTTPClient, @unchecked Sendable {
         }
         let path = request.url?.path ?? ""
         let body: String
-        if path.hasSuffix("/comments"), request.httpMethod == "GET" {
+        if path.hasSuffix("/bootstrap") {
+            body = #"{"item":{"version":"2.0","oidc":null}}"#
+        } else if path.hasSuffix("/comments"), request.httpMethod == "GET" {
             body = PreviewMock.commentsJSON
         } else if path.hasSuffix("/actions"), request.httpMethod == "GET" {
             body = PreviewMock.actionsJSON

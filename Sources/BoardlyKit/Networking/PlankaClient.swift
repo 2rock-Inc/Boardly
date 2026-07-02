@@ -83,6 +83,17 @@ public struct PlankaClient: Sendable {
         )
     }
 
+    /// Update the current user's preferences (e.g. `defaultHomeView`,
+    /// `defaultEditorMode`) via `PATCH /users/{id}`.
+    public func updateCurrentUser(patch: UserPatch) async throws -> User {
+        guard let id = currentUserId() else { throw PlankaAPIError.unauthorized }
+        struct Response: Decodable { let item: User }
+        let body = try JSONEncoder().encode(patch)
+        let request = try buildRequest(method: "PATCH", path: "/users/\(id)", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
     // MARK: - Projects
 
     public func getProjects() async throws -> ProjectsPayload {

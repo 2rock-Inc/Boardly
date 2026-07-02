@@ -5,6 +5,7 @@ struct ProfileView: View {
     let profile: ServerProfile
     let client: PlankaClient
     @Environment(ProfileStore.self) private var profileStore
+    @AppStorage(AppTheme.storageKey) private var appearanceRaw = AppTheme.system.rawValue
     @State private var viewModel: ProfileViewModel?
 
     var body: some View {
@@ -29,16 +30,71 @@ struct ProfileView: View {
     private func content(_ viewModel: ProfileViewModel) -> some View {
         VStack(alignment: .leading, spacing: 22) {
             header(viewModel.user)
-            // Surface a load failure (else a transient error would silently hide
-            // the current user's role — an admin would appear to lose admin rows).
-            if viewModel.user == nil, let error = viewModel.error {
+            // Surface any failure: a load error (which would otherwise hide the
+            // user's admin rows) or a preference-save error.
+            if let error = viewModel.error {
                 errorBanner(error) { Task { await viewModel.load() } }
             }
+            preferencesSection(viewModel)
             accountSection(viewModel)
             actions
-            footer
+            footer(viewModel)
         }
         .padding(20)
+    }
+
+    // MARK: - Preferences (design 13)
+
+    private func preferencesSection(_ viewModel: ProfileViewModel) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            BoardlyFieldLabel("Préférences")
+            VStack(spacing: 0) {
+                // Apparence — app-local theme.
+                Menu {
+                    Picker("Apparence", selection: $appearanceRaw) {
+                        ForEach(AppTheme.allCases) { Text($0.label).tag($0.rawValue) }
+                    }
+                } label: {
+                    SettingsRow(icon: "sun.max", title: "Apparence",
+                                value: AppTheme(rawValue: appearanceRaw)?.label, showsChevron: true)
+                }
+
+                Divider().padding(.leading, 52)
+
+                // Vue d'accueil — PLANKA pref.
+                Menu {
+                    ForEach(HomeViewOption.allCases) { option in
+                        prefButton(option.label, selected: viewModel.homeView == option) {
+                            viewModel.setHomeView(option)
+                        }
+                    }
+                } label: {
+                    SettingsRow(icon: "square.grid.2x2", title: "Vue d’accueil",
+                                value: viewModel.homeView.label, showsChevron: true)
+                }
+
+                Divider().padding(.leading, 52)
+
+                // Éditeur Markdown — PLANKA pref.
+                Menu {
+                    ForEach(EditorModeOption.allCases) { option in
+                        prefButton(option.label, selected: viewModel.editorMode == option) {
+                            viewModel.setEditorMode(option)
+                        }
+                    }
+                } label: {
+                    SettingsRow(icon: "text.alignleft", title: "Éditeur Markdown",
+                                value: viewModel.editorMode.label, showsChevron: true)
+                }
+            }
+            .boardlyCard(padding: 0)
+        }
+    }
+
+    private func prefButton(_ title: String, selected: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            if selected { Label(title, systemImage: "checkmark") } else { Text(title) }
+        }
     }
 
     private func errorBanner(_ message: String, retry: @escaping () -> Void) -> some View {
@@ -159,12 +215,18 @@ struct ProfileView: View {
         }
     }
 
-    private var footer: some View {
-        Text("Boardly \(appVersion)")
+    private func footer(_ viewModel: ProfileViewModel) -> some View {
+        Text(footerText(viewModel))
             .font(.boardlyMonoCaption)
             .foregroundStyle(Color.boardlyTextTertiary)
             .frame(maxWidth: .infinity)
             .padding(.top, 4)
+    }
+
+    private func footerText(_ viewModel: ProfileViewModel) -> String {
+        var text = "Boardly \(appVersion)"
+        if let version = viewModel.plankaVersion { text += " · Planka \(version)" }
+        return text
     }
 
     private var appVersion: String {
