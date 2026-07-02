@@ -229,38 +229,29 @@ struct CardDetailView: View {
 
     private func quickActions(card: Card) -> some View {
         HStack(spacing: 8) {
-            quickAction("Membres", systemImage: "person.2", enabled: true) {
-                showMembersSheet = true
-            }
-            quickAction("Échéance", systemImage: "calendar", enabled: true) {
-                showDueDateSheet = true
-            }
-            quickAction("Joindre", systemImage: "paperclip", enabled: true) {
-                showAttachmentsSheet = true
-            }
+            quickAction("Membres", systemImage: "person.2") { showMembersSheet = true }
+            quickAction("Échéance", systemImage: "calendar") { showDueDateSheet = true }
+            quickAction("Joindre", systemImage: "paperclip") { showAttachmentsSheet = true }
+            Spacer(minLength: 0)
         }
     }
 
-    private func quickAction(_ title: String, systemImage: String, enabled: Bool, action: @escaping () -> Void) -> some View {
+    private func quickAction(_ title: String, systemImage: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            VStack(spacing: 5) {
+            HStack(spacing: 6) {
                 Image(systemName: systemImage)
-                    .font(.system(size: 16, weight: .medium))
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(Color.accentColor)
                 Text(title)
-                    .font(.boardlyMonoLabel)
+                    .font(.sans(14, .semibold))
+                    .foregroundStyle(Color.boardlyInk)
             }
-            .foregroundStyle(enabled ? Color.accentColor : Color.boardlyTextTertiary)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(Color.boardlySurface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(Color.boardlySeparator, lineWidth: 0.5)
-            )
+            .padding(.horizontal, 13)
+            .padding(.vertical, 8)
+            .background(Color.boardlySurface, in: Capsule())
+            .overlay(Capsule().stroke(Color.boardlySeparator, lineWidth: 1))
         }
         .buttonStyle(.plain)
-        .disabled(!enabled)
-        .opacity(enabled ? 1 : 0.5)
     }
 
     // MARK: - Description
