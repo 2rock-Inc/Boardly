@@ -62,8 +62,8 @@ final class LoginViewModel {
         }
         guard let session = OIDCSession(oidc: oidc, baseURL: baseURL) else {
             #if DEBUG
-            // Surface the raw URL so we can see which parameter is missing.
-            error = "OIDC: nonce introuvable. authorizationUrl = \(oidc.authorizationUrl)"
+            // Surface the raw URL so we can diagnose a parsing failure.
+            error = "OIDC: URL d’autorisation illisible. authorizationUrl = \(oidc.authorizationUrl)"
             #else
             error = OIDCError.notConfigured.errorDescription
             #endif

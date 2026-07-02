@@ -15,31 +15,41 @@ import WebKit
 
 // MARK: - Session
 
-/// The parameters needed to run one SSO attempt, parsed from `Bootstrap.oidc`.
+/// The parameters needed to run one SSO attempt, derived from `Bootstrap.oidc`.
+///
+/// PLANKA advertises a *base* authorization URL without `nonce`/`state` — the
+/// client is expected to generate them, add them to the request, and send the
+/// nonce back at token exchange (PLANKA has none stored server-side, so it relies
+/// on ours). We also force `response_mode=query` so the authorization `code`
+/// comes back in the query string, which is reliable to intercept natively (the
+/// advertised default is `fragment`, which is not).
 struct OIDCSession: Identifiable {
     let id = UUID()
-    let authorizationURL: URL
+    /// The URL to actually load — the advertised one plus our nonce/state and a
+    /// forced `response_mode=query`.
+    let requestURL: URL
     /// `scheme://host[:port]/path` of the provider's redirect_uri — navigations
     /// to this location carry the authorization `code`.
     let redirectPrefix: String
     let nonce: String
+    let state: String
 
-    /// Parse the advertised authorization URL. `baseURL` is the profile's server
-    /// URL, used to derive the redirect target when PLANKA keeps `redirect_uri`
-    /// server-side (i.e. it isn't present in the authorization URL).
+    /// `baseURL` is the profile's server URL, used to derive the redirect target
+    /// when PLANKA keeps `redirect_uri` server-side (absent from the auth URL).
     init?(oidc: Bootstrap.OIDCConfig, baseURL: URL) {
         guard let url = URL(string: oidc.authorizationUrl),
-              let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
-              let nonce = components.queryItems?.first(where: { $0.name == "nonce" })?.value,
-              !nonce.isEmpty
+              var components = URLComponents(url: url, resolvingAgainstBaseURL: false)
         else { return nil }
 
-        self.authorizationURL = url
+        let nonce = Self.randomToken()
+        let state = Self.randomToken()
         self.nonce = nonce
+        self.state = state
 
-        // Prefer the redirect_uri carried in the URL; otherwise fall back to
-        // PLANKA's default callback path on the instance's base URL.
-        if let redirect = components.queryItems?.first(where: { $0.name == "redirect_uri" })?.value,
+        // Determine the redirect target (from the URL, else derived from base URL)
+        // before we rebuild the query.
+        let advertisedRedirect = components.queryItems?.first(where: { $0.name == "redirect_uri" })?.value
+        if let redirect = advertisedRedirect,
            let rc = URLComponents(string: redirect), let scheme = rc.scheme, let host = rc.host {
             let port = rc.port.map { ":\($0)" } ?? ""
             self.redirectPrefix = "\(scheme)://\(host)\(port)\(rc.path)"
@@ -50,6 +60,25 @@ struct OIDCSession: Identifiable {
         } else {
             return nil
         }
+
+        var items = (components.queryItems ?? [])
+            .filter { !["response_mode", "nonce", "state"].contains($0.name) }
+        items.append(URLQueryItem(name: "response_mode", value: "query"))
+        items.append(URLQueryItem(name: "nonce", value: nonce))
+        items.append(URLQueryItem(name: "state", value: state))
+        // If PLANKA omitted redirect_uri, add the derived one so the IdP redirects back.
+        if advertisedRedirect == nil {
+            items.append(URLQueryItem(name: "redirect_uri", value: redirectPrefix))
+        }
+        components.queryItems = items
+
+        guard let requestURL = components.url else { return nil }
+        self.requestURL = requestURL
+    }
+
+    /// A URL-safe, unguessable token for `nonce` / `state`.
+    private static func randomToken() -> String {
+        (UUID().uuidString + UUID().uuidString).replacingOccurrences(of: "-", with: "")
     }
 }
 
@@ -109,7 +138,7 @@ private struct OIDCWebAuthView: UIViewRepresentable {
     func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
         webView.navigationDelegate = context.coordinator
-        webView.load(URLRequest(url: session.authorizationURL))
+        webView.load(URLRequest(url: session.requestURL))
         return webView
     }
 
@@ -159,6 +188,9 @@ private struct OIDCWebAuthView: UIViewRepresentable {
 
             if let error = all.first(where: { $0.name == "error" })?.value {
                 onResult(.failure(OIDCError.providerError(error)))
+            } else if let returnedState = all.first(where: { $0.name == "state" })?.value,
+                      returnedState != session.state {
+                onResult(.failure(OIDCError.providerError("state mismatch")))
             } else if let code = all.first(where: { $0.name == "code" })?.value {
                 onResult(.success(code))
             } else {
