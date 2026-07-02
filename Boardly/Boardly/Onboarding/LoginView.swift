@@ -12,7 +12,8 @@ final class LoginViewModel {
     /// OIDC config advertised by the instance (`Bootstrap.oidc`). When non-nil the
     /// SSO button is shown; when `isEnforced` the password form is hidden.
     var oidc: Bootstrap.OIDCConfig?
-    private let authenticator = OIDCAuthenticator()
+    /// Non-nil while the SSO web flow is presented.
+    var oidcSession: OIDCSession?
 
     var canLogin: Bool {
         !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !password.isEmpty
@@ -50,16 +51,28 @@ final class LoginViewModel {
         return false
     }
 
-    /// Run the OIDC/SSO leg: browser auth → code+nonce → token exchange.
-    func loginWithSSO(using client: PlankaClient) async -> Bool {
-        guard let oidc else { return false }
+    /// Begin the OIDC/SSO leg by presenting the web flow (parsed from the
+    /// instance's advertised authorization URL).
+    func startSSO() {
+        error = nil
+        guard let oidc, let session = OIDCSession(oidc: oidc) else {
+            error = OIDCError.notConfigured.errorDescription
+            return
+        }
+        oidcSession = session
+    }
+
+    /// Finish SSO: exchange the captured `code` (+ the session's `nonce`) for a
+    /// token. Returns whether login succeeded.
+    func completeSSO(code: String, using client: PlankaClient) async -> Bool {
+        guard let session = oidcSession else { return false }
+        oidcSession = nil
         isLoggingIn = true
         error = nil
         defer { isLoggingIn = false }
 
         do {
-            let (code, nonce) = try await authenticator.authenticate(authorizationURL: oidc.authorizationUrl)
-            try await client.exchangeOIDC(code: code, nonce: nonce)
+            try await client.exchangeOIDC(code: code, nonce: session.nonce)
             return true
         } catch let apiError as PlankaAPIError {
             switch apiError {
@@ -67,12 +80,14 @@ final class LoginViewModel {
             case .forbidden: error = "Connexion SSO refusée par le serveur."
             default: error = "Erreur réseau pendant la connexion SSO."
             }
-        } catch let oidcError as OIDCAuthenticator.OIDCError {
-            if case .cancelled = oidcError { error = nil } else { error = oidcError.errorDescription }
         } catch {
             self.error = error.localizedDescription
         }
         return false
+    }
+
+    func cancelSSO() {
+        oidcSession = nil
     }
 }
 
@@ -196,6 +211,20 @@ struct LoginView: View {
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .task { await viewModel.loadBootstrap(using: profileStore.makeClient(for: profile)) }
+        .fullScreenCover(item: $viewModel.oidcSession) { session in
+            OIDCWebFlow(
+                session: session,
+                onCode: { code in
+                    Task {
+                        let client = profileStore.makeClient(for: profile)
+                        if await viewModel.completeSSO(code: code, using: client) {
+                            profileStore.setActiveProfile(id: profile.id)
+                        }
+                    }
+                },
+                onCancel: { viewModel.cancelSSO() }
+            )
+        }
     }
 
     private func handleSignIn() {
@@ -209,11 +238,6 @@ struct LoginView: View {
     }
 
     private func handleSSO() {
-        Task {
-            let client = profileStore.makeClient(for: profile)
-            if await viewModel.loginWithSSO(using: client) {
-                profileStore.setActiveProfile(id: profile.id)
-            }
-        }
+        viewModel.startSSO()
     }
 }
