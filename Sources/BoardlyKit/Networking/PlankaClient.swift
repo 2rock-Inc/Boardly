@@ -306,13 +306,22 @@ public struct PlankaClient: Sendable {
     /// the token to a third-party host referenced by an attachment.
     public func imageData(url: URL) async -> Data? {
         var request = URLRequest(url: url)
-        if url.host == profile.baseURL.host, let token = try? tokenStore.loadToken() {
+        // Attach the token only for the exact same origin AND over TLS — never
+        // send the Bearer to a different host/port/scheme or over plaintext http.
+        if isSameSecureOrigin(url), let token = try? tokenStore.loadToken() {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         guard let (data, response) = try? await httpClient.data(for: request),
               let http = response as? HTTPURLResponse, (200 ... 299).contains(http.statusCode)
         else { return nil }
         return data
+    }
+
+    private func isSameSecureOrigin(_ url: URL) -> Bool {
+        url.scheme?.lowercased() == "https"
+            && url.scheme?.lowercased() == profile.baseURL.scheme?.lowercased()
+            && url.host?.lowercased() == profile.baseURL.host?.lowercased()
+            && url.port == profile.baseURL.port
     }
 
     // MARK: - Auth (continued)
