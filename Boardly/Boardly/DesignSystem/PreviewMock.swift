@@ -60,6 +60,22 @@ enum PreviewMock {
         client(json: notificationsJSON)
     }
 
+    static func profileClient() -> PlankaClient {
+        client(json: currentUserJSON)
+    }
+
+    nonisolated static let currentUserJSON = """
+    {
+      "item": { "id": "u1", "role": "admin", "name": "Marie Dupont", "username": "marie.dupont", "organization": "Acme Corp", "isDeactivated": false, "isDefaultAdmin": true },
+      "included": {
+        "notificationServices": [
+          { "id": "ns1", "userId": "u1", "boardId": null, "url": "https://hooks.slack.com/services/T000/B000/xyz", "format": "markdown", "createdAt": null, "updatedAt": null },
+          { "id": "ns2", "userId": "u1", "boardId": null, "url": "tgram://bottoken/chatid", "format": "text", "createdAt": null, "updatedAt": null }
+        ]
+      }
+    }
+    """
+
     private static func client(json: String) -> PlankaClient {
         let profile = ServerProfile(name: "Mock", baseURL: URL(string: "https://mock.local")!)
         return PlankaClient(
@@ -247,6 +263,16 @@ struct MockActivityHarness: View {
     @State private var vm = NotificationsViewModel(client: PreviewMock.notificationsClient())
     var body: some View {
         ActivityView(viewModel: vm)
+    }
+}
+
+struct MockProfileHarness: View {
+    var body: some View {
+        ProfileView(
+            profile: ServerProfile(name: "Équipe", baseURL: URL(string: "https://todo.2rock.fr")!),
+            client: PreviewMock.profileClient()
+        )
+        .environment(ProfileStore())
     }
 }
 

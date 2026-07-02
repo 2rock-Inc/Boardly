@@ -50,17 +50,21 @@ struct PlankaClientPhase5Tests {
 
     // MARK: - Current user
 
-    @Test("getCurrentUser GETs /users/{id} from the JWT and decodes role")
+    @Test("getCurrentUser GETs /users/{id}, decodes role + sideloaded services")
     func getCurrentUser() async throws {
         try tokenStore.saveToken(fakeJWT(userId: "u1"))
-        mockHTTP.stub(json: #"{"item":{"id":"u1","role":"admin","name":"Marie","isDeactivated":false,"isDefaultAdmin":true}}"#)
-        let user = try await client.getCurrentUser()
+        mockHTTP.stub(json: #"""
+        {"item":{"id":"u1","role":"admin","name":"Marie","isDeactivated":false,"isDefaultAdmin":true},
+         "included":{"notificationServices":[{"id":"ns1","userId":"u1","boardId":null,"url":"https://hook","format":"text","createdAt":null,"updatedAt":null}]}}
+        """#)
+        let payload = try await client.getCurrentUser()
 
         let req = try #require(mockHTTP.lastRequest)
         #expect(req.httpMethod == "GET")
         #expect(req.url?.path.hasSuffix("/api/users/u1") == true)
-        #expect(user.role == "admin")
-        #expect(user.isDefaultAdmin == true)
+        #expect(payload.user.role == "admin")
+        #expect(payload.isAdmin == true)
+        #expect(payload.notificationServices.map(\.id) == ["ns1"])
     }
 
     // MARK: - Notifications

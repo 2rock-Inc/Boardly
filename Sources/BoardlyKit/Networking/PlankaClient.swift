@@ -68,14 +68,19 @@ public struct PlankaClient: Sendable {
         return PlankaJWT.userId(from: token)
     }
 
-    /// The full current-user record (name, role, preferences). Needed to gate
-    /// admin-only UI on `role == "admin"` and to populate the profile screen.
-    public func getCurrentUser() async throws -> User {
+    /// The full current-user record plus the notification services sideloaded by
+    /// `GET /users/{id}`. Needed to gate admin-only UI on `role == "admin"`,
+    /// populate the profile screen, and list the user's notification services.
+    public func getCurrentUser() async throws -> CurrentUserPayload {
         guard let id = currentUserId() else { throw PlankaAPIError.unauthorized }
-        struct Response: Decodable { let item: User }
+        struct Included: Decodable { let notificationServices: [NotificationService]? }
+        struct Response: Decodable { let item: User; let included: Included? }
         let request = try buildRequest(method: "GET", path: "/users/\(id)")
         let response: Response = try await execute(request)
-        return response.item
+        return CurrentUserPayload(
+            user: response.item,
+            notificationServices: response.included?.notificationServices ?? []
+        )
     }
 
     // MARK: - Projects
