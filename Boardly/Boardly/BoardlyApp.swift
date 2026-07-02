@@ -39,7 +39,7 @@ struct BoardlyApp: App {
                 RootView().environment(profileStore).preferredColorScheme(colorScheme)
             }
             #else
-            RootView().environment(profileStore)
+            RootView().environment(profileStore).preferredColorScheme(colorScheme)
             #endif
         }
     }

@@ -28,25 +28,41 @@ final class ProfileViewModel {
         } catch {
             self.error = "Impossible de charger le profil."
         }
-        // Best-effort — used only for the version footer.
-        plankaVersion = try? await client.validateInstance().version
+        // Best-effort, fetched once per session — used only for the version footer.
+        if plankaVersion == nil {
+            plankaVersion = try? await client.validateInstance().version
+        }
     }
 
     // MARK: - Preferences
 
-    func setHomeView(_ value: String) async {
-        await updatePreference(UserPatch(defaultHomeView: value))
+    var homeView: HomeViewOption { .from(user?.defaultHomeView) }
+    var editorMode: EditorModeOption { .from(user?.defaultEditorMode) }
+
+    func setHomeView(_ option: HomeViewOption) {
+        updatePreference(UserPatch(defaultHomeView: option.rawValue))
     }
 
-    func setEditorMode(_ value: String) async {
-        await updatePreference(UserPatch(defaultEditorMode: value))
+    func setEditorMode(_ option: EditorModeOption) {
+        updatePreference(UserPatch(defaultEditorMode: option.rawValue))
     }
 
-    private func updatePreference(_ patch: UserPatch) async {
-        do {
-            user = try await client.updateCurrentUser(patch: patch)
-        } catch {
-            self.error = "Impossible d’enregistrer la préférence."
+    private var prefTask: Task<Void, Never>?
+
+    /// Apply a preference PATCH. Rapid toggles cancel the in-flight request so the
+    /// last selection wins (out-of-order responses can't overwrite the newer one).
+    private func updatePreference(_ patch: UserPatch) {
+        error = nil
+        prefTask?.cancel()
+        prefTask = Task {
+            do {
+                let updated = try await client.updateCurrentUser(patch: patch)
+                if !Task.isCancelled { user = updated }
+            } catch is CancellationError {
+                // Superseded by a newer toggle — ignore.
+            } catch {
+                if !Task.isCancelled { self.error = "Impossible d’enregistrer la préférence." }
+            }
         }
     }
 
