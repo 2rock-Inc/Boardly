@@ -23,7 +23,9 @@ struct ActivityView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     header
 
-                    if viewModel.notifications.isEmpty {
+                    if let error = viewModel.error, viewModel.notifications.isEmpty {
+                        errorState(error)
+                    } else if viewModel.notifications.isEmpty {
                         emptyState
                     } else {
                         ForEach(sections, id: \.title) { section in
@@ -111,6 +113,24 @@ struct ActivityView: View {
             Text("Vous êtes à jour.")
                 .font(.boardlyBody)
                 .foregroundStyle(Color.boardlyTextSecondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 80)
+    }
+
+    /// Distinct from the empty state: a failed fetch must not read as "all caught up".
+    private func errorState(_ message: String) -> some View {
+        VStack(spacing: 12) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 34, weight: .light))
+                .foregroundStyle(Color.labelRose)
+            Text(message)
+                .font(.boardlyBody)
+                .foregroundStyle(Color.boardlyTextSecondary)
+                .multilineTextAlignment(.center)
+            Button("Réessayer") { Task { await viewModel.load() } }
+                .buttonStyle(.boardlySecondary)
+                .fixedSize()
         }
         .frame(maxWidth: .infinity)
         .padding(.top, 80)

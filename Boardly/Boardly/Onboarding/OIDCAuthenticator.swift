@@ -183,7 +183,12 @@ private struct OIDCWebAuthView: UIViewRepresentable {
             else { return false }
             let port = components.port.map { ":\($0)" } ?? ""
             let base = "\(scheme)://\(host)\(port)\(components.path)"
-            return base == session.redirectPrefix
+            // Compare with trailing slashes normalized so a provider callback that
+            // differs only by a trailing "/" is still intercepted.
+            func normalized(_ value: String) -> String {
+                value.hasSuffix("/") ? String(value.dropLast()) : value
+            }
+            return normalized(base) == normalized(session.redirectPrefix)
         }
 
         private func finish(with url: URL) {

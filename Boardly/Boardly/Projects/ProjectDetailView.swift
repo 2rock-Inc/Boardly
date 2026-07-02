@@ -45,35 +45,47 @@ final class ProjectDetailViewModel {
         return backgroundImages.first { $0.id == id }
     }
 
-    func setGradient(_ name: String, using client: PlankaClient) async {
-        guard let id = project?.id else { return }
+    @discardableResult
+    func setGradient(_ name: String, using client: PlankaClient) async -> Bool {
+        guard let id = project?.id else { return false }
+        error = nil
         do {
             project = try await client.updateProject(
                 id: id, patch: ProjectPatch(backgroundType: "gradient", backgroundGradient: name))
+            return true
         } catch {
             self.error = "Impossible de changer le fond."
+            return false
         }
     }
 
-    func uploadImage(data: Data, fileName: String, mimeType: String, using client: PlankaClient) async {
-        guard let id = project?.id else { return }
+    @discardableResult
+    func uploadImage(data: Data, fileName: String, mimeType: String, using client: PlankaClient) async -> Bool {
+        guard let id = project?.id else { return false }
+        error = nil
         do {
             let image = try await client.uploadBackgroundImage(
                 projectId: id, fileName: fileName, mimeType: mimeType, data: data)
             backgroundImages.append(image)
             project = try await client.updateProject(
                 id: id, patch: ProjectPatch(backgroundType: "image", backgroundImageId: image.id))
+            return true
         } catch {
             self.error = "Échec de l’envoi de l’image de fond."
+            return false
         }
     }
 
-    func clearBackground(using client: PlankaClient) async {
-        guard let id = project?.id else { return }
+    @discardableResult
+    func clearBackground(using client: PlankaClient) async -> Bool {
+        guard let id = project?.id else { return false }
+        error = nil
         do {
             project = try await client.updateProject(id: id, patch: ProjectPatch(clearBackground: true))
+            return true
         } catch {
             self.error = "Impossible de retirer le fond."
+            return false
         }
     }
 
@@ -175,7 +187,7 @@ struct ProjectDetailView: View {
         if let project = viewModel.project,
            project.backgroundType == "image",
            let image = viewModel.currentBackgroundImage,
-           let url = URL(string: image.url, relativeTo: client.profile.baseURL) {
+           let url = resolvedBackgroundURL(image.url) {
             BackgroundImageView(url: url) { await client.imageData(url: $0) }
         } else if let project = viewModel.project,
                   project.backgroundType == "gradient",
@@ -184,6 +196,17 @@ struct ProjectDetailView: View {
         } else {
             projectColor(projectId)
         }
+    }
+
+    /// Resolve a background-image URL. Absolute URLs are used as-is; relative ones
+    /// are appended to the profile's base URL *preserving its path*, so subpath-
+    /// hosted instances (e.g. https://example.com/planka) don't drop the subpath.
+    private func resolvedBackgroundURL(_ raw: String) -> URL? {
+        if let url = URL(string: raw), url.scheme != nil { return url }
+        let base = client.profile.baseURL.absoluteString
+        let trimmedBase = base.hasSuffix("/") ? String(base.dropLast()) : base
+        let path = raw.hasPrefix("/") ? raw : "/\(raw)"
+        return URL(string: trimmedBase + path)
     }
 
     @ViewBuilder
@@ -332,6 +355,13 @@ private struct BackgroundPickerSheet: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
+                    if let error = viewModel.error {
+                        Text(error)
+                            .font(.boardlyCallout)
+                            .foregroundStyle(Color.labelRose)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+
                     HStack(spacing: 10) {
                         PhotosPicker(selection: $photoItem, matching: .images) {
                             Label("Importer une image", systemImage: "photo")
@@ -343,7 +373,7 @@ private struct BackgroundPickerSheet: View {
                         }
                         if viewModel.project?.backgroundType != nil {
                             Button {
-                                Task { await viewModel.clearBackground(using: client); dismiss() }
+                                Task { if await viewModel.clearBackground(using: client) { dismiss() } }
                             } label: {
                                 Image(systemName: "trash")
                                     .font(.system(size: 16, weight: .semibold))
@@ -358,7 +388,7 @@ private struct BackgroundPickerSheet: View {
                     LazyVGrid(columns: columns, spacing: 10) {
                         ForEach(PlankaGradient.names, id: \.self) { name in
                             Button {
-                                Task { await viewModel.setGradient(name, using: client); dismiss() }
+                                Task { if await viewModel.setGradient(name, using: client) { dismiss() } }
                             } label: {
                                 PlankaGradient.linear(name)
                                     .frame(height: 54)
@@ -388,13 +418,17 @@ private struct BackgroundPickerSheet: View {
             guard let photoItem else { return }
             isUploading = true
             defer { isUploading = false }
+            self.photoItem = nil
             if let data = try? await photoItem.loadTransferable(type: Data.self),
                let uiImage = UIImage(data: data),
                let jpeg = uiImage.jpegData(compressionQuality: 0.9) {
-                await viewModel.uploadImage(
-                    data: jpeg, fileName: "background.jpg", mimeType: "image/jpeg", using: client)
+                if await viewModel.uploadImage(
+                    data: jpeg, fileName: "background.jpg", mimeType: "image/jpeg", using: client) {
+                    dismiss()
+                }
+            } else {
+                viewModel.error = "Image illisible."
             }
-            dismiss()
         }
     }
 }

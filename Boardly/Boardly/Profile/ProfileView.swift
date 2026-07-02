@@ -29,11 +29,30 @@ struct ProfileView: View {
     private func content(_ viewModel: ProfileViewModel) -> some View {
         VStack(alignment: .leading, spacing: 22) {
             header(viewModel.user)
+            // Surface a load failure (else a transient error would silently hide
+            // the current user's role — an admin would appear to lose admin rows).
+            if viewModel.user == nil, let error = viewModel.error {
+                errorBanner(error) { Task { await viewModel.load() } }
+            }
             accountSection(viewModel)
             actions
             footer
         }
         .padding(20)
+    }
+
+    private func errorBanner(_ message: String, retry: @escaping () -> Void) -> some View {
+        HStack(spacing: 10) {
+            Text(message)
+                .font(.boardlyCallout)
+                .foregroundStyle(Color.labelRose)
+            Spacer(minLength: 8)
+            Button("Réessayer", action: retry)
+                .font(.boardlyCallout)
+                .foregroundStyle(Color.accentColor)
+        }
+        .padding(12)
+        .background(Color.labelRose.opacity(0.08), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
     // MARK: - Header
@@ -92,7 +111,8 @@ struct ProfileView: View {
                 Divider().padding(.leading, 52)
 
                 SettingsRow(icon: "globe", title: "Serveur",
-                            value: profile.baseURL.host, showsChevron: false)
+                            value: profile.baseURL.host ?? profile.baseURL.absoluteString,
+                            showsChevron: false)
 
                 if viewModel.isAdmin {
                     Divider().padding(.leading, 52)
