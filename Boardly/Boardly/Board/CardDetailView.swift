@@ -20,6 +20,7 @@ struct CardDetailView: View {
     @State private var comments: [Comment] = []
     @State private var newComment = ""
     @State private var actions: [Action] = []
+    @State private var topInset: CGFloat = 0
 
     private var card: Card? { boardVM.payload?.card(id: cardId) }
 
@@ -35,6 +36,13 @@ struct CardDetailView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
+        .background {
+            GeometryReader { proxy in
+                Color.clear
+                    .onAppear { topInset = proxy.safeAreaInsets.top }
+                    .onChange(of: proxy.safeAreaInsets.top) { _, new in topInset = new }
+            }
+        }
         .safeAreaInset(edge: .bottom) {
             if card != nil { commentInputBar }
         }
@@ -80,23 +88,19 @@ struct CardDetailView: View {
     // MARK: - Content
 
     private func content(card: Card, payload: BoardPayload) -> some View {
-        ScrollView {
+        let hasCover = card.coverAttachmentId != nil
+        return ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                coverHero(card: card)
+                if hasCover {
+                    coverHero(url: coverImageURL(card: card, payload: payload))
+                }
 
                 VStack(alignment: .leading, spacing: 20) {
                     labelRow(payload.labels(for: card))
 
-                    titleField(card: card)
-                    metaSubtitle(card: card, payload: payload)
-
-                    let cardMembers = payload.members(for: card)
-                    if !cardMembers.isEmpty {
-                        HStack(spacing: -8) {
-                            ForEach(cardMembers) { user in
-                                AvatarView(name: user.name, size: 30)
-                            }
-                        }
+                    VStack(alignment: .leading, spacing: 5) {
+                        titleField(card: card)
+                        metaSubtitle(card: card, payload: payload)
                     }
 
                     quickActions(card: card)
@@ -139,6 +143,7 @@ struct CardDetailView: View {
                 .padding(20)
             }
         }
+        .ignoresSafeArea(edges: hasCover ? .top : [])
         .scrollDismissesKeyboard(.immediately)
         .onAppear {
             guard !didSeedEditState else { return }
@@ -147,20 +152,36 @@ struct CardDetailView: View {
         }
     }
 
-    // MARK: - Cover (Phase 4 wires a real cover image; placeholder hero for now)
+    // MARK: - Cover (shown only when the card has a cover attachment)
 
-    private func coverHero(card: Card) -> some View {
-        LinearGradient(
-            colors: [Color.accentColor, Color.accentColor.opacity(0.7)],
-            startPoint: .topLeading, endPoint: .bottomTrailing
-        )
-        .frame(height: 180)
-        .overlay(alignment: .bottomTrailing) {
-            Image(systemName: "rectangle.stack")
-                .font(.system(size: 64, weight: .light))
-                .foregroundStyle(.white.opacity(0.18))
-                .padding(20)
+    private func coverHero(url: URL?) -> some View {
+        AsyncImage(url: url) { phase in
+            switch phase {
+            case .success(let image):
+                image.resizable().scaledToFill()
+            default:
+                LinearGradient(
+                    colors: [Color.accentColor, Color.accentColor.opacity(0.7)],
+                    startPoint: .topLeading, endPoint: .bottomTrailing
+                )
+            }
         }
+        .frame(maxWidth: .infinity)
+        .frame(height: 180 + topInset)
+        .clipped()
+    }
+
+    /// The card's cover image URL, resolved from its cover attachment (if set).
+    private func coverImageURL(card: Card, payload: BoardPayload) -> URL? {
+        guard let coverId = card.coverAttachmentId,
+              let attachment = payload.attachments.first(where: { $0.id == coverId }),
+              let data = try? JSONEncoder().encode(attachment.data),
+              let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+        else { return nil }
+        let urlString = (obj["url"] as? String)
+            ?? ((obj["image"] as? [String: Any])?["url"] as? String)
+            ?? ((obj["thumbnailUrls"] as? [String: Any])?["outside360"] as? String)
+        return urlString.flatMap(URL.init(string:))
     }
 
     // MARK: - Labels
@@ -217,12 +238,15 @@ struct CardDetailView: View {
 
     private func metaSubtitle(card: Card, payload: BoardPayload) -> some View {
         let listName = payload.sortedLists().first { $0.id == card.listId }?.name ?? "—"
-        var parts = ["dans \(listName)"]
+        let creator = card.creatorUserId.flatMap { id in payload.users.first { $0.id == id } }
+
+        var md = "dans **\(listName)**"
+        if let creator { md += " · créée par \(creator.name)" }
         if let created = card.createdAt {
-            parts.append("créée \(created.formatted(.relative(presentation: .named)))")
+            md += " · \(created.formatted(.relative(presentation: .named)))"
         }
-        return Text(parts.joined(separator: " · "))
-            .font(.boardlyMonoCaption)
+        return Text(LocalizedStringKey(md))
+            .font(.sans(13, .regular))
             .foregroundStyle(Color.boardlyTextSecondary)
     }
 

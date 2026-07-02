@@ -123,7 +123,7 @@ enum PreviewMock {
           { "id": "l3", "boardId": "b1", "type": "active", "name": "Terminé", "position": 3 }
         ],
         "cards": [
-          { "id": "c1", "boardId": "b1", "listId": "l1", "name": "Nouvelle page d’accueil — exploration visuelle", "position": 1, "dueDate": "2026-10-12T09:00:00.000Z", "commentsTotal": 2, "stopwatch": { "total": 5040, "startedAt": null } },
+          { "id": "c1", "boardId": "b1", "listId": "l1", "name": "Nouvelle page d’accueil — exploration visuelle", "position": 1, "dueDate": "2026-10-12T09:00:00.000Z", "commentsTotal": 2, "creatorUserId": "u1", "createdAt": "2026-06-29T09:00:00.000Z", "coverAttachmentId": "at1", "stopwatch": { "total": 5040, "startedAt": null } },
           { "id": "c2", "boardId": "b1", "listId": "l1", "name": "Composant carte réutilisable en SwiftUI", "position": 2 },
           { "id": "c3", "boardId": "b1", "listId": "l1", "name": "Lister les écrans à refondre", "position": 3 },
           { "id": "c4", "boardId": "b1", "listId": "l2", "name": "Système de couleurs & tokens Pine Teal", "position": 1, "dueDate": "2026-06-29T09:00:00.000Z" },
@@ -157,7 +157,7 @@ enum PreviewMock {
           { "id": "cm1", "cardId": "c1", "userId": "u1", "role": "editor" }
         ],
         "attachments": [
-          { "id": "at1", "cardId": "c1", "type": "file", "data": { "url": "x" }, "name": "maquette-accueil.png" }
+          { "id": "at1", "cardId": "c1", "type": "file", "data": { "url": "https://picsum.photos/id/1062/900/500" }, "name": "maquette-accueil.png" }
         ],
         "cardLabels": [
           { "id": "cl1", "cardId": "c1", "labelId": "lb1" },
