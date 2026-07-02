@@ -12,6 +12,8 @@ struct BoardView: View {
     let boardId: String
     let boardName: String
     let projectName: String?
+    /// When set (e.g. arriving from search), the board opens this card once loaded.
+    let focusCardId: String?
 
     @State private var viewModel: BoardViewModel
     @State private var selectedCardId: SelectedCard?
@@ -20,11 +22,13 @@ struct BoardView: View {
     @State private var newCardTitle = ""
     @Environment(\.dismiss) private var dismiss
 
-    init(client: PlankaClient, boardId: String, boardName: String, projectName: String? = nil) {
+    init(client: PlankaClient, boardId: String, boardName: String,
+         projectName: String? = nil, focusCardId: String? = nil) {
         self.client = client
         self.boardId = boardId
         self.boardName = boardName
         self.projectName = projectName
+        self.focusCardId = focusCardId
         _viewModel = State(initialValue: BoardViewModel(client: client, boardId: boardId))
     }
 
@@ -50,6 +54,9 @@ struct BoardView: View {
         .toolbar(.hidden, for: .navigationBar)
         .task {
             if viewModel.payload == nil { await viewModel.load() }
+            if let focusCardId, selectedCardId == nil {
+                selectedCardId = SelectedCard(id: focusCardId)
+            }
             viewModel.startRealtime()
         }
         .onDisappear {

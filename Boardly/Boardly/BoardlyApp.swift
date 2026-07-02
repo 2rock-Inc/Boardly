@@ -28,6 +28,8 @@ struct BoardlyApp: App {
                 MockActivityHarness()
             } else if CommandLine.arguments.contains("-mockProfile") {
                 MockProfileHarness()
+            } else if CommandLine.arguments.contains("-mockSearch") {
+                MockSearchHarness()
             } else {
                 RootView().environment(profileStore)
             }
