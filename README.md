@@ -1,259 +1,151 @@
-<!--
-  Drop marketing assets into docs/ (create the folder if missing):
-    docs/banner.png        — social preview / GitHub "Open Graph" image (1280×640)
-    docs/welcome.png       — Welcome / login screen
-    docs/projects.png      — Projects & boards list
-    docs/kanban.png        — Board (kanban) screen
-    docs/card.png          — Card detail screen
-  Once added, the images below will render automatically.
--->
-
 <div align="center">
 
 <img src="docs/banner.png" alt="Boardly" width="720" />
 
 # Boardly
 
-### A native iOS client for any self-hosted PLANKA instance
+### Your PLANKA boards, native on iPhone
 
-Bring your kanban boards to iPhone — fast, native, and real-time. No middleman backend: Boardly talks straight to *your* PLANKA server.
+Boardly brings your self-hosted [PLANKA](https://github.com/plankanban/planka) kanban boards to iPhone — fast, native, and updating in real time. There's **no middleman**: the app connects straight to *your* PLANKA server, so your data never passes through anyone else.
 
 <br />
 
 [![Platform](https://img.shields.io/badge/platform-iOS%2026-000000?logo=apple&logoColor=white)](https://developer.apple.com/ios/)
-[![Swift 6](https://img.shields.io/badge/Swift-6.0-F05138?logo=swift&logoColor=white)](https://www.swift.org/)
-[![SwiftUI](https://img.shields.io/badge/SwiftUI-native-0A84FF?logo=swift&logoColor=white)](https://developer.apple.com/xcode/swiftui/)
-[![Tests](https://img.shields.io/badge/tests-83%20passing-30A46C)](#-testing)
+[![SwiftUI](https://img.shields.io/badge/built%20with-SwiftUI-0A84FF?logo=swift&logoColor=white)](https://developer.apple.com/xcode/swiftui/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 </div>
 
 ---
 
-## Overview
+## What is Boardly?
 
-**Boardly** is a native SwiftUI client for [PLANKA](https://github.com/plankanban/planka), the open-source kanban board. It has **no backend of its own** — every request goes directly to the self-hosted PLANKA server you point it at, over REST and Socket.IO. One user, many servers: Boardly is **multi-instance from day one**, so you can juggle a work instance, a personal instance, and a client's instance side by side, each with its own credentials stored securely in the Keychain.
+Boardly is a native iOS app for **PLANKA**, the open-source Trello-style kanban board. If you run your own PLANKA server, Boardly gives you a proper iPhone app for it — instead of pinching-and-zooming the website.
 
-Models are derived from PLANKA's own OpenAPI specification (`Reference/planka-openapi.json`) rather than guesswork, and the whole networking core lives in a pure-Swift package (`BoardlyKit`) that is unit-tested independently of the UI.
+- 📱 **Native & fast** — built entirely in SwiftUI, it feels like it belongs on your phone.
+- 🔗 **Connects to your server** — Boardly has no backend of its own. Every action talks directly to the PLANKA instance you choose, over a secure connection.
+- 🗂️ **Many servers, one app** — juggle a work instance, a personal one, and a client's, each signed in separately.
+- ⚡ **Real-time** — cards, lists, comments and members update live as your team works.
+- 🔒 **Private by design** — your login stays in the iPhone Keychain and is only ever sent to your own server.
 
 ---
 
 ## Screenshots
 
-> _Screenshots live in `docs/` — add the PNGs listed at the top of this file to populate the table._
-
-| Welcome | Projects | Kanban board | Card detail |
+| Sign in | Projects | Kanban board | Card detail |
 | :-----: | :------: | :----------: | :---------: |
-| <img src="docs/welcome.png" width="200" alt="Welcome" /> | <img src="docs/projects.png" width="200" alt="Projects" /> | <img src="docs/kanban.png" width="200" alt="Kanban board" /> | <img src="docs/card.png" width="200" alt="Card detail" /> |
+| <img src="docs/welcome.png" width="200" alt="Sign in" /> | <img src="docs/projects.png" width="200" alt="Projects" /> | <img src="docs/kanban.png" width="200" alt="Kanban board" /> | <img src="docs/card.png" width="200" alt="Card detail" /> |
 
 ---
 
 ## Features
 
-### 🔐 Servers & accounts
-- Add, switch, and remove multiple PLANKA **server profiles**
-- Base-URL validation (including **subpath hosting**, e.g. `https://example.com/planka`)
-- Password login (`POST /access-tokens`); JWT stored in the **Keychain**, scoped per profile
-- Automatic 401 handling — clears the token and routes back to that profile's login
+**Sign in & servers**
+- Add, switch between, and remove multiple PLANKA **servers**
+- Sign in with a **password** or **single sign-on (OIDC/SSO)** — works with providers like Authentik, Keycloak, Google, etc.
+- Works with PLANKA hosted under a subpath (e.g. `https://example.com/planka`)
+- Your token is stored securely in the **Keychain**, separately for each server
 
-### 🗂️ Boards, lists & cards
-- Projects → boards navigation
-- Board detail: lists and cards parsed from a single `GET /boards/{id}` `included` payload (no per-card fan-out)
-- Create and edit cards — name, description, due date, and **move between lists**
-- Tasks inside a card's task list, with `isCompleted` toggling
-- Pull-to-refresh as a manual fallback
+**Boards, lists & cards**
+- Browse **projects → boards**, then work the board as a kanban
+- Create and edit cards — title, description, **due date**, and drag between lists
+- **Checklists / tasks** inside a card, tick them off as you go
+- Pull to refresh anytime
 
-### ⚡ Real-time sync
-- **Socket.IO** live updates for lists, cards, and tasks while a board is open
-- Per-profile connection lifecycle — connects on board open, tears down on leave / profile switch
-- Reconnection handling, with pull-to-refresh as recovery
+**Real-time sync**
+- Live updates while a board is open — new cards, moves, comments and members appear instantly
+- Automatic reconnection when your connection drops
 
-### 🃏 Rich card content
-- **Labels** — create, assign, and remove
-- **Members** — assign and remove
-- **Comments** — threaded, with an inline composer
-- **Attachments** — file, photo (multipart upload), or link
-- **Due dates** — calendar picker
-- **Chrono** (stopwatch) and an **activity feed**
+**Rich cards**
+- **Labels**, **members**, and **due dates**
+- **Comments** with a threaded conversation
+- **Attachments** — files, photos, or links
+- A built-in **stopwatch** and a per-card **activity feed**
 
-### 🎨 Design — "Pine Teal"
-- Custom design system with **Manrope** + **JetBrains Mono** typefaces
-- Semantic light / dark color tokens
-- App icon authored with Icon Composer
+**Find & follow**
+- **Search** across cards, boards, and projects, with matches highlighted
+- An **Activity** tab with your notifications, grouped by recency — mark one or all as read
 
-### 🗺️ Planned (Phase 5)
-- OIDC / SSO login (`POST /access-tokens/exchange-with-oidc`)
-- In-app notifications & notification services
-- Board backgrounds
-- Custom fields on cards
-- Admin config — webhooks and instance settings, gated on admin rights
+**Make it yours**
+- **Project backgrounds** — pick from 25 gradients or upload your own image
+- **Appearance** — light, dark, or automatic
+- Set your **home view** and **Markdown editor** preferences
+- Manage your **notification services**
+
+**For admins**
+- Manage **webhooks** and **email (SMTP) settings** — shown only when you're an instance admin
+
+**Crafted design**
+- A custom "Pine Teal" look with the **Manrope** and **JetBrains Mono** typefaces, in light and dark
 
 ---
 
-## Tech stack & architecture
+## Requirements
 
-Boardly is split into a UI-free Swift package and the SwiftUI app that consumes it.
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│  Boardly  (SwiftUI app)                                      │
-│  • Views hold no business logic                             │
-│  • MV pattern — @Observable view models, explicit injection │
-│  • Path-based NavigationStack router                        │
-│  • "Pine Teal" design system                               │
-└───────────────────────────────┬─────────────────────────────┘
-                                 │ depends on (local SPM)
-┌───────────────────────────────▼─────────────────────────────┐
-│  BoardlyKit  (pure Swift, no UIKit / SwiftUI)               │
-│  • Models .............. Codable, derived from OpenAPI spec │
-│  • Networking .......... URLSession + async/await REST      │
-│  • Auth ................ Keychain-only tokens, per profile  │
-│  • Profiles ............ multi-instance ProfileStore        │
-│  • Realtime ............ Socket.IO transport + reconcile    │
-│  • Errors .............. central PlankaAPIError mapping     │
-│  • Logging ............. BoardlyLog with Redacted() secrets │
-└──────────────────────────────────────────────────────────────┘
-                                 │ REST + Socket.IO
-                                 ▼
-                    Your self-hosted PLANKA server
-```
-
-**Key decisions**
-
-- **OpenAPI-driven models** — the canonical source of truth is `Reference/planka-openapi.json`.
-- **One allowed third-party dependency** — [socket.io-client-swift](https://github.com/socketio/socket.io-client-swift), scoped strictly to the real-time layer. REST, auth, and models use only the standard library.
-- **Keychain-only** token storage, keyed per server profile — never `UserDefaults`.
-- **Redacted logging** — any secret in log metadata is wrapped in `Redacted(...)`, making it structurally impossible for a token to reach the log sink in plaintext.
-- **No global client** — every call runs through a `PlankaClient` bound to a specific profile.
+- An **iPhone on iOS 26** (or the iOS 26 Simulator)
+- A reachable **PLANKA instance** and an account on it — Boardly does not host anything for you
 
 ---
 
 ## Getting started
 
-### Prerequisites
-
-- **Xcode 26** (Swift 6)
-- iOS **26** deployment target / simulator
-- A reachable **PLANKA instance** and an account on it (Boardly ships no server)
-
-### Clone
+Boardly isn't on the App Store yet, so you run it from source with **Xcode 26**:
 
 ```bash
-git clone https://github.com/2rock-Inc/boardly.git
-cd boardly
-```
-
-### Build & test the core package
-
-`BoardlyKit` builds and tests without Xcode:
-
-```bash
-swift build          # build the BoardlyKit SPM module
-swift test           # run the ~83 unit tests
-```
-
-### Run the app
-
-Open the Xcode project, select an iPhone simulator, and run:
-
-```bash
+git clone https://github.com/2rock-Inc/Boardly.git
+cd Boardly
 open Boardly/Boardly.xcodeproj
 ```
 
-Or from the command line:
+Pick an iPhone simulator (or your own device) and hit **Run**.
 
-```bash
-xcodebuild -project Boardly/Boardly.xcodeproj \
-  -scheme Boardly \
-  -destination 'platform=iOS Simulator,name=iPhone 16' \
-  build
-```
+Then, in the app:
 
-On first launch, add a server profile pointing at your PLANKA base URL and log in.
+1. **Add a server** — enter your PLANKA address (e.g. `https://todo.example.com`).
+2. **Sign in** — with your email/username and password, or tap **Continue with SSO** if your instance uses single sign-on.
+3. You're in — your projects and boards load, and updates stream in live.
 
 ---
 
-## Project structure
+## Privacy & security
 
-```
-boardly/
-├── Package.swift                  # SPM manifest — declares BoardlyKit
-├── Reference/
-│   └── planka-openapi.json        # canonical PLANKA API spec (models derive from this)
-├── Sources/BoardlyKit/            # pure-Swift PLANKA client
-│   ├── Models/                    # Codable models (Board, Card, List, Task, Label, …)
-│   ├── Payloads/                  # sideloaded payload decoding (BoardPayload, CardPatch, …)
-│   ├── Networking/                # HTTPClient, PlankaClient, JSON decoding
-│   ├── Auth/                      # Keychain store, TokenStore, JWT helpers
-│   ├── Profiles/                  # ServerProfile, ProfileStore (multi-instance)
-│   ├── Realtime/                  # Socket.IO transport, events, reconciliation
-│   ├── Errors/                    # PlankaAPIError mapping
-│   └── Logging/                   # BoardlyLog, LogTag, Redacted
-├── Tests/BoardlyKitTests/         # unit tests + JSON fixtures
-└── Boardly/
-    ├── Boardly.xcodeproj          # SwiftUI app (depends on BoardlyKit locally)
-    └── Boardly/
-        ├── App/                   # app routing
-        ├── Onboarding/            # add server, login, profile selection
-        ├── Projects/              # projects & boards lists
-        ├── Board/                 # board, columns, cards, card detail + sheets
-        ├── Profile/               # profile management
-        ├── DesignSystem/          # Pine Teal — typography, components, logo
-        └── Resources/Fonts/       # Manrope, JetBrains Mono
-```
+Boardly is built to keep your data yours:
+
+- **No backend in the middle.** The app connects only to the PLANKA server you enter — nothing is routed through us.
+- **Your login stays on your device.** Access tokens live in the iOS **Keychain**, scoped per server, never in plain storage.
+- **Tokens go to your server only.** Your token is attached solely to requests to your own instance's secure origin, never to third-party links or images.
+- **No secrets in logs.** Diagnostic logging is built so tokens and passwords can't leak into it.
+- **Certificates matter.** Boardly doesn't silently bypass TLS problems.
 
 ---
 
 ## Roadmap
 
-The work is planned across five phases (see [`ROADMAP.md`](ROADMAP.md)).
+Boardly ships in phases (see [`ROADMAP.md`](ROADMAP.md) for detail):
 
-- [x] **Phase 1 — Foundation:** BoardlyKit core, OpenAPI models, REST client, multi-instance Keychain auth, onboarding
-- [x] **Phase 2 — Core kanban loop:** projects/boards, board detail, card & task CRUD, pull-to-refresh
-- [x] **Phase 3 — Real-time sync:** Socket.IO live updates, per-profile lifecycle, reconnection
-- [x] **Phase 4 — Rich card content:** labels, members, comments, attachments, due dates, chrono, activity
-- [ ] **Phase 5 — Account & admin:** OIDC/SSO, notifications, board backgrounds, custom fields, admin config
-
----
-
-## Testing
-
-`BoardlyKit` carries the project's highest-priority test coverage — it's the foundation everything else trusts.
-
-```bash
-swift test                                   # run all tests
-swift test --filter BoardlyKitTests          # scope to the kit
-```
-
-- **~83 unit tests** written with **Swift Testing** (`@Test` / `#expect`)
-- Networking is exercised through a **mockable `URLSession`** — no real network in tests
-- Real-time is tested against a **mock socket transport**, not a live connection
-- Coverage spans request building, `PlankaAPIError` mapping, Keychain storage, profile add/switch/remove, `included`-payload decoding, real-time reconciliation, and JWT handling
-- Model decoding is validated against JSON fixtures in `Tests/BoardlyKitTests/Fixtures/`
+- [x] Foundation — servers, secure sign-in, onboarding
+- [x] Core kanban — projects, boards, cards, tasks
+- [x] Real-time sync
+- [x] Rich cards — labels, members, comments, attachments, due dates, stopwatch, activity
+- [x] Account & admin — SSO, notifications, project backgrounds, webhooks & SMTP
+- [x] Search & profile preferences
+- [ ] Custom fields on cards *(in progress)*
 
 ---
 
-## Contributing
+## For developers
 
-Contributions are welcome. A few house rules:
+Boardly is open source (MIT) and contributions are welcome.
 
-- Run `swift test` before opening a PR (a passing run is required).
-- Feature work goes on `feat/<slug>`, fixes on `fix/<slug>`, tooling on `chore/<slug>` — never commit features directly to `main`.
-- PRs are squash-merged into `main`.
+- The networking core lives in a pure-Swift package, **`BoardlyKit`** (no UIKit/SwiftUI), so it builds and tests without Xcode:
+  ```bash
+  swift build
+  swift test
+  ```
+- The SwiftUI app follows a **Model-View** pattern with `@Observable` view models and a path-based `NavigationStack`. Models are generated from PLANKA's own OpenAPI spec (`Reference/planka-openapi.json`). The only third-party dependency is the Socket.IO client, scoped to real-time sync.
+- Architecture notes, conventions, and the phase plan are in [`ROADMAP.md`](ROADMAP.md) and `CLAUDE.md`.
 
-**Commit convention** — emoji conventional commits: `<emoji> <type>(<scope>): <imperative message>`
-
-| Type | Emoji | Example |
-| ---- | :---: | ------- |
-| feat | ✨ | `✨ feat(auth): add OIDC token exchange flow` |
-| fix | 🐛 | `🐛 fix(board): pin columns to top` |
-| docs | 📝 | `📝 docs(readme): document getting started` |
-| refactor | ♻️ | `♻️ refactor(board): extend BoardPayload` |
-| style | 🎨 | `🎨 style(card): full-bleed cover image` |
-| test | ✅ | `✅ test(realtime): cover reconnection` |
-| chore | 🧑‍💻 | `🧑‍💻 chore(ci): configure hooks` |
-
-`swiftformat` runs automatically as a post-edit hook.
+Feature work goes on a `feat/<slug>` branch and is squash-merged into `main` after a passing `swift test`. Commits use emoji conventional messages (e.g. `✨ feat(search): add board search`).
 
 ---
 
@@ -265,6 +157,6 @@ Released under the [MIT License](LICENSE). © 2026 2rock Inc.
 
 <div align="center">
 
-Built with SwiftUI for the [PLANKA](https://github.com/plankanban/planka) community · made by **2rock Inc.**
+Made with SwiftUI for the [PLANKA](https://github.com/plankanban/planka) community · by **2rock Inc.**
 
 </div>
