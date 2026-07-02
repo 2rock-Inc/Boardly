@@ -1,4 +1,4 @@
-# Boardly — Macro Roadmap (5 phases)
+# Boardly — Macro Roadmap (7 phases)
 
 Each phase is meant to be one (or a few) separate Claude Code session(s).
 Phases are ordered by dependency: each one builds on what the previous
@@ -87,23 +87,31 @@ board.
 
 ---
 
-## Phase 4 — Rich card content
+## Phase 4 — Rich card content ✅ (custom fields split out → Phase 7)
 
 **Goal:** everything that "hangs off" a card, building on Phase 2's card screen.
 
+**Shipped** (merged in `main` via PR #5):
+
 - Labels: create, assign, remove on cards
-- Comments: add, view on cards
-- Attachments: add (file or link), view on cards
+- Members: assign / remove board members on cards
+- Comments: add, view, delete on cards
+- Attachments: add (file / photo / link), view on cards (multipart upload)
+- Chrono (stopwatch): start / stop, live-ticking elapsed time
+- Activity: per-card action feed (author-attributed)
+
+**Deferred out of this phase → now Phase 7:**
+
 - Custom fields: manage custom field groups/fields, set values on cards
 
 **Testing expectations:** unit tests for model decoding of labels,
-comments, attachments, and custom field groups/values, plus the view
+comments, attachments (and the realtime reconciler for each), plus the view
 models managing them on the card detail screen.
 
 **Suggested kickoff prompt:**
-> Read CLAUDE.md and ROADMAP.md. Implement Phase 4: labels, comments, attachments,
-> and custom fields on the card detail screen. Include unit tests per the "Testing
-> expectations" in ROADMAP.md. Plan first, then implement.
+> Read CLAUDE.md and ROADMAP.md. Implement Phase 4: labels, members, comments,
+> attachments, chrono, and the activity feed on the card detail screen. Include
+> unit tests per the "Testing expectations" in ROADMAP.md. Plan first, then implement.
 
 ---
 
@@ -123,10 +131,84 @@ phase since it touches settings/admin screens rather than the core loop.
 (mocked), notification list/mark-as-read logic, and the admin-rights gating
 that decides whether admin screens are shown at all.
 
+> The notification data/logic built here is *surfaced* by the **Activité** tab
+> and the **Profil → Notifications** settings screen in Phase 6; keep the
+> BoardlyKit-side model + view model reusable by both.
+
 **Suggested kickoff prompt:**
 > Read CLAUDE.md and ROADMAP.md. Implement Phase 5: OIDC/SSO login, notifications,
 > board backgrounds, and admin config screens (gated on admin rights). Include unit
 > tests per the "Testing expectations" in ROADMAP.md. Plan first, then implement.
+
+---
+
+## Phase 6 — App shell: TabBar + Recherche / Activité / Profil
+
+**Goal:** the top-level navigation shell and the three remaining root tabs from
+the design (screens 11–13). Ties together data already built in earlier phases
+(notifications from Phase 5, profiles/auth from Phase 1) behind a persistent
+TabBar. It's app-level chrome rather than the core loop.
+
+- **TabBar shell:** persistent bottom tab bar — Projets · Recherche · Activité ·
+  Profil — with an unread badge dot on the Activité tab. Projets is the existing
+  projects→boards flow re-parented under the first tab.
+- **Recherche tab** (screen 12): a search field + scope chips (Tout / Cartes /
+  Boards / Projets); results grouped by type with match highlighting
+  (card → project · list; board → project · N cartes; project). Drives the
+  existing detail navigation. Decide REST search endpoint vs. client-side filter
+  of loaded data (check `Reference/planka-openapi.json` for a search endpoint).
+- **Activité tab** (screen 11): the notification/activity feed from Phase 5,
+  grouped by recency (Aujourd'hui / Cette semaine), author-attributed with
+  action text + context + relative time + unread dot; "Tout lire" (mark all read).
+- **Profil tab** (screen 13): current-user header (avatar, name, @username,
+  org · role); **Préférences** (Apparence, Vue d'accueil, Éditeur Markdown —
+  backed by PLANKA user prefs like `defaultEditorMode` / `defaultHomeView`);
+  **Compte & serveur** (Notifications → the Phase 5 notification-services screen,
+  Serveur → active profile + switch); **Se déconnecter**; version footer
+  ("Boardly x.y · Planka a.b").
+
+**Testing expectations:** unit tests for the search view model (scope filtering
++ result grouping/ranking), the activity feed grouping (recency buckets +
+read/unread), and the profile view model (preference read/write, logout, server
+switch).
+
+**Suggested kickoff prompt:**
+> Read CLAUDE.md and ROADMAP.md. Implement Phase 6: the TabBar app shell and the
+> Recherche, Activité, and Profil tabs (design screens 11–13), reusing the Phase 5
+> notifications data and the Phase 1 profile/auth layer. Include unit tests per the
+> "Testing expectations" in ROADMAP.md. Plan first, then implement.
+
+---
+
+## Phase 7 — Custom fields
+
+**Goal:** the one piece of rich card content deferred out of Phase 4. Card-level
+and board-level, so it slots cleanly on top of the Phase 4 card detail screen.
+
+- BoardlyKit models: flesh out `CustomFieldGroup`, `CustomField`,
+  `CustomFieldValue`, `BaseCustomFieldGroup` against `Reference/planka-openapi.json`
+  (they currently exist only as Phase 1 stubs)
+- `PlankaClient` endpoints: create/update/delete custom field groups and fields;
+  set/clear a custom field value on a card
+- `BoardPayload`: sideload `customFieldGroups` / `customFields` / `customFieldValues`
+  (already present-but-ignored in the `included` payload) + a
+  `customFields(for: card)` accessor
+- Realtime: custom field group/field/value create-update-delete events wired into
+  the pure reconciler (live sync, same pattern as labels/attachments)
+- UI: a "Champs personnalisés" section on the card detail + an edit sheet
+  (types: text, number, date, dropdown, checkbox — per PLANKA)
+- Board-level management of custom field groups/fields
+
+**Testing expectations:** unit tests for model decoding of custom field
+groups/fields/values, the realtime reconciler for each event, and the view
+model managing values on the card detail screen.
+
+**Suggested kickoff prompt:**
+> Read CLAUDE.md and ROADMAP.md. Implement Phase 7: custom fields (groups, fields,
+> values) on the card detail screen and board-level management, including realtime
+> reconciliation. Complete the BoardlyKit models against the OpenAPI spec first.
+> Include unit tests per the "Testing expectations" in ROADMAP.md. Plan first,
+> then implement.
 
 ---
 

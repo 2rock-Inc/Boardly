@@ -56,6 +56,26 @@ enum PreviewMock {
         client(json: projectsJSON)
     }
 
+    static func notificationsClient() -> PlankaClient {
+        client(json: notificationsJSON)
+    }
+
+    static func profileClient() -> PlankaClient {
+        client(json: currentUserJSON)
+    }
+
+    nonisolated static let currentUserJSON = """
+    {
+      "item": { "id": "u1", "role": "admin", "name": "Marie Dupont", "username": "marie.dupont", "organization": "Acme Corp", "isDeactivated": false, "isDefaultAdmin": true },
+      "included": {
+        "notificationServices": [
+          { "id": "ns1", "userId": "u1", "boardId": null, "url": "https://hooks.slack.com/services/T000/B000/xyz", "format": "markdown", "createdAt": null, "updatedAt": null },
+          { "id": "ns2", "userId": "u1", "boardId": null, "url": "tgram://bottoken/chatid", "format": "text", "createdAt": null, "updatedAt": null }
+        ]
+      }
+    }
+    """
+
     private static func client(json: String) -> PlankaClient {
         let profile = ServerProfile(name: "Mock", baseURL: URL(string: "https://mock.local")!)
         return PlankaClient(
@@ -64,6 +84,25 @@ enum PreviewMock {
             httpClient: MockHTTPClient(json: json)
         )
     }
+
+    nonisolated static let notificationsJSON = """
+    {
+      "items": [
+        { "id": "n1", "userId": "u1", "creatorUserId": "u2", "boardId": "b1", "cardId": "c1", "commentId": "cm1", "actionId": null, "type": "mentionInComment", "data": { "card": { "name": "Système de couleurs" }, "text": "on part là-dessus ?" }, "isRead": false, "createdAt": "2026-07-02T07:30:00.000Z", "updatedAt": "2026-07-02T07:30:00.000Z" },
+        { "id": "n2", "userId": "u1", "creatorUserId": "u3", "boardId": "b1", "cardId": "c2", "commentId": null, "actionId": "a2", "type": "moveCard", "data": { "card": { "name": "Navigation par onglets" } }, "isRead": false, "createdAt": "2026-07-02T05:30:00.000Z", "updatedAt": "2026-07-02T05:30:00.000Z" },
+        { "id": "n3", "userId": "u1", "creatorUserId": "u4", "boardId": "b1", "cardId": "c3", "commentId": null, "actionId": null, "type": "addMemberToCard", "data": { "card": { "name": "Tests VoiceOver" } }, "isRead": false, "createdAt": "2026-07-02T03:30:00.000Z", "updatedAt": "2026-07-02T03:30:00.000Z" },
+        { "id": "n4", "userId": "u1", "creatorUserId": "u5", "boardId": "b1", "cardId": "c4", "commentId": "cm4", "actionId": null, "type": "commentCard", "data": { "card": { "name": "Nouvelle page d’accueil" }, "text": "Super direction, je valide." }, "isRead": false, "createdAt": "2026-06-30T09:00:00.000Z", "updatedAt": "2026-06-30T09:00:00.000Z" }
+      ],
+      "included": {
+        "users": [
+          { "id": "u2", "role": "boardUser", "name": "Paul Lemaire", "isDeactivated": false },
+          { "id": "u3", "role": "boardUser", "name": "Jules Kern", "isDeactivated": false },
+          { "id": "u4", "role": "boardUser", "name": "Emma Martin", "isDeactivated": false },
+          { "id": "u5", "role": "boardUser", "name": "Marie Dupont", "isDeactivated": false }
+        ]
+      }
+    }
+    """
 
     nonisolated static let actionsJSON = """
     {
@@ -216,6 +255,23 @@ struct MockLoginHarness: View {
         NavigationStack(path: $path) {
             LoginView(profile: profile, path: $path)
         }
+        .environment(ProfileStore())
+    }
+}
+
+struct MockActivityHarness: View {
+    @State private var vm = NotificationsViewModel(client: PreviewMock.notificationsClient())
+    var body: some View {
+        ActivityView(viewModel: vm)
+    }
+}
+
+struct MockProfileHarness: View {
+    var body: some View {
+        ProfileView(
+            profile: ServerProfile(name: "Équipe", baseURL: URL(string: "https://todo.2rock.fr")!),
+            client: PreviewMock.profileClient()
+        )
         .environment(ProfileStore())
     }
 }

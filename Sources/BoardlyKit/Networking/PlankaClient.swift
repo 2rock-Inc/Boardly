@@ -46,11 +46,41 @@ public struct PlankaClient: Sendable {
                                                metadata: ["user": emailOrUsername])
     }
 
+    /// Exchange an OIDC authorization `code` + `nonce` (captured from the SSO
+    /// redirect) for a PLANKA access token, then store it — same shape as
+    /// password login. The instance advertises OIDC via `Bootstrap.oidc`.
+    public func exchangeOIDC(code: String, nonce: String) async throws {
+        struct Body: Encodable { let code: String; let nonce: String }
+        struct Response: Decodable { let item: String }
+        BoardlyLog.tag(.auth).icon("🔐").info("OIDC token exchange")
+        let body = try JSONEncoder().encode(Body(code: code, nonce: nonce))
+        let request = try buildRequest(method: "POST", path: "/access-tokens/exchange-with-oidc",
+                                       body: body, requiresAuth: false)
+        let response: Response = try await execute(request)
+        try tokenStore.saveToken(response.item)
+        BoardlyLog.tag(.auth).icon("✅").info("OIDC login succeeded")
+    }
+
     /// The current user's id, recovered from the stored access token (JWT).
     /// For display only — the server still authorizes every request.
     public func currentUserId() -> String? {
         guard let token = try? tokenStore.loadToken() else { return nil }
         return PlankaJWT.userId(from: token)
+    }
+
+    /// The full current-user record plus the notification services sideloaded by
+    /// `GET /users/{id}`. Needed to gate admin-only UI on `role == "admin"`,
+    /// populate the profile screen, and list the user's notification services.
+    public func getCurrentUser() async throws -> CurrentUserPayload {
+        guard let id = currentUserId() else { throw PlankaAPIError.unauthorized }
+        struct Included: Decodable { let notificationServices: [NotificationService]? }
+        struct Response: Decodable { let item: User; let included: Included? }
+        let request = try buildRequest(method: "GET", path: "/users/\(id)")
+        let response: Response = try await execute(request)
+        return CurrentUserPayload(
+            user: response.item,
+            notificationServices: response.included?.notificationServices ?? []
+        )
     }
 
     // MARK: - Projects
@@ -60,6 +90,7 @@ public struct PlankaClient: Sendable {
             let boards: [Board]?
             let users: [User]?
             let boardMemberships: [BoardMembership]?
+            let backgroundImages: [BackgroundImage]?
         }
         struct Response: Decodable {
             let items: [Project]
@@ -71,7 +102,8 @@ public struct PlankaClient: Sendable {
             projects: response.items,
             boards: response.included.boards ?? [],
             users: response.included.users ?? [],
-            boardMemberships: response.included.boardMemberships ?? []
+            boardMemberships: response.included.boardMemberships ?? [],
+            backgroundImages: response.included.backgroundImages ?? []
         )
     }
 
@@ -322,6 +354,161 @@ public struct PlankaClient: Sendable {
             && url.scheme?.lowercased() == profile.baseURL.scheme?.lowercased()
             && url.host?.lowercased() == profile.baseURL.host?.lowercased()
             && url.port == profile.baseURL.port
+    }
+
+    // MARK: - Notifications
+
+    /// The current user's unread notifications, with creator users sideloaded.
+    public func getNotifications() async throws -> NotificationsPayload {
+        struct Included: Decodable { let users: [User]? }
+        struct Response: Decodable { let items: [PlankaNotification]; let included: Included }
+        let request = try buildRequest(method: "GET", path: "/notifications")
+        let response: Response = try await execute(request)
+        return NotificationsPayload(notifications: response.items,
+                                    users: response.included.users ?? [])
+    }
+
+    @discardableResult
+    public func setNotificationRead(id: String, isRead: Bool) async throws -> PlankaNotification {
+        struct Body: Encodable { let isRead: Bool }
+        struct Response: Decodable { let item: PlankaNotification }
+        let body = try JSONEncoder().encode(Body(isRead: isRead))
+        let request = try buildRequest(method: "PATCH", path: "/notifications/\(id)", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    public func markAllNotificationsRead() async throws {
+        let request = try buildRequest(method: "POST", path: "/notifications/read-all")
+        try await executeVoid(request)
+    }
+
+    // MARK: - Notification services
+
+    public func createUserNotificationService(userId: String, url: String, format: String) async throws -> NotificationService {
+        try await createNotificationService(path: "/users/\(userId)/notification-services", url: url, format: format)
+    }
+
+    public func createBoardNotificationService(boardId: String, url: String, format: String) async throws -> NotificationService {
+        try await createNotificationService(path: "/boards/\(boardId)/notification-services", url: url, format: format)
+    }
+
+    private func createNotificationService(path: String, url: String, format: String) async throws -> NotificationService {
+        struct Body: Encodable { let url: String; let format: String }
+        struct Response: Decodable { let item: NotificationService }
+        let body = try JSONEncoder().encode(Body(url: url, format: format))
+        let request = try buildRequest(method: "POST", path: path, body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    public func updateNotificationService(id: String, url: String?, format: String?) async throws -> NotificationService {
+        struct Body: Encodable { let url: String?; let format: String? }
+        struct Response: Decodable { let item: NotificationService }
+        let body = try JSONEncoder().encode(Body(url: url, format: format))
+        let request = try buildRequest(method: "PATCH", path: "/notification-services/\(id)", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    @discardableResult
+    public func deleteNotificationService(id: String) async throws -> NotificationService {
+        struct Response: Decodable { let item: NotificationService }
+        let request = try buildRequest(method: "DELETE", path: "/notification-services/\(id)")
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    public func testNotificationService(id: String) async throws {
+        let request = try buildRequest(method: "POST", path: "/notification-services/\(id)/test")
+        try await executeVoid(request)
+    }
+
+    // MARK: - Project background
+
+    public func updateProject(id: String, patch: ProjectPatch) async throws -> Project {
+        struct Response: Decodable { let item: Project }
+        let body = try JSONEncoder().encode(patch)
+        let request = try buildRequest(method: "PATCH", path: "/projects/\(id)", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    public func uploadBackgroundImage(projectId: String, fileName: String, mimeType: String, data: Data) async throws -> BackgroundImage {
+        struct Response: Decodable { let item: BackgroundImage }
+        let request = try buildMultipartRequest(
+            path: "/projects/\(projectId)/background-images",
+            fields: [:],
+            file: (fieldName: "file", fileName: fileName, mimeType: mimeType, data: data)
+        )
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    @discardableResult
+    public func deleteBackgroundImage(id: String) async throws -> BackgroundImage {
+        struct Response: Decodable { let item: BackgroundImage }
+        let request = try buildRequest(method: "DELETE", path: "/background-images/\(id)")
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    // MARK: - Webhooks (admin)
+
+    public func getWebhooks() async throws -> [Webhook] {
+        struct Response: Decodable { let items: [Webhook] }
+        let request = try buildRequest(method: "GET", path: "/webhooks")
+        let response: Response = try await execute(request)
+        return response.items
+    }
+
+    public func createWebhook(name: String, url: String, accessToken: String? = nil,
+                              events: [String]? = nil, excludedEvents: [String]? = nil) async throws -> Webhook {
+        struct Response: Decodable { let item: Webhook }
+        let patch = WebhookPatch(name: name, url: url, accessToken: accessToken,
+                                 events: events, excludedEvents: excludedEvents)
+        let body = try JSONEncoder().encode(patch)
+        let request = try buildRequest(method: "POST", path: "/webhooks", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    public func updateWebhook(id: String, patch: WebhookPatch) async throws -> Webhook {
+        struct Response: Decodable { let item: Webhook }
+        let body = try JSONEncoder().encode(patch)
+        let request = try buildRequest(method: "PATCH", path: "/webhooks/\(id)", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    @discardableResult
+    public func deleteWebhook(id: String) async throws -> Webhook {
+        struct Response: Decodable { let item: Webhook }
+        let request = try buildRequest(method: "DELETE", path: "/webhooks/\(id)")
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    // MARK: - Instance config (admin)
+
+    public func getConfig() async throws -> Config {
+        struct Response: Decodable { let item: Config }
+        let request = try buildRequest(method: "GET", path: "/config")
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    public func updateConfig(patch: ConfigPatch) async throws -> Config {
+        struct Response: Decodable { let item: Config }
+        let body = try JSONEncoder().encode(patch)
+        let request = try buildRequest(method: "PATCH", path: "/config", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    public func testSMTP() async throws {
+        let request = try buildRequest(method: "POST", path: "/config/test-smtp")
+        try await executeVoid(request)
     }
 
     // MARK: - Auth (continued)
