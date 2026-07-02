@@ -4,9 +4,14 @@ import BoardlyKit
 @main
 struct BoardlyApp: App {
     @State private var profileStore = ProfileStore()
+    @AppStorage(AppTheme.storageKey) private var appearanceRaw = AppTheme.system.rawValue
 
     init() {
         BoardlyFonts.register()
+    }
+
+    private var colorScheme: ColorScheme? {
+        AppTheme(rawValue: appearanceRaw)?.colorScheme
     }
 
     var body: some Scene {
@@ -31,7 +36,7 @@ struct BoardlyApp: App {
             } else if CommandLine.arguments.contains("-mockSearch") {
                 MockSearchHarness()
             } else {
-                RootView().environment(profileStore)
+                RootView().environment(profileStore).preferredColorScheme(colorScheme)
             }
             #else
             RootView().environment(profileStore)

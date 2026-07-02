@@ -67,6 +67,20 @@ struct PlankaClientPhase5Tests {
         #expect(payload.notificationServices.map(\.id) == ["ns1"])
     }
 
+    @Test("updateCurrentUser PATCHes /users/{id} with only the set preferences")
+    func updateCurrentUser() async throws {
+        try tokenStore.saveToken(fakeJWT(userId: "u1"))
+        mockHTTP.stub(json: #"{"item":{"id":"u1","role":"boardUser","name":"Marie","isDeactivated":false,"defaultHomeView":"gridProjects"}}"#)
+        _ = try await client.updateCurrentUser(patch: UserPatch(defaultHomeView: "gridProjects"))
+
+        let req = try #require(mockHTTP.lastRequest)
+        #expect(req.httpMethod == "PATCH")
+        #expect(req.url?.path.hasSuffix("/api/users/u1") == true)
+        let json = try body(of: req)
+        #expect(json["defaultHomeView"] as? String == "gridProjects")
+        #expect(json.keys.contains("defaultEditorMode") == false)
+    }
+
     // MARK: - Notifications
 
     @Test("getNotifications parses items + sideloaded creator users")

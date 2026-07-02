@@ -7,6 +7,7 @@ final class ProfileViewModel {
     private let client: PlankaClient
     var user: User?
     var services: [NotificationService] = []
+    var plankaVersion: String?
     var isLoading = false
     var error: String?
 
@@ -26,6 +27,26 @@ final class ProfileViewModel {
             services = payload.notificationServices
         } catch {
             self.error = "Impossible de charger le profil."
+        }
+        // Best-effort — used only for the version footer.
+        plankaVersion = try? await client.validateInstance().version
+    }
+
+    // MARK: - Preferences
+
+    func setHomeView(_ value: String) async {
+        await updatePreference(UserPatch(defaultHomeView: value))
+    }
+
+    func setEditorMode(_ value: String) async {
+        await updatePreference(UserPatch(defaultEditorMode: value))
+    }
+
+    private func updatePreference(_ patch: UserPatch) async {
+        do {
+            user = try await client.updateCurrentUser(patch: patch)
+        } catch {
+            self.error = "Impossible d’enregistrer la préférence."
         }
     }
 
