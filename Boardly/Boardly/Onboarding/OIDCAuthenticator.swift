@@ -188,10 +188,15 @@ private struct OIDCWebAuthView: UIViewRepresentable {
 
             if let error = all.first(where: { $0.name == "error" })?.value {
                 onResult(.failure(OIDCError.providerError(error)))
-            } else if let returnedState = all.first(where: { $0.name == "state" })?.value,
-                      returnedState != session.state {
-                onResult(.failure(OIDCError.providerError("state mismatch")))
             } else if let code = all.first(where: { $0.name == "code" })?.value {
+                // CSRF protection: the returned state must be present AND match
+                // the one we generated for this session.
+                guard let returnedState = all.first(where: { $0.name == "state" })?.value,
+                      returnedState == session.state
+                else {
+                    onResult(.failure(OIDCError.providerError("state mismatch")))
+                    return
+                }
                 onResult(.success(code))
             } else {
                 onResult(.failure(OIDCError.missingCode))
