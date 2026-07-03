@@ -8,6 +8,11 @@ final class BoardViewModel {
     var isLoading = false
     var error: String?
 
+    /// The project's base custom-field groups (loaded on demand for the board's
+    /// custom-fields management sheet).
+    var baseGroups: [BaseCustomFieldGroup] = []
+    private var baseFields: [CustomField] = []
+
     private let client: PlankaClient
     let boardId: String
     private var realtime: BoardRealtimeClient?
@@ -223,6 +228,115 @@ final class BoardViewModel {
             copy.customFieldValues.removeAll {
                 $0.cardId == card.id && $0.customFieldGroupId == groupId && $0.customFieldId == fieldId
             }
+            payload = copy
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
+    // MARK: - Custom field groups (Phase 7 · board management)
+
+    /// Load the project's base custom-field groups (the "inherited" candidates).
+    func loadBaseGroups() async {
+        guard let projectId = payload?.board.projectId else { return }
+        do {
+            let projects = try await client.getProjects()
+            guard let project = projects.projects.first(where: { $0.id == projectId }) else { return }
+            baseGroups = projects.baseGroups(for: project)
+            baseFields = projects.customFields
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
+    func fields(inBaseGroup group: BaseCustomFieldGroup) -> [CustomField] {
+        baseFields.filter { $0.baseCustomFieldGroupId == group.id }
+            .sorted { ($0.position ?? 0) < ($1.position ?? 0) }
+    }
+
+    /// The board's instance of a base group, if it has been enabled.
+    func instance(ofBase base: BaseCustomFieldGroup) -> CustomFieldGroup? {
+        payload?.customFieldGroups.first { $0.baseCustomFieldGroupId == base.id }
+    }
+
+    /// Enable a base group on this board (the server copies its fields), then refresh.
+    func enableBaseGroup(_ base: BaseCustomFieldGroup) async {
+        guard let payload else { return }
+        let position = (payload.boardCustomFieldGroups().map { $0.position ?? 0 }.max() ?? 0) + 65536
+        do {
+            _ = try await client.createBoardCustomFieldGroup(
+                boardId: boardId, position: position, baseCustomFieldGroupId: base.id)
+            await refreshCustomFields()
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
+    func disableBaseGroup(_ base: BaseCustomFieldGroup) async {
+        guard let group = instance(ofBase: base) else { return }
+        await deleteCustomFieldGroup(group)
+    }
+
+    func addBoardGroup(name: String) async {
+        guard let payload else { return }
+        let position = (payload.boardCustomFieldGroups().map { $0.position ?? 0 }.max() ?? 0) + 65536
+        do {
+            let group = try await client.createBoardCustomFieldGroup(boardId: boardId, position: position, name: name)
+            guard var copy = self.payload else { return }
+            copy.customFieldGroups.append(group)
+            self.payload = copy
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
+    func deleteCustomFieldGroup(_ group: CustomFieldGroup) async {
+        do {
+            try await client.deleteCustomFieldGroup(id: group.id)
+            guard var copy = payload else { return }
+            copy.customFieldGroups.removeAll { $0.id == group.id }
+            copy.customFields.removeAll { $0.customFieldGroupId == group.id }
+            copy.customFieldValues.removeAll { $0.customFieldGroupId == group.id }
+            payload = copy
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
+    func addCustomField(to group: CustomFieldGroup, name: String) async {
+        guard let payload else { return }
+        let position = (payload.fields(in: group).map { $0.position ?? 0 }.max() ?? 0) + 65536
+        do {
+            let field = try await client.createCustomFieldInGroup(groupId: group.id, name: name, position: position)
+            guard var copy = self.payload else { return }
+            copy.customFields.append(field)
+            self.payload = copy
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
+    func deleteCustomField(_ field: CustomField) async {
+        do {
+            try await client.deleteCustomField(id: field.id)
+            guard var copy = payload else { return }
+            copy.customFields.removeAll { $0.id == field.id }
+            copy.customFieldValues.removeAll { $0.customFieldId == field.id }
+            payload = copy
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
+    /// Re-fetch only the custom-field collections from the board (used after
+    /// enabling a base group, whose fields are copied server-side).
+    private func refreshCustomFields() async {
+        do {
+            let fresh = try await client.getBoard(id: boardId)
+            guard var copy = payload else { return }
+            copy.customFieldGroups = fresh.customFieldGroups
+            copy.customFields = fresh.customFields
+            copy.customFieldValues = fresh.customFieldValues
             payload = copy
         } catch {
             self.error = error.localizedDescription
