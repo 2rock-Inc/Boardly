@@ -320,16 +320,19 @@ struct RealtimeCustomFieldsTests {
         #expect(p.customFields.isEmpty)
     }
 
-    @Test("value create → update content → delete lifecycle")
+    @Test("value first-set (update = upsert) → change → delete lifecycle")
     func valueLifecycle() {
         var p = makePayload()
+        // PLANKA has no customFieldValueCreate: the first set arrives as an update
+        // for a value that doesn't exist locally yet → it must be inserted.
         p = p.applying(event(
-            "customFieldValueCreate",
+            "customFieldValueUpdate",
             #"{"item":{"id":"v1","cardId":"c1","customFieldGroupId":"g1","customFieldId":"f1","content":"Low"}}"#))
         #expect(p.customFieldValues.first?.content == "Low")
         p = p.applying(event(
             "customFieldValueUpdate",
             #"{"item":{"id":"v1","cardId":"c1","customFieldGroupId":"g1","customFieldId":"f1","content":"High"}}"#))
+        #expect(p.customFieldValues.count == 1)
         #expect(p.customFieldValues.first?.content == "High")
         p = p.applying(event("customFieldValueDelete", #"{"item":{"id":"v1"}}"#))
         #expect(p.customFieldValues.isEmpty)
