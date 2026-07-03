@@ -225,7 +225,7 @@ private struct FavoriteCard: View {
                         .foregroundStyle(Color.boardlyTextSecondary)
                         .lineLimit(1)
                 }
-                Text("\(boardCount) board\(boardCount > 1 ? "s" : "")")
+                Text("\(boardCount) boards")
                     .font(.sans(17, .bold))
                     .foregroundStyle(Color.boardlyInk)
                     .lineLimit(1)
@@ -300,7 +300,7 @@ private struct BoardRow: View {
 
     private var meta: String {
         var parts: [String] = []
-        if let cardCount { parts.append("\(cardCount) card\(cardCount > 1 ? "s" : "")") }
+        if let cardCount { parts.append(String(localized: "\(cardCount) cards")) }
         if let updated = board.updatedAt {
             parts.append("updated \(updated.formatted(.relative(presentation: .named)))")
         }

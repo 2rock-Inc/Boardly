@@ -80,7 +80,7 @@ struct SearchView: View {
             ForEach(SearchScope.allCases) { item in
                 let active = scope.wrappedValue == item
                 Button { scope.wrappedValue = item } label: {
-                    Text(item.rawValue)
+                    Text(LocalizedStringKey(item.rawValue))
                         .font(.sans(14, .semibold))
                         .foregroundStyle(active ? .white : Color.boardlyTextSecondary)
                         .padding(.horizontal, 14)
@@ -194,7 +194,7 @@ struct SearchView: View {
                         .font(.boardlyBody)
                         .foregroundStyle(Color.boardlyInk)
                         .lineLimit(1)
-                    Text(context(hit.projectName, "\(hit.cardCount) card\(hit.cardCount > 1 ? "s" : "")"))
+                    Text(context(hit.projectName, String(localized: "\(hit.cardCount) cards")))
                         .font(.boardlyMonoCaption)
                         .foregroundStyle(Color.boardlyTextTertiary)
                         .lineLimit(1)

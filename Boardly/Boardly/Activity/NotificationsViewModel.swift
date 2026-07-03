@@ -123,7 +123,7 @@ final class NotificationsViewModel {
 
     private static let relativeFormatter: RelativeDateTimeFormatter = {
         let f = RelativeDateTimeFormatter()
-        f.locale = Locale(identifier: "en_US")
+        f.locale = .autoupdatingCurrent
         f.unitsStyle = .abbreviated
         return f
     }()

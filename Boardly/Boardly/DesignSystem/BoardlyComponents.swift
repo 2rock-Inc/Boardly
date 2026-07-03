@@ -116,14 +116,14 @@ struct SheetHeader: View {
 
     var body: some View {
         HStack {
-            Button(cancelLabel, action: onCancel)
+            Button(LocalizedStringKey(cancelLabel), action: onCancel)
                 .foregroundStyle(Color.boardlyTextSecondary)
             Spacer()
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.sans(16, .bold))
                 .foregroundStyle(Color.boardlyInk)
             Spacer()
-            Button(doneLabel, action: onDone)
+            Button(LocalizedStringKey(doneLabel), action: onDone)
                 .foregroundStyle(Color.accentColor)
         }
         .font(.sans(16, .semibold))
@@ -151,7 +151,9 @@ struct BoardlyFieldLabel: View {
     let text: String
     init(_ text: String) { self.text = text }
     var body: some View {
-        Text(text)
+        // Literal call-site strings are localized via the catalog; dynamic ones
+        // (e.g. a group name) fall through to their verbatim value.
+        Text(LocalizedStringKey(text))
             .font(.boardlyMonoLabel)
             .tracking(1.5)
             .textCase(.uppercase)
