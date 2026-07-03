@@ -104,6 +104,100 @@ In tests, swap `BoardlyLog.sink` for a `TestLogSink` (defined in `BoardlyLogTest
 
 ---
 
+## Localization
+
+Boardly ships an English **String Catalog** (`Boardly/Boardly/Localizable.xcstrings`,
+base language `en`) with French as a translated locale. The catalog is the **single
+source of truth**; every user-facing string must be localizable.
+
+**The one rule:** any text shown to a user is a `LocalizedStringKey` /
+`LocalizedStringResource` — **never a bare `String`.** `Text("…")`, `Button("…")`,
+`Label("…", …)`, `.navigationTitle("…")` already do this — stay on that path. A
+literal silently leaves the catalog the moment it flows through a `String`, so the
+rules below close every such escape.
+
+### 1. Component copy params are `LocalizedStringKey`, never `String`
+
+*Data* a component renders (a card name, a field value) is a separate `String`
+param shown with `Text(verbatim:)`.
+
+```swift
+// Correct
+struct SettingRow: View { let title: LocalizedStringKey; let value: String }
+Text(title)             // localized copy
+Text(verbatim: value)   // data — never localized
+
+// Never — a String copy param opts every call site out of the catalog
+struct SettingRow: View { let title: String }
+```
+
+### 2. Never assemble user-facing sentences by concatenation/interpolation into a `String`
+
+One localized format string per phrase, so translators own word order and grammar.
+
+```swift
+Text("updated \(date.formatted(.relative(presentation: .named)))")   // key: "updated %@"
+// Never: build the phrase as a String, then Text(thatString)
+```
+
+### 3. Counts use catalog plurals
+
+Not `"\(n) item\(n == 1 ? "" : "s")"`. Write `Text("\(n) cards")` /
+`String(localized: "\(n) cards")` and give the key `one`/`other` variants per locale
+— English `+"s"` never pluralises French (`tableaux`, not `tableaus`).
+
+### 4. Enums separate the stored value from the display name
+
+`rawValue` is a persistence/API identifier and is **never shown**; expose
+`var localizedName: LocalizedStringResource`.
+
+```swift
+enum BoardViewMode: String { case kanban, list, grid
+    var localizedName: LocalizedStringResource {
+        switch self { case .kanban: "Kanban"; case .list: "List"; case .grid: "Grid" } } }
+Text(mode.localizedName)          // not Text(mode.rawValue)
+```
+
+### 5. Error copy is localized in the app layer
+
+BoardlyKit stays UI-string-free (see Architecture rules): it surfaces **typed errors
+/ PLANKA error codes**; the **app** maps them to `LocalizedStringResource`. Never show
+one of our own thrown errors' `localizedDescription` as final copy — map the code.
+(OS/URLSession `localizedDescription` is already localized by iOS.)
+
+### Never localize (keep verbatim)
+
+Server/user data (project/board/list/card/label/member names, descriptions, comments,
+usernames), technical identifiers (SF Symbol names, PLANKA API field values, URLs,
+Keychain/UserDefaults keys, API/persistence `rawValue`s), and proper nouns (Boardly,
+PLANKA, Markdown, HTML, WYSIWYG, TLS, SMTP, OIDC).
+
+### Adding a string
+
+Write it as a `LocalizedStringKey` (`Text("…")`, `String(localized: "…")`) —
+extraction is automatic on build. Refresh the catalog from the CLI (Xcode's IDE does
+this on build, but `xcodebuild` does not write it back):
+
+```bash
+xcodebuild … build     # emits .stringsdata under DerivedData
+xcrun xcstringstool sync Boardly/Boardly/Localizable.xcstrings --stringsdata <each .stringsdata>
+```
+
+then add the `fr` value. Strings that reach the UI via a **dynamic**
+`LocalizedStringKey(var)` (e.g. an enum name) aren't auto-extracted — add those keys
+to the catalog by hand.
+
+### Verification
+
+Run the app under the **accented pseudolanguage** (`-AppleLanguages "(en-XA)"`): every
+catalog string renders accented, so anything still plain English on screen is a leak
+(fix it) or server data (leave it). **CI blocks** on: (a) any catalog key missing its
+`fr` value or left `stale`/`needs_review`, and (b) the divergent patterns above
+(`Text(x.rawValue)` / `Text(x.label)`, `String` copy params on view components,
+concatenated `+"s"` plurals). Pseudolocalization is the definitive net.
+
+---
+
 ## Authentication
 
 - Login: `POST /access-tokens` with `emailOrUsername` + `password` → JWT, **or** via OIDC/SSO using `POST /access-tokens/exchange-with-oidc`
