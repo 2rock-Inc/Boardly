@@ -77,9 +77,9 @@ public enum BoardRealtimeEvent: Sendable {
     case attachmentDeleted(id: String)
 }
 
-extension BoardRealtimeEvent {
+public extension BoardRealtimeEvent {
     /// PLANKA socket event names this client reconciles into local state.
-    public static let handledNames: Set<String> = [
+    static let handledNames: Set<String> = [
         "cardCreate", "cardUpdate", "cardDelete",
         "listCreate", "listUpdate", "listDelete",
         "taskCreate", "taskUpdate", "taskDelete",
@@ -91,12 +91,12 @@ extension BoardRealtimeEvent {
 
     /// Parse a PLANKA socket event from its name and the JSON of its `{ item: … }`
     /// payload. Returns nil for unhandled events or malformed payloads.
-    public static func parse(event name: String, payload data: Data) -> BoardRealtimeEvent? {
+    static func parse(event name: String, payload data: Data) -> BoardRealtimeEvent? {
         let decoder = JSONDecoder.planka
         struct Wrap<U: Decodable>: Decodable { let item: U }
         struct IDWrap: Decodable { struct Item: Decodable { let id: String }; let item: Item }
 
-        func item<T: Decodable>(_ type: T.Type) -> T? {
+        func item<T: Decodable>(_: T.Type) -> T? {
             (try? decoder.decode(Wrap<T>.self, from: data))?.item
         }
         func id() -> String? {

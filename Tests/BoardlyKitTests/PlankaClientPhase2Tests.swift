@@ -1,5 +1,5 @@
-import Testing
 import Foundation
+import Testing
 @testable import BoardlyKit
 
 @Suite("PlankaClient — Phase 2 endpoints")
@@ -52,8 +52,8 @@ struct PlankaClientPhase2Tests {
         mockHTTP.stub(data: loadFixture("board_detail"))
         let payload = try await client.getBoard(id: "board-001")
         #expect(payload.board.name == "Sprint 1")
-        #expect(payload.lists.count == 4)  // raw: 2 active + 1 archive + 1 trash
-        #expect(payload.sortedLists().count == 2)  // only active lists shown
+        #expect(payload.lists.count == 4) // raw: 2 active + 1 archive + 1 trash
+        #expect(payload.sortedLists().count == 2) // only active lists shown
         #expect(payload.cards.count == 2)
         #expect(payload.taskLists.count == 1)
         #expect(payload.tasks.count == 2)

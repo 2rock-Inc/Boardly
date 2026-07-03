@@ -23,12 +23,11 @@ public struct AnyCodable: Codable, Sendable {
         } else if let dict = try? container.decode([String: AnyCodable].self) {
             value = dict
         } else if container.decodeNil() {
-            value = Optional<String>.none as any Sendable
+            value = String?.none as any Sendable
         } else {
             throw DecodingError.dataCorruptedError(
                 in: container,
-                debugDescription: "Unsupported JSON value type"
-            )
+                debugDescription: "Unsupported JSON value type")
         }
     }
 

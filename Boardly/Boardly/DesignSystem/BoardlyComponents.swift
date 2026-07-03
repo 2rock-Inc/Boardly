@@ -30,6 +30,7 @@ struct BoardlySecondaryButtonStyle: ButtonStyle {
 extension ButtonStyle where Self == BoardlyPrimaryButtonStyle {
     static var boardlyPrimary: BoardlyPrimaryButtonStyle { .init() }
 }
+
 extension ButtonStyle where Self == BoardlySecondaryButtonStyle {
     static var boardlySecondary: BoardlySecondaryButtonStyle { .init() }
 }
@@ -43,8 +44,7 @@ struct BoardlyCard: ViewModifier {
             .background(Color.boardlySurface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(Color.boardlySeparator, lineWidth: 0.5)
-            )
+                    .stroke(Color.boardlySeparator, lineWidth: 0.5))
     }
 }
 
@@ -63,8 +63,7 @@ struct BoardlyFieldStyle: ViewModifier {
             .background(Color.boardlySurface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(Color.boardlySeparator, lineWidth: 1)
-            )
+                    .stroke(Color.boardlySeparator, lineWidth: 1))
     }
 }
 
@@ -92,6 +91,7 @@ struct AvatarView: View {
         let chars = name.split(separator: " ").prefix(2).compactMap(\.first).map(String.init)
         return chars.joined().uppercased()
     }
+
     private var color: Color {
         Self.palette[boardlyStableHash(name) % Self.palette.count]
     }

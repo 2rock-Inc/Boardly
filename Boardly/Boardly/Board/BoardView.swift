@@ -1,5 +1,5 @@
-import SwiftUI
 import BoardlyKit
+import SwiftUI
 
 enum BoardViewMode: String, CaseIterable {
     case kanban = "Kanban"
@@ -23,8 +23,13 @@ struct BoardView: View {
     @State private var newCardTitle = ""
     @Environment(\.dismiss) private var dismiss
 
-    init(client: PlankaClient, boardId: String, boardName: String,
-         projectName: String? = nil, focusCardId: String? = nil) {
+    init(
+        client: PlankaClient,
+        boardId: String,
+        boardName: String,
+        projectName: String? = nil,
+        focusCardId: String? = nil)
+    {
         self.client = client
         self.boardId = boardId
         self.boardName = boardName
@@ -61,7 +66,8 @@ struct BoardView: View {
             // Deep-open the focused card at most once, and only if it still exists
             // on this board (it may have been deleted/moved since indexing).
             if let focusCardId, !didFocusCard,
-               viewModel.payload?.cards.contains(where: { $0.id == focusCardId }) == true {
+               viewModel.payload?.cards.contains(where: { $0.id == focusCardId }) == true
+            {
                 didFocusCard = true
                 selectedCardId = SelectedCard(id: focusCardId)
             }
@@ -87,8 +93,8 @@ struct BoardView: View {
         }
         .alert("Error", isPresented: Binding(
             get: { viewModel.error != nil },
-            set: { if !$0 { viewModel.error = nil } }
-        )) {
+            set: { if !$0 { viewModel.error = nil } }))
+        {
             Button("OK") { viewModel.error = nil }
         } message: {
             Text(viewModel.error ?? "")
@@ -140,8 +146,7 @@ struct BoardView: View {
                         .padding(.vertical, 7)
                         .background(
                             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(active ? Color.boardlySurface : .clear)
-                        )
+                                .fill(active ? Color.boardlySurface : .clear))
                         .onTapGesture {
                             withAnimation(.easeInOut(duration: 0.15)) { mode = item }
                         }
@@ -164,8 +169,7 @@ struct BoardView: View {
                 ContentUnavailableView(
                     "No lists",
                     systemImage: "rectangle.split.3x1",
-                    description: Text("Add lists to this board from the web app.")
-                )
+                    description: Text("Add lists to this board from the web app."))
             } else {
                 switch mode {
                 case .kanban: kanbanMode(payload)
@@ -195,9 +199,8 @@ struct BoardView: View {
                             onCardTap: { selectedCardId = SelectedCard(id: $0.id) },
                             onCreateCard: { name in
                                 Task { await viewModel.createCard(in: list, name: name) }
-                            }
-                        )
-                        .frame(width: 280)
+                            })
+                            .frame(width: 280)
                     }
                 }
                 .padding(.horizontal, 20)
@@ -232,8 +235,7 @@ struct BoardView: View {
                                 card: card,
                                 tasks: payload.taskLists(for: card).flatMap { payload.tasks(for: $0) },
                                 onTap: { selectedCardId = SelectedCard(id: card.id) },
-                                onToggleTask: { task in Task { await viewModel.toggleTask(task) } }
-                            )
+                                onToggleTask: { task in Task { await viewModel.toggleTask(task) } })
                         }
                     }
                 }
@@ -255,8 +257,7 @@ struct BoardView: View {
                                 taskLists: payload.taskLists(for: card),
                                 tasks: payload.taskLists(for: card).flatMap { payload.tasks(for: $0) },
                                 labels: payload.labels(for: card),
-                                members: payload.members(for: card)
-                            )
+                                members: payload.members(for: card))
                         }
                         .buttonStyle(.plain)
                     }

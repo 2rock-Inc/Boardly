@@ -42,9 +42,9 @@ public struct OSLogSink: LogSink {
         let logger = Logger(subsystem: subsystem, category: entry.tag.rawValue)
         let text = format(entry)
         switch entry.level {
-        case .info:    logger.info("\(text, privacy: .public)")
+        case .info: logger.info("\(text, privacy: .public)")
         case .warning: logger.warning("\(text, privacy: .public)")
-        case .error:   logger.error("\(text, privacy: .public)")
+        case .error: logger.error("\(text, privacy: .public)")
         }
     }
 
@@ -61,9 +61,9 @@ public struct OSLogSink: LogSink {
             parts.append("error=\"\(desc)\"")
         }
         #if DEBUG
-        if let file = entry.file, let fn = entry.function, let line = entry.line {
-            parts.append("(\(file):\(line) \(fn))")
-        }
+            if let file = entry.file, let fn = entry.function, let line = entry.line {
+                parts.append("(\(file):\(line) \(fn))")
+            }
         #endif
         return parts.joined(separator: " ")
     }

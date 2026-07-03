@@ -9,3 +9,7 @@
 --importgrouping testable-bottom
 --exclude .build,DerivedData,Reference
 
+# Keep concise single-line bodies (e.g. `var id: String { rawValue }`) rather
+# than expanding them onto multiple lines — the idiomatic Swift/SwiftUI style.
+--disable wrapFunctionBodies,wrapPropertyBodies,wrapLoopBodies
+

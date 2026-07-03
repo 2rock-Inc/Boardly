@@ -1,10 +1,9 @@
-import Testing
 import Foundation
+import Testing
 @testable import BoardlyKit
 
 @Suite("BoardPayload")
 struct BoardPayloadTests {
-
     // MARK: - Fixture decoding
 
     @Test("Decode board detail fixture — lists, cards, tasks")
@@ -30,8 +29,8 @@ struct BoardPayloadTests {
         let inc = response.included
 
         #expect(response.item.name == "Sprint 1")
-        #expect((inc.lists ?? []).count == 4)  // 2 active + 1 archive + 1 trash
-        #expect((inc.lists ?? []).filter { $0.type == "active" }.count == 2)
+        #expect((inc.lists ?? []).count == 4) // 2 active + 1 archive + 1 trash
+        #expect((inc.lists ?? []).count(where: { $0.type == "active" }) == 2)
         #expect((inc.cards ?? []).count == 2)
         #expect((inc.taskLists ?? []).count == 1)
         #expect((inc.tasks ?? []).count == 2)
@@ -139,7 +138,6 @@ struct BoardPayloadTests {
             labels: inc.labels ?? [],
             cardMemberships: inc.cardMemberships ?? [],
             cardLabels: inc.cardLabels ?? [],
-            users: inc.users ?? []
-        )
+            users: inc.users ?? [])
     }
 }

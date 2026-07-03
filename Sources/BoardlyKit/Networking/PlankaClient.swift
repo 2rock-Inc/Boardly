@@ -8,8 +8,8 @@ public struct PlankaClient: Sendable {
     public init(
         profile: ServerProfile,
         tokenStore: TokenStore,
-        httpClient: any HTTPClient = URLSessionHTTPClient()
-    ) {
+        httpClient: any HTTPClient = URLSessionHTTPClient())
+    {
         self.profile = profile
         self.tokenStore = tokenStore
         self.httpClient = httpClient
@@ -19,8 +19,9 @@ public struct PlankaClient: Sendable {
 
     public func validateInstance() async throws -> Bootstrap {
         struct Response: Decodable { let item: Bootstrap }
-        BoardlyLog.tag(.network).icon("🔍").info("Validate instance",
-                                                  metadata: ["url": profile.baseURL.absoluteString])
+        BoardlyLog.tag(.network).icon("🔍").info(
+            "Validate instance",
+            metadata: ["url": profile.baseURL.absoluteString])
         let request = try buildRequest(method: "GET", path: "/bootstrap", requiresAuth: false)
         let response: Response = try await execute(request)
         BoardlyLog.tag(.network).icon("✅").info("Instance reachable")
@@ -36,14 +37,16 @@ public struct PlankaClient: Sendable {
             let item: String
         }
 
-        BoardlyLog.tag(.auth).icon("🔐").info("Login attempt",
-                                               metadata: ["user": emailOrUsername])
+        BoardlyLog.tag(.auth).icon("🔐").info(
+            "Login attempt",
+            metadata: ["user": emailOrUsername])
         let body = try JSONEncoder().encode(Body(emailOrUsername: emailOrUsername, password: password))
         let request = try buildRequest(method: "POST", path: "/access-tokens", body: body, requiresAuth: false)
         let response: Response = try await execute(request)
         try tokenStore.saveToken(response.item)
-        BoardlyLog.tag(.auth).icon("✅").info("Login succeeded",
-                                               metadata: ["user": emailOrUsername])
+        BoardlyLog.tag(.auth).icon("✅").info(
+            "Login succeeded",
+            metadata: ["user": emailOrUsername])
     }
 
     /// Exchange an OIDC authorization `code` + `nonce` (captured from the SSO
@@ -54,8 +57,11 @@ public struct PlankaClient: Sendable {
         struct Response: Decodable { let item: String }
         BoardlyLog.tag(.auth).icon("🔐").info("OIDC token exchange")
         let body = try JSONEncoder().encode(Body(code: code, nonce: nonce))
-        let request = try buildRequest(method: "POST", path: "/access-tokens/exchange-with-oidc",
-                                       body: body, requiresAuth: false)
+        let request = try buildRequest(
+            method: "POST",
+            path: "/access-tokens/exchange-with-oidc",
+            body: body,
+            requiresAuth: false)
         let response: Response = try await execute(request)
         try tokenStore.saveToken(response.item)
         BoardlyLog.tag(.auth).icon("✅").info("OIDC login succeeded")
@@ -79,8 +85,7 @@ public struct PlankaClient: Sendable {
         let response: Response = try await execute(request)
         return CurrentUserPayload(
             user: response.item,
-            notificationServices: response.included?.notificationServices ?? []
-        )
+            notificationServices: response.included?.notificationServices ?? [])
     }
 
     /// Update the current user's preferences (e.g. `defaultHomeView`,
@@ -120,8 +125,7 @@ public struct PlankaClient: Sendable {
             backgroundImages: response.included.backgroundImages ?? [],
             projectManagers: response.included.projectManagers ?? [],
             baseCustomFieldGroups: response.included.baseCustomFieldGroups ?? [],
-            customFields: response.included.customFields ?? []
-        )
+            customFields: response.included.customFields ?? [])
     }
 
     // MARK: - Board
@@ -140,8 +144,7 @@ public struct PlankaClient: Sendable {
             return payload
         } catch {
             BoardlyLog.tag(.network).icon("❌").error(
-                "Decode failed", error: error, metadata: ["type": "BoardPayload", "path": request.url?.path ?? "?"]
-            )
+                "Decode failed", error: error, metadata: ["type": "BoardPayload", "path": request.url?.path ?? "?"])
             throw PlankaAPIError.decodingError(error)
         }
     }
@@ -279,6 +282,7 @@ public struct PlankaClient: Sendable {
                 try c.encode(total, forKey: .total)
                 try c.encode(startedAt, forKey: .startedAt) // explicit null when nil (stopped)
             }
+
             enum CodingKeys: String, CodingKey { case total, startedAt }
         }
         struct Body: Encodable { let stopwatch: Stopwatch }
@@ -323,8 +327,7 @@ public struct PlankaClient: Sendable {
         let request = try buildMultipartRequest(
             path: "/cards/\(cardId)/attachments",
             fields: ["type": "file", "name": fileName],
-            file: (fieldName: "file", fileName: fileName, mimeType: mimeType, data: data)
-        )
+            file: (fieldName: "file", fileName: fileName, mimeType: mimeType, data: data))
         let response: Response = try await execute(request)
         return response.item
     }
@@ -334,8 +337,7 @@ public struct PlankaClient: Sendable {
         let request = try buildMultipartRequest(
             path: "/cards/\(cardId)/attachments",
             fields: ["type": "link", "url": url, "name": name],
-            file: nil
-        )
+            file: nil)
         let response: Response = try await execute(request)
         return response.item
     }
@@ -394,8 +396,9 @@ public struct PlankaClient: Sendable {
         struct Response: Decodable { let items: [PlankaNotification]; let included: Included }
         let request = try buildRequest(method: "GET", path: "/notifications")
         let response: Response = try await execute(request)
-        return NotificationsPayload(notifications: response.items,
-                                    users: response.included.users ?? [])
+        return NotificationsPayload(
+            notifications: response.items,
+            users: response.included.users ?? [])
     }
 
     @discardableResult
@@ -469,8 +472,7 @@ public struct PlankaClient: Sendable {
         let request = try buildMultipartRequest(
             path: "/projects/\(projectId)/background-images",
             fields: [:],
-            file: (fieldName: "file", fileName: fileName, mimeType: mimeType, data: data)
-        )
+            file: (fieldName: "file", fileName: fileName, mimeType: mimeType, data: data))
         let response: Response = try await execute(request)
         return response.item
     }
@@ -556,11 +558,20 @@ public struct PlankaClient: Sendable {
         return response.items
     }
 
-    public func createWebhook(name: String, url: String, accessToken: String? = nil,
-                              events: [String]? = nil, excludedEvents: [String]? = nil) async throws -> Webhook {
+    public func createWebhook(
+        name: String,
+        url: String,
+        accessToken: String? = nil,
+        events: [String]? = nil,
+        excludedEvents: [String]? = nil) async throws -> Webhook
+    {
         struct Response: Decodable { let item: Webhook }
-        let patch = WebhookPatch(name: name, url: url, accessToken: accessToken,
-                                 events: events, excludedEvents: excludedEvents)
+        let patch = WebhookPatch(
+            name: name,
+            url: url,
+            accessToken: accessToken,
+            events: events,
+            excludedEvents: excludedEvents)
         let body = try JSONEncoder().encode(patch)
         let request = try buildRequest(method: "POST", path: "/webhooks", body: body)
         let response: Response = try await execute(request)
@@ -627,8 +638,8 @@ public struct PlankaClient: Sendable {
         method: String,
         path: String,
         body: Data? = nil,
-        requiresAuth: Bool = true
-    ) throws -> URLRequest {
+        requiresAuth: Bool = true) throws -> URLRequest
+    {
         guard var components = URLComponents(url: profile.baseURL, resolvingAgainstBaseURL: false) else {
             throw PlankaAPIError.invalidURL
         }
@@ -655,8 +666,8 @@ public struct PlankaClient: Sendable {
     private func buildMultipartRequest(
         path: String,
         fields: [String: String],
-        file: (fieldName: String, fileName: String, mimeType: String, data: Data)?
-    ) throws -> URLRequest {
+        file: (fieldName: String, fileName: String, mimeType: String, data: Data)?) throws -> URLRequest
+    {
         guard var components = URLComponents(url: profile.baseURL, resolvingAgainstBaseURL: false) else {
             throw PlankaAPIError.invalidURL
         }
@@ -703,8 +714,7 @@ public struct PlankaClient: Sendable {
             BoardlyLog.tag(.network).icon("❌").error(
                 "Decode failed",
                 error: error,
-                metadata: ["type": "\(T.self)", "path": request.url?.path ?? "?"]
-            )
+                metadata: ["type": "\(T.self)", "path": request.url?.path ?? "?"])
             throw PlankaAPIError.decodingError(error)
         }
     }
@@ -722,32 +732,37 @@ public struct PlankaClient: Sendable {
         do {
             (data, response) = try await httpClient.data(for: request)
         } catch {
-            BoardlyLog.tag(.network).icon("❌").error("Network failure",
-                                                       error: error,
-                                                       metadata: ["path": path])
+            BoardlyLog.tag(.network).icon("❌").error(
+                "Network failure",
+                error: error,
+                metadata: ["path": path])
             throw PlankaAPIError.networkError(error)
         }
 
         guard let http = response as? HTTPURLResponse else {
-            BoardlyLog.tag(.network).icon("❌").error("Invalid response",
-                                                       metadata: ["path": path])
+            BoardlyLog.tag(.network).icon("❌").error(
+                "Invalid response",
+                metadata: ["path": path])
             throw PlankaAPIError.networkError(URLError(.badServerResponse))
         }
 
-        guard (200...299).contains(http.statusCode) else {
+        guard (200 ... 299).contains(http.statusCode) else {
             // Try to parse PLANKA's structured error body
             let plankaCode = (try? JSONDecoder().decode(PlankaErrorBody.self, from: data))?.code
             var meta: [String: Any] = ["path": path]
             if let code = plankaCode { meta["code"] = code }
             if http.statusCode == 401 {
-                BoardlyLog.tag(.auth).icon("⚠️").warning("401 Unauthorized — token cleared",
-                                                          metadata: meta)
+                BoardlyLog.tag(.auth).icon("⚠️").warning(
+                    "401 Unauthorized — token cleared",
+                    metadata: meta)
             } else if http.statusCode >= 500 {
-                BoardlyLog.tag(.network).icon("❌").error("← \(http.statusCode) \(method) \(path)",
-                                                           metadata: meta)
+                BoardlyLog.tag(.network).icon("❌").error(
+                    "← \(http.statusCode) \(method) \(path)",
+                    metadata: meta)
             } else {
-                BoardlyLog.tag(.network).icon("⚠️").warning("← \(http.statusCode) \(method) \(path)",
-                                                              metadata: meta)
+                BoardlyLog.tag(.network).icon("⚠️").warning(
+                    "← \(http.statusCode) \(method) \(path)",
+                    metadata: meta)
             }
             if let mapped = plankaCode.flatMap(PlankaAPIError.from(plankaCode:)) {
                 throw mapped

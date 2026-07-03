@@ -16,8 +16,8 @@ public struct WebhookPatch: Encodable, Sendable {
         url: String? = nil,
         accessToken: String? = nil,
         events: [String]? = nil,
-        excludedEvents: [String]? = nil
-    ) {
+        excludedEvents: [String]? = nil)
+    {
         self.name = name
         self.url = url
         self.accessToken = accessToken

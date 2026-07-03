@@ -56,8 +56,8 @@ final class MockKeychainStore: KeychainStoring, @unchecked Sendable {
 func makeProfile(
     id: UUID = UUID(),
     name: String = "Test Server",
-    baseURL: URL = URL(string: "https://planka.example.com")!
-) -> ServerProfile {
+    baseURL: URL = URL(string: "https://planka.example.com")!) -> ServerProfile
+{
     ServerProfile(id: id, name: name, baseURL: baseURL)
 }
 

@@ -1,5 +1,5 @@
-import SwiftUI
 import BoardlyKit
+import SwiftUI
 
 @Observable
 @MainActor
@@ -36,8 +36,7 @@ final class LoginViewModel {
         do {
             try await client.login(
                 emailOrUsername: email.trimmingCharacters(in: .whitespacesAndNewlines),
-                password: password
-            )
+                password: password)
             return true
         } catch let apiError as PlankaAPIError {
             switch apiError {
@@ -62,10 +61,10 @@ final class LoginViewModel {
         }
         guard let session = OIDCSession(oidc: oidc, baseURL: baseURL) else {
             #if DEBUG
-            // Surface the raw URL so we can diagnose a parsing failure.
-            error = "OIDC: authorization URL could not be parsed. authorizationUrl = \(oidc.authorizationUrl)"
+                // Surface the raw URL so we can diagnose a parsing failure.
+                error = "OIDC: authorization URL could not be parsed. authorizationUrl = \(oidc.authorizationUrl)"
             #else
-            error = OIDCError.notConfigured.errorDescription
+                error = OIDCError.notConfigured.errorDescription
             #endif
             return
         }
@@ -192,7 +191,7 @@ struct LoginView: View {
                     }
 
                     // Divider — only when both password and SSO are offered
-                    if viewModel.showsPasswordForm && viewModel.showsSSO {
+                    if viewModel.showsPasswordForm, viewModel.showsSSO {
                         HStack(spacing: 12) {
                             Rectangle().fill(Color.boardlySeparator).frame(height: 1)
                             Text("or").font(.boardlyMonoLabel).foregroundStyle(Color.boardlyTextTertiary)
@@ -204,7 +203,7 @@ struct LoginView: View {
                     // SSO (OIDC) — shown only when the instance advertises it
                     if viewModel.showsSSO {
                         Button(action: handleSSO) {
-                            if viewModel.isLoggingIn && !viewModel.showsPasswordForm {
+                            if viewModel.isLoggingIn, !viewModel.showsPasswordForm {
                                 ProgressView().tint(Color.boardlyInk)
                             } else {
                                 Label("Continue with SSO", systemImage: "rectangle.portrait.and.arrow.right")
@@ -232,8 +231,7 @@ struct LoginView: View {
                         }
                     }
                 },
-                onCancel: { viewModel.cancelSSO() }
-            )
+                onCancel: { viewModel.cancelSSO() })
         }
     }
 

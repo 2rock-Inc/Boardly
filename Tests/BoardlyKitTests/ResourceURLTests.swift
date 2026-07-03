@@ -1,5 +1,5 @@
-import Testing
 import Foundation
+import Testing
 @testable import BoardlyKit
 
 @Suite("PlankaClient.resourceURL — subpath-safe URL resolution")
@@ -9,8 +9,7 @@ struct ResourceURLTests {
         return PlankaClient(
             profile: profile,
             tokenStore: TokenStore(profileID: profile.id, keychainStore: MockKeychainStore()),
-            httpClient: MockHTTPClient()
-        )
+            httpClient: MockHTTPClient())
     }
 
     @Test("absolute URLs pass through unchanged")

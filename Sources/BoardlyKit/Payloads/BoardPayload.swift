@@ -24,8 +24,8 @@ public struct BoardPayload: Sendable {
         cardLabels: [CardLabel],
         users: [User],
         attachments: [Attachment] = [],
-        boardMemberships: [BoardMembership] = []
-    ) {
+        boardMemberships: [BoardMembership] = [])
+    {
         self.board = board
         self.lists = lists
         self.cards = cards
@@ -47,7 +47,7 @@ public struct BoardPayload: Sendable {
 
     public func cards(for list: PlankaList) -> [Card] {
         cards.filter { $0.listId == list.id }
-             .sorted { ($0.position ?? 0) < ($1.position ?? 0) }
+            .sorted { ($0.position ?? 0) < ($1.position ?? 0) }
     }
 
     public func card(id: String) -> Card? {
@@ -56,12 +56,12 @@ public struct BoardPayload: Sendable {
 
     public func taskLists(for card: Card) -> [TaskList] {
         taskLists.filter { $0.cardId == card.id }
-                 .sorted { ($0.position ?? 0) < ($1.position ?? 0) }
+            .sorted { ($0.position ?? 0) < ($1.position ?? 0) }
     }
 
     public func tasks(for taskList: TaskList) -> [PlankaTask] {
         tasks.filter { $0.taskListId == taskList.id }
-             .sorted { ($0.position ?? 0) < ($1.position ?? 0) }
+            .sorted { ($0.position ?? 0) < ($1.position ?? 0) }
     }
 
     public func nextCardPosition(in list: PlankaList) -> Double {
@@ -75,7 +75,7 @@ public struct BoardPayload: Sendable {
     public func labels(for card: Card) -> [Label] {
         let ids = Set(cardLabels.filter { $0.cardId == card.id }.map(\.labelId))
         return labels.filter { ids.contains($0.id) }
-                     .sorted { ($0.position ?? 0) < ($1.position ?? 0) }
+            .sorted { ($0.position ?? 0) < ($1.position ?? 0) }
     }
 
     /// Users assigned to a card.
@@ -87,7 +87,7 @@ public struct BoardPayload: Sendable {
     /// Attachments on a card.
     public func attachments(for card: Card) -> [Attachment] {
         attachments.filter { $0.cardId == card.id }
-                   .sorted { ($0.createdAt ?? .distantPast) < ($1.createdAt ?? .distantPast) }
+            .sorted { ($0.createdAt ?? .distantPast) < ($1.createdAt ?? .distantPast) }
     }
 
     /// Users who are members of this board (candidates for card assignment).
@@ -110,7 +110,6 @@ extension Card {
             prevListId: prevListId, coverAttachmentId: coverAttachmentId, type: type,
             position: position, name: name, description: description, dueDate: dueDate,
             isDueCompleted: isDueCompleted, stopwatch: stopwatch, commentsTotal: total,
-            isClosed: isClosed, listChangedAt: listChangedAt, createdAt: createdAt, updatedAt: updatedAt
-        )
+            isClosed: isClosed, listChangedAt: listChangedAt, createdAt: createdAt, updatedAt: updatedAt)
     }
 }

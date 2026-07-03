@@ -10,8 +10,7 @@ extension JSONDecoder {
             if let date = ISO8601Formatters.standard.date(from: string) { return date }
             throw DecodingError.dataCorruptedError(
                 in: container,
-                debugDescription: "Cannot decode date from '\(string)'"
-            )
+                debugDescription: "Cannot decode date from '\(string)'")
         }
         return decoder
     }()

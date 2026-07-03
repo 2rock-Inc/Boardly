@@ -24,7 +24,7 @@ public enum PlankaJWT {
 
     private static func base64URLDecode(_ string: String) -> Data? {
         var s = string.replacingOccurrences(of: "-", with: "+")
-                      .replacingOccurrences(of: "_", with: "/")
+            .replacingOccurrences(of: "_", with: "/")
         while s.count % 4 != 0 { s.append("=") }
         return Data(base64Encoded: s)
     }

@@ -18,8 +18,8 @@ public struct ProjectsPayload: Sendable {
         backgroundImages: [BackgroundImage] = [],
         projectManagers: [ProjectManager] = [],
         baseCustomFieldGroups: [BaseCustomFieldGroup] = [],
-        customFields: [CustomField] = []
-    ) {
+        customFields: [CustomField] = [])
+    {
         self.projects = projects
         self.boards = boards
         self.users = users
@@ -54,7 +54,7 @@ public struct ProjectsPayload: Sendable {
 
     public func boards(for project: Project) -> [Board] {
         boards.filter { $0.projectId == project.id }
-              .sorted { ($0.position ?? 0) < ($1.position ?? 0) }
+            .sorted { ($0.position ?? 0) < ($1.position ?? 0) }
     }
 
     /// The uploaded background image currently set on the project, if any.

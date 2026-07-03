@@ -1,5 +1,5 @@
-import SwiftUI
 import BoardlyKit
+import SwiftUI
 
 /// Design 08c — assign/unassign the board's labels to a card, plus create one.
 struct CardLabelsSheet: View {
@@ -13,6 +13,7 @@ struct CardLabelsSheet: View {
     private var boardLabels: [BoardlyKit.Label] {
         (boardVM.payload?.labels ?? []).sorted { ($0.position ?? 0) < ($1.position ?? 0) }
     }
+
     private var assignedIds: Set<String> {
         guard let card, let payload = boardVM.payload else { return [] }
         return Set(payload.labels(for: card).map(\.id))

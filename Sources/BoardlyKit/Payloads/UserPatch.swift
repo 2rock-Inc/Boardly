@@ -13,8 +13,8 @@ public struct UserPatch: Encodable, Sendable {
     public init(
         defaultHomeView: String? = nil,
         defaultEditorMode: String? = nil,
-        defaultProjectsOrder: String? = nil
-    ) {
+        defaultProjectsOrder: String? = nil)
+    {
         self.defaultHomeView = defaultHomeView
         self.defaultEditorMode = defaultEditorMode
         self.defaultProjectsOrder = defaultProjectsOrder

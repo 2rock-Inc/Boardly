@@ -1,5 +1,5 @@
-import Testing
 import Foundation
+import Testing
 @testable import BoardlyKit
 
 @Suite("PlankaClient")
@@ -161,12 +161,11 @@ struct PlankaClientTests {
 
     @Test("subpath base URL is preserved when building request")
     func subpathBaseURLPreserved() async throws {
-        let subpathProfile = makeProfile(baseURL: URL(string: "https://example.com/planka")!)
+        let subpathProfile = try makeProfile(baseURL: #require(URL(string: "https://example.com/planka")))
         let subClient = PlankaClient(
             profile: subpathProfile,
             tokenStore: TokenStore(profileID: subpathProfile.id, keychainStore: mockKeychain),
-            httpClient: mockHTTP
-        )
+            httpClient: mockHTTP)
         mockHTTP.stub(json: #"{"item":{"version":"2.0.1","termsLanguages":[],"oidc":null}}"#)
         _ = try await subClient.validateInstance()
 

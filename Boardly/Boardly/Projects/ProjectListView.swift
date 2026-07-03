@@ -1,5 +1,5 @@
-import SwiftUI
 import BoardlyKit
+import SwiftUI
 
 @Observable
 @MainActor
@@ -24,8 +24,8 @@ final class ProjectListViewModel {
         }
     }
 
-    // Per-board card counts for the list rows (design shows "N cards"); the
-    // /projects payload has no counts, so fetch each board concurrently.
+    /// Per-board card counts for the list rows (design shows "N cards"); the
+    /// /projects payload has no counts, so fetch each board concurrently.
     private func loadCardCounts(payload: ProjectsPayload, client: PlankaClient) async {
         await withTaskGroup(of: (String, Int)?.self) { group in
             for board in payload.boards {
@@ -47,7 +47,7 @@ final class ProjectListViewModel {
     }
 }
 
-// Stable project color shared by favorite cards and project headers.
+/// Stable project color shared by favorite cards and project headers.
 func projectColor(_ id: String) -> Color {
     [Color.labelTeal, .labelBlue, .labelPurple, .labelGreen][boardlyStableHash(id) % 4]
 }
@@ -62,7 +62,7 @@ struct ProjectListView: View {
         ZStack {
             Color.boardlyBackground.ignoresSafeArea()
 
-            if viewModel.payload == nil && viewModel.error == nil {
+            if viewModel.payload == nil, viewModel.error == nil {
                 ProgressView().tint(.accentColor)
             } else if let error = viewModel.error {
                 ContentUnavailableView(error, systemImage: "exclamationmark.triangle")
@@ -103,8 +103,7 @@ struct ProjectListView: View {
                                 members: payload.members(for: project),
                                 cardCounts: viewModel.cardCounts,
                                 onOpenBoard: { path.append(.board(id: $0.id, name: $0.name, projectName: project.name)) },
-                                onOpenProject: { path.append(.project(id: project.id, name: project.name)) }
-                            )
+                                onOpenProject: { path.append(.project(id: project.id, name: project.name)) })
                         }
                     }
                 }
@@ -239,8 +238,7 @@ private struct FavoriteCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(Color.boardlySeparator, lineWidth: 0.5)
-        )
+                .stroke(Color.boardlySeparator, lineWidth: 0.5))
     }
 }
 
@@ -287,8 +285,7 @@ private struct ProjectCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(Color.boardlySeparator, lineWidth: 0.5)
-        )
+                .stroke(Color.boardlySeparator, lineWidth: 0.5))
     }
 }
 

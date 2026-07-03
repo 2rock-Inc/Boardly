@@ -1,5 +1,5 @@
-import Foundation
 import BoardlyKit
+import Foundation
 
 enum SearchScope: String, CaseIterable, Identifiable {
     case all = "All"
@@ -64,8 +64,10 @@ final class SearchViewModel {
             cardHits = cards
             let countByBoard = Dictionary(grouping: cards, by: \.boardId).mapValues(\.count)
             boardHits = payload.boards.map {
-                BoardHit(board: $0, projectName: projectName[$0.projectId] ?? "",
-                         cardCount: countByBoard[$0.id] ?? 0)
+                BoardHit(
+                    board: $0,
+                    projectName: projectName[$0.projectId] ?? "",
+                    cardCount: countByBoard[$0.id] ?? 0)
             }
             // Only cache the index as done when every board loaded — otherwise a
             // transient per-board failure would leave cards permanently unfindable
@@ -88,8 +90,12 @@ final class SearchViewModel {
                     let listName = Dictionary(
                         payload.lists.map { ($0.id, $0.name ?? "") }, uniquingKeysWith: { first, _ in first })
                     return payload.cards.map { card in
-                        CardHit(card: card, boardId: board.id, boardName: boardName,
-                                projectName: project, listName: listName[card.listId] ?? "")
+                        CardHit(
+                            card: card,
+                            boardId: board.id,
+                            boardName: boardName,
+                            projectName: project,
+                            listName: listName[card.listId] ?? "")
                     }
                 }
             }

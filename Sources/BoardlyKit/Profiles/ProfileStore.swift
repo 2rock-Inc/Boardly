@@ -79,7 +79,8 @@ public final class ProfileStore {
         profiles = decoded
         if let idString = userDefaults.string(forKey: activeProfileKey),
            let id = UUID(uuidString: idString),
-           profiles.contains(where: { $0.id == id }) {
+           profiles.contains(where: { $0.id == id })
+        {
             activeProfileID = id
         } else {
             activeProfileID = profiles.first?.id

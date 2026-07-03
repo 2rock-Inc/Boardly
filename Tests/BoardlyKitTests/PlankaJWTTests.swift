@@ -1,10 +1,9 @@
-import Testing
 import Foundation
+import Testing
 @testable import BoardlyKit
 
 @Suite("PlankaJWT")
 struct PlankaJWTTests {
-
     private func token(payloadJSON: String) -> String {
         let payload = Data(payloadJSON.utf8).base64EncodedString()
             .replacingOccurrences(of: "+", with: "-")

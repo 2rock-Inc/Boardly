@@ -21,13 +21,10 @@ let package = Package(
             dependencies: [
                 .product(name: "SocketIO", package: "socket.io-client-swift"),
             ],
-            path: "Sources/BoardlyKit"
-        ),
+            path: "Sources/BoardlyKit"),
         .testTarget(
             name: "BoardlyKitTests",
             dependencies: ["BoardlyKit"],
             path: "Tests/BoardlyKitTests",
-            resources: [.copy("Fixtures")]
-        ),
-    ]
-)
+            resources: [.copy("Fixtures")]),
+    ])

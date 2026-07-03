@@ -1,6 +1,6 @@
-import SwiftUI
 import BoardlyKit
 import PhotosUI
+import SwiftUI
 import UniformTypeIdentifiers
 
 /// Design 08d — attach a file (photo library / file) or a link to a card, and
@@ -138,7 +138,7 @@ struct CardAttachmentsSheet: View {
     }
 
     private func handleFile(_ result: Result<URL, Error>) {
-        guard case .success(let url) = result else { return }
+        guard case let .success(url) = result else { return }
         let scoped = url.startAccessingSecurityScopedResource()
         defer { if scoped { url.stopAccessingSecurityScopedResource() } }
         guard let data = try? Data(contentsOf: url) else { return }

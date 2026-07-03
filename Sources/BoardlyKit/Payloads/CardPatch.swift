@@ -16,8 +16,8 @@ public struct CardPatch: Encodable, Sendable {
         listId: String? = nil,
         position: Double? = nil,
         dueDate: Date? = nil,
-        clearDueDate: Bool = false
-    ) {
+        clearDueDate: Bool = false)
+    {
         self.name = name
         self.description = description
         self.listId = listId

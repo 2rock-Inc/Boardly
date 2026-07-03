@@ -11,8 +11,12 @@ struct EditProjectSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var tab: EditTab
 
-    init(viewModel: ProjectDetailViewModel, client: PlankaClient,
-         initialTab: EditTab = .general, onDeleted: @escaping () -> Void) {
+    init(
+        viewModel: ProjectDetailViewModel,
+        client: PlankaClient,
+        initialTab: EditTab = .general,
+        onDeleted: @escaping () -> Void)
+    {
         self.viewModel = viewModel
         self.client = client
         self.onDeleted = onDeleted
@@ -249,8 +253,7 @@ private struct ManagersTab: View {
                     .background(
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
                             .strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
-                            .foregroundStyle(Color.boardlySeparator)
-                    )
+                            .foregroundStyle(Color.boardlySeparator))
             }
 
             sectionSeparator("Danger zone")
@@ -298,8 +301,7 @@ private struct BackgroundTab: View {
                             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                    .stroke(Color.accentColor, lineWidth: currentGradient == gradientName ? 3 : 0)
-                            )
+                                    .stroke(Color.accentColor, lineWidth: currentGradient == gradientName ? 3 : 0))
                     }
                     .buttonStyle(.plain)
                 }
@@ -315,8 +317,7 @@ private struct BackgroundTab: View {
                     .background(
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
                             .strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
-                            .foregroundStyle(Color.boardlySeparator)
-                    )
+                            .foregroundStyle(Color.boardlySeparator))
             }
 
             if viewModel.project?.backgroundType != nil {
@@ -343,7 +344,8 @@ private struct BackgroundTab: View {
             photoItem = nil
             if let data = try? await item.loadTransferable(type: Data.self),
                let uiImage = UIImage(data: data),
-               let jpeg = uiImage.jpegData(compressionQuality: 0.9) {
+               let jpeg = uiImage.jpegData(compressionQuality: 0.9)
+            {
                 _ = await viewModel.uploadImage(data: jpeg, fileName: "background.jpg", mimeType: "image/jpeg", using: client)
             } else {
                 viewModel.error = "Unreadable image."
@@ -351,7 +353,6 @@ private struct BackgroundTab: View {
         }
     }
 
-    @ViewBuilder
     private var preview: some View {
         ZStack(alignment: .bottomLeading) {
             previewBackground
@@ -369,7 +370,8 @@ private struct BackgroundTab: View {
     private var previewBackground: some View {
         if viewModel.project?.backgroundType == "image",
            let image = viewModel.currentBackgroundImage,
-           let url = client.resourceURL(image.url) {
+           let url = client.resourceURL(image.url)
+        {
             BackgroundImageView(url: url) { await client.imageData(url: $0) }
         } else if let gradient = currentGradient {
             PlankaGradient.linear(gradient)
@@ -415,8 +417,7 @@ private struct CustomFieldsTab: View {
                     .background(
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
                             .strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
-                            .foregroundStyle(Color.boardlySeparator)
-                    )
+                            .foregroundStyle(Color.boardlySeparator))
             }
         }
         .alert("New Group", isPresented: $showAddGroup) {

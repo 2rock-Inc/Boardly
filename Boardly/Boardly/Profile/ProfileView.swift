@@ -1,5 +1,5 @@
-import SwiftUI
 import BoardlyKit
+import SwiftUI
 
 struct ProfileView: View {
     let profile: ServerProfile
@@ -55,8 +55,11 @@ struct ProfileView: View {
                         ForEach(AppTheme.allCases) { Text($0.label).tag($0.rawValue) }
                     }
                 } label: {
-                    SettingsRow(icon: "sun.max", title: "Appearance",
-                                value: AppTheme(rawValue: appearanceRaw)?.label, showsChevron: true)
+                    SettingsRow(
+                        icon: "sun.max",
+                        title: "Appearance",
+                        value: AppTheme(rawValue: appearanceRaw)?.label,
+                        showsChevron: true)
                 }
 
                 Divider().padding(.leading, 52)
@@ -69,8 +72,11 @@ struct ProfileView: View {
                         }
                     }
                 } label: {
-                    SettingsRow(icon: "square.grid.2x2", title: "Home View",
-                                value: viewModel.homeView.label, showsChevron: true)
+                    SettingsRow(
+                        icon: "square.grid.2x2",
+                        title: "Home View",
+                        value: viewModel.homeView.label,
+                        showsChevron: true)
                 }
 
                 Divider().padding(.leading, 52)
@@ -83,8 +89,11 @@ struct ProfileView: View {
                         }
                     }
                 } label: {
-                    SettingsRow(icon: "text.alignleft", title: "Markdown Editor",
-                                value: viewModel.editorMode.label, showsChevron: true)
+                    SettingsRow(
+                        icon: "text.alignleft",
+                        title: "Markdown Editor",
+                        value: viewModel.editorMode.label,
+                        showsChevron: true)
                 }
             }
             .boardlyCard(padding: 0)
@@ -144,9 +153,9 @@ struct ProfileView: View {
 
     private func roleLabel(_ role: String) -> String {
         switch role {
-        case "admin": return "Administrator"
-        case "projectOwner": return "Project Owner"
-        default: return "Member"
+        case "admin": "Administrator"
+        case "projectOwner": "Project Owner"
+        default: "Member"
         }
     }
 
@@ -159,24 +168,32 @@ struct ProfileView: View {
                 NavigationLink {
                     NotificationServicesView(viewModel: viewModel)
                 } label: {
-                    SettingsRow(icon: "bell", title: "Notifications",
-                                value: "\(viewModel.services.count)", showsChevron: true)
+                    SettingsRow(
+                        icon: "bell",
+                        title: "Notifications",
+                        value: "\(viewModel.services.count)",
+                        showsChevron: true)
                 }
                 .buttonStyle(.plain)
 
                 Divider().padding(.leading, 52)
 
-                SettingsRow(icon: "globe", title: "Server",
-                            value: profile.baseURL.host ?? profile.baseURL.absoluteString,
-                            showsChevron: false)
+                SettingsRow(
+                    icon: "globe",
+                    title: "Server",
+                    value: profile.baseURL.host ?? profile.baseURL.absoluteString,
+                    showsChevron: false)
 
                 if viewModel.isAdmin {
                     Divider().padding(.leading, 52)
                     NavigationLink {
                         WebhooksView(client: client)
                     } label: {
-                        SettingsRow(icon: "point.3.connected.trianglepath.dotted",
-                                    title: "Webhooks", value: nil, showsChevron: true)
+                        SettingsRow(
+                            icon: "point.3.connected.trianglepath.dotted",
+                            title: "Webhooks",
+                            value: nil,
+                            showsChevron: true)
                     }
                     .buttonStyle(.plain)
 
@@ -184,8 +201,11 @@ struct ProfileView: View {
                     NavigationLink {
                         SMTPConfigView(client: client)
                     } label: {
-                        SettingsRow(icon: "envelope", title: "SMTP Configuration",
-                                    value: nil, showsChevron: true)
+                        SettingsRow(
+                            icon: "envelope",
+                            title: "SMTP Configuration",
+                            value: nil,
+                            showsChevron: true)
                     }
                     .buttonStyle(.plain)
                 }

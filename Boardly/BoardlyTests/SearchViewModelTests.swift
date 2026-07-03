@@ -6,22 +6,21 @@
 //  fanning out to cards, and the case/diacritic-insensitive filtering by scope.
 //
 
+import BoardlyKit
 import Foundation
 import Testing
-import BoardlyKit
 @testable import Boardly
 
 private final class SearchStubHTTP: HTTPClient, @unchecked Sendable {
     func data(for request: URLRequest) async throws -> (Data, URLResponse) {
         let path = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)?.path ?? ""
-        let json: String
-        if path.hasSuffix("/api/projects") {
-            json = """
+        let json = if path.hasSuffix("/api/projects") {
+            """
             {"items":[{"id":"p1","name":"Website Redesign 2026","isHidden":false}],
              "included":{"boards":[{"id":"b1","projectId":"p1","name":"Product Sprint","position":1}]}}
             """
         } else if path.contains("/api/boards/") {
-            json = """
+            """
             {"item":{"id":"b1","projectId":"p1","name":"Product Sprint"},
              "included":{"lists":[{"id":"l1","boardId":"b1","type":"active","name":"To Do","position":1}],
              "cards":[{"id":"c1","boardId":"b1","listId":"l1","type":"active","position":1,"name":"New home page"},
@@ -29,7 +28,7 @@ private final class SearchStubHTTP: HTTPClient, @unchecked Sendable {
              "taskLists":[],"tasks":[]}}
             """
         } else {
-            json = "{}"
+            "{}"
         }
         let resp = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
         return (Data(json.utf8), resp)
@@ -44,8 +43,7 @@ struct SearchViewModelTests {
         let client = PlankaClient(
             profile: profile,
             tokenStore: TokenStore(profileID: profile.id, keychainStore: EphemeralKeychain()),
-            httpClient: SearchStubHTTP()
-        )
+            httpClient: SearchStubHTTP())
         return SearchViewModel(client: client)
     }
 
@@ -86,14 +84,13 @@ struct SearchViewModelTests {
     }
 
     @Test("a failed index is not cached — a later call rebuilds it")
-    func retriesAfterFailure() async {
+    func retriesAfterFailure() async throws {
         let stub = FlakyStubHTTP()
-        let profile = ServerProfile(name: "T", baseURL: URL(string: "https://mock.local")!)
+        let profile = try ServerProfile(name: "T", baseURL: #require(URL(string: "https://mock.local")))
         let client = PlankaClient(
             profile: profile,
             tokenStore: TokenStore(profileID: profile.id, keychainStore: EphemeralKeychain()),
-            httpClient: stub
-        )
+            httpClient: stub)
         let vm = SearchViewModel(client: client)
 
         await vm.loadIfNeeded() // getProjects fails once
@@ -118,21 +115,20 @@ private final class FlakyStubHTTP: HTTPClient, @unchecked Sendable {
             let resp = HTTPURLResponse(url: request.url!, statusCode: 500, httpVersion: nil, headerFields: nil)!
             return (Data("{}".utf8), resp)
         }
-        let json: String
-        if path.hasSuffix("/api/projects") {
-            json = """
+        let json = if path.hasSuffix("/api/projects") {
+            """
             {"items":[{"id":"p1","name":"Website Redesign 2026","isHidden":false}],
              "included":{"boards":[{"id":"b1","projectId":"p1","name":"Product Sprint","position":1}]}}
             """
         } else if path.contains("/api/boards/") {
-            json = """
+            """
             {"item":{"id":"b1","projectId":"p1","name":"Product Sprint"},
              "included":{"lists":[{"id":"l1","boardId":"b1","type":"active","name":"To Do","position":1}],
              "cards":[{"id":"c1","boardId":"b1","listId":"l1","type":"active","position":1,"name":"New home page"}],
              "taskLists":[],"tasks":[]}}
             """
         } else {
-            json = "{}"
+            "{}"
         }
         let resp = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
         return (Data(json.utf8), resp)

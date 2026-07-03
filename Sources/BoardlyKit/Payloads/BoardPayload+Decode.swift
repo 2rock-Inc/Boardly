@@ -35,7 +35,6 @@ extension BoardPayload {
             cardLabels: inc.cardLabels ?? [],
             users: inc.users ?? [],
             attachments: inc.attachments ?? [],
-            boardMemberships: inc.boardMemberships ?? []
-        )
+            boardMemberships: inc.boardMemberships ?? [])
     }
 }

@@ -1,5 +1,5 @@
-import Testing
 import Foundation
+import Testing
 @testable import BoardlyKit
 
 @Suite("PlankaClient — Phase 5 endpoints")
@@ -70,7 +70,8 @@ struct PlankaClientPhase5Tests {
     @Test("updateCurrentUser PATCHes /users/{id} with only the set preferences")
     func updateCurrentUser() async throws {
         try tokenStore.saveToken(fakeJWT(userId: "u1"))
-        mockHTTP.stub(json: #"{"item":{"id":"u1","role":"boardUser","name":"Marie","isDeactivated":false,"defaultHomeView":"gridProjects"}}"#)
+        mockHTTP
+            .stub(json: #"{"item":{"id":"u1","role":"boardUser","name":"Marie","isDeactivated":false,"defaultHomeView":"gridProjects"}}"#)
         _ = try await client.updateCurrentUser(patch: UserPatch(defaultHomeView: "gridProjects"))
 
         let req = try #require(mockHTTP.lastRequest)
@@ -101,7 +102,9 @@ struct PlankaClientPhase5Tests {
 
     @Test("setNotificationRead PATCHes /notifications/{id} with isRead")
     func setNotificationRead() async throws {
-        mockHTTP.stub(json: #"{"item":{"id":"n1","userId":"u1","creatorUserId":null,"boardId":"b1","cardId":"c1","commentId":null,"actionId":null,"type":"commentCard","data":{},"isRead":true,"createdAt":null,"updatedAt":null}}"#)
+        mockHTTP
+            .stub(
+                json: #"{"item":{"id":"n1","userId":"u1","creatorUserId":null,"boardId":"b1","cardId":"c1","commentId":null,"actionId":null,"type":"commentCard","data":{},"isRead":true,"createdAt":null,"updatedAt":null}}"#)
         _ = try await client.setNotificationRead(id: "n1", isRead: true)
 
         let req = try #require(mockHTTP.lastRequest)
@@ -123,7 +126,9 @@ struct PlankaClientPhase5Tests {
 
     @Test("createBoardNotificationService POSTs to the board with url+format")
     func createBoardNotificationService() async throws {
-        mockHTTP.stub(json: #"{"item":{"id":"ns1","userId":null,"boardId":"b1","url":"https://hook","format":"text","createdAt":null,"updatedAt":null}}"#)
+        mockHTTP
+            .stub(
+                json: #"{"item":{"id":"ns1","userId":null,"boardId":"b1","url":"https://hook","format":"text","createdAt":null,"updatedAt":null}}"#)
         _ = try await client.createBoardNotificationService(boardId: "b1", url: "https://hook", format: "text")
 
         let req = try #require(mockHTTP.lastRequest)
@@ -136,7 +141,9 @@ struct PlankaClientPhase5Tests {
 
     @Test("createUserNotificationService POSTs to the user")
     func createUserNotificationService() async throws {
-        mockHTTP.stub(json: #"{"item":{"id":"ns2","userId":"u1","boardId":null,"url":"https://h","format":"markdown","createdAt":null,"updatedAt":null}}"#)
+        mockHTTP
+            .stub(
+                json: #"{"item":{"id":"ns2","userId":"u1","boardId":null,"url":"https://h","format":"markdown","createdAt":null,"updatedAt":null}}"#)
         _ = try await client.createUserNotificationService(userId: "u1", url: "https://h", format: "markdown")
         let req = try #require(mockHTTP.lastRequest)
         #expect(req.url?.path.hasSuffix("/api/users/u1/notification-services") == true)
@@ -144,7 +151,9 @@ struct PlankaClientPhase5Tests {
 
     @Test("deleteNotificationService DELETEs /notification-services/{id}")
     func deleteNotificationService() async throws {
-        mockHTTP.stub(json: #"{"item":{"id":"ns1","userId":"u1","boardId":null,"url":"https://h","format":"text","createdAt":null,"updatedAt":null}}"#)
+        mockHTTP
+            .stub(
+                json: #"{"item":{"id":"ns1","userId":"u1","boardId":null,"url":"https://h","format":"text","createdAt":null,"updatedAt":null}}"#)
         try await client.deleteNotificationService(id: "ns1")
         let req = try #require(mockHTTP.lastRequest)
         #expect(req.httpMethod == "DELETE")
@@ -152,7 +161,7 @@ struct PlankaClientPhase5Tests {
     }
 
     @Test("testNotificationService POSTs /notification-services/{id}/test")
-    func testNotificationService() async throws {
+    func notificationService() async throws {
         mockHTTP.stub(json: "{}")
         try await client.testNotificationService(id: "ns1")
         let req = try #require(mockHTTP.lastRequest)
@@ -164,7 +173,9 @@ struct PlankaClientPhase5Tests {
 
     @Test("updateProject PATCHes /projects/{id} with background fields")
     func updateProject() async throws {
-        mockHTTP.stub(json: #"{"item":{"id":"p1","ownerProjectManagerId":null,"backgroundImageId":null,"name":"P","description":null,"backgroundType":"gradient","backgroundGradient":"ocean-dive","isHidden":false,"isFavorite":null,"createdAt":null,"updatedAt":null}}"#)
+        mockHTTP
+            .stub(
+                json: #"{"item":{"id":"p1","ownerProjectManagerId":null,"backgroundImageId":null,"name":"P","description":null,"backgroundType":"gradient","backgroundGradient":"ocean-dive","isHidden":false,"isFavorite":null,"createdAt":null,"updatedAt":null}}"#)
         let project = try await client.updateProject(
             id: "p1", patch: ProjectPatch(backgroundType: "gradient", backgroundGradient: "ocean-dive"))
 
@@ -179,7 +190,9 @@ struct PlankaClientPhase5Tests {
 
     @Test("uploadBackgroundImage sends multipart POST to the project")
     func uploadBackgroundImage() async throws {
-        mockHTTP.stub(json: #"{"item":{"id":"bg1","projectId":"p1","size":"1024","url":"https://x/bg.png","thumbnailUrls":{"outside360":"https://x/t.png"},"createdAt":null,"updatedAt":null}}"#)
+        mockHTTP
+            .stub(
+                json: #"{"item":{"id":"bg1","projectId":"p1","size":"1024","url":"https://x/bg.png","thumbnailUrls":{"outside360":"https://x/t.png"},"createdAt":null,"updatedAt":null}}"#)
         let img = try await client.uploadBackgroundImage(
             projectId: "p1", fileName: "bg.png", mimeType: "image/png", data: Data([0x1, 0x2]))
 
@@ -192,7 +205,9 @@ struct PlankaClientPhase5Tests {
 
     @Test("deleteBackgroundImage DELETEs /background-images/{id}")
     func deleteBackgroundImage() async throws {
-        mockHTTP.stub(json: #"{"item":{"id":"bg1","projectId":"p1","size":"1024","url":"https://x/bg.png","thumbnailUrls":{},"createdAt":null,"updatedAt":null}}"#)
+        mockHTTP
+            .stub(
+                json: #"{"item":{"id":"bg1","projectId":"p1","size":"1024","url":"https://x/bg.png","thumbnailUrls":{},"createdAt":null,"updatedAt":null}}"#)
         try await client.deleteBackgroundImage(id: "bg1")
         let req = try #require(mockHTTP.lastRequest)
         #expect(req.httpMethod == "DELETE")
@@ -203,7 +218,9 @@ struct PlankaClientPhase5Tests {
 
     @Test("getWebhooks GETs /webhooks and decodes events as an array")
     func getWebhooks() async throws {
-        mockHTTP.stub(json: #"{"items":[{"id":"w1","name":"Hook","url":"https://h","accessToken":null,"events":["cardCreate","cardUpdate"],"excludedEvents":null,"createdAt":null,"updatedAt":null}]}"#)
+        mockHTTP
+            .stub(
+                json: #"{"items":[{"id":"w1","name":"Hook","url":"https://h","accessToken":null,"events":["cardCreate","cardUpdate"],"excludedEvents":null,"createdAt":null,"updatedAt":null}]}"#)
         let hooks = try await client.getWebhooks()
 
         let req = try #require(mockHTTP.lastRequest)
@@ -214,7 +231,9 @@ struct PlankaClientPhase5Tests {
 
     @Test("createWebhook POSTs comma-joined events")
     func createWebhook() async throws {
-        mockHTTP.stub(json: #"{"item":{"id":"w1","name":"Hook","url":"https://h","accessToken":null,"events":["cardCreate","cardDelete"],"excludedEvents":null,"createdAt":null,"updatedAt":null}}"#)
+        mockHTTP
+            .stub(
+                json: #"{"item":{"id":"w1","name":"Hook","url":"https://h","accessToken":null,"events":["cardCreate","cardDelete"],"excludedEvents":null,"createdAt":null,"updatedAt":null}}"#)
         _ = try await client.createWebhook(name: "Hook", url: "https://h", events: ["cardCreate", "cardDelete"])
 
         let req = try #require(mockHTTP.lastRequest)
@@ -227,7 +246,9 @@ struct PlankaClientPhase5Tests {
 
     @Test("deleteWebhook DELETEs /webhooks/{id}")
     func deleteWebhook() async throws {
-        mockHTTP.stub(json: #"{"item":{"id":"w1","name":"Hook","url":"https://h","accessToken":null,"events":null,"excludedEvents":null,"createdAt":null,"updatedAt":null}}"#)
+        mockHTTP
+            .stub(
+                json: #"{"item":{"id":"w1","name":"Hook","url":"https://h","accessToken":null,"events":null,"excludedEvents":null,"createdAt":null,"updatedAt":null}}"#)
         try await client.deleteWebhook(id: "w1")
         let req = try #require(mockHTTP.lastRequest)
         #expect(req.httpMethod == "DELETE")
@@ -238,7 +259,9 @@ struct PlankaClientPhase5Tests {
 
     @Test("getConfig GETs /config and decodes SMTP fields")
     func getConfig() async throws {
-        mockHTTP.stub(json: #"{"item":{"id":"1","smtpHost":"smtp.example.com","smtpPort":587,"smtpName":null,"smtpSecure":true,"smtpTlsRejectUnauthorized":true,"smtpUser":"u","smtpPassword":"p","smtpFrom":"a@b.c","createdAt":null,"updatedAt":null}}"#)
+        mockHTTP
+            .stub(
+                json: #"{"item":{"id":"1","smtpHost":"smtp.example.com","smtpPort":587,"smtpName":null,"smtpSecure":true,"smtpTlsRejectUnauthorized":true,"smtpUser":"u","smtpPassword":"p","smtpFrom":"a@b.c","createdAt":null,"updatedAt":null}}"#)
         let config = try await client.getConfig()
 
         let req = try #require(mockHTTP.lastRequest)
@@ -250,7 +273,9 @@ struct PlankaClientPhase5Tests {
 
     @Test("updateConfig PATCHes /config with only the set fields")
     func updateConfig() async throws {
-        mockHTTP.stub(json: #"{"item":{"id":"1","smtpHost":"new.host","smtpPort":25,"smtpName":null,"smtpSecure":false,"smtpTlsRejectUnauthorized":true,"smtpUser":null,"smtpPassword":null,"smtpFrom":null,"createdAt":null,"updatedAt":null}}"#)
+        mockHTTP
+            .stub(
+                json: #"{"item":{"id":"1","smtpHost":"new.host","smtpPort":25,"smtpName":null,"smtpSecure":false,"smtpTlsRejectUnauthorized":true,"smtpUser":null,"smtpPassword":null,"smtpFrom":null,"createdAt":null,"updatedAt":null}}"#)
         _ = try await client.updateConfig(patch: ConfigPatch(smtpHost: "new.host", smtpPort: 25))
 
         let req = try #require(mockHTTP.lastRequest)
@@ -263,7 +288,7 @@ struct PlankaClientPhase5Tests {
     }
 
     @Test("testSMTP POSTs /config/test-smtp")
-    func testSMTP() async throws {
+    func sMTP() async throws {
         mockHTTP.stub(json: "{}")
         try await client.testSMTP()
         let req = try #require(mockHTTP.lastRequest)

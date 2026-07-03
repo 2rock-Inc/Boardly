@@ -1,5 +1,5 @@
-import SwiftUI
 import BoardlyKit
+import SwiftUI
 
 /// Draft for the add/edit notification-service sheet. `id == nil` means new.
 private struct NotificationServiceDraft: Identifiable {
@@ -131,8 +131,7 @@ private struct NotificationServiceSheet: View {
                     guard canSave else { return }
                     onSave(draft)
                     dismiss()
-                }
-            )
+                })
             VStack(alignment: .leading, spacing: 16) {
                 BoardlyFieldLabel("Service URL")
                 TextField("https://…", text: $draft.url)

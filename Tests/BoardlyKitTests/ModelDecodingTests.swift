@@ -1,10 +1,9 @@
-import Testing
 import Foundation
+import Testing
 @testable import BoardlyKit
 
 @Suite("Model Decoding")
 struct ModelDecodingTests {
-
     @Test("Decode User from fixture")
     func decodeUser() throws {
         let data = loadFixture("user")

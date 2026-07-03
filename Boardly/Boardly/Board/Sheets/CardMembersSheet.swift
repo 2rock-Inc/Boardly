@@ -1,5 +1,5 @@
-import SwiftUI
 import BoardlyKit
+import SwiftUI
 
 /// Design 08a — assign/unassign board members to a card.
 struct CardMembersSheet: View {
@@ -18,7 +18,8 @@ struct CardMembersSheet: View {
     private var boardMembers: [User] {
         (boardVM.payload?.boardMembers() ?? [])
             .filter { query.isEmpty || $0.name.localizedCaseInsensitiveContains(query)
-                || ($0.username ?? "").localizedCaseInsensitiveContains(query) }
+                || ($0.username ?? "").localizedCaseInsensitiveContains(query)
+            }
             .sorted { $0.name < $1.name }
     }
 

@@ -1,5 +1,5 @@
-import SwiftUI
 import BoardlyKit
+import SwiftUI
 
 @Observable
 @MainActor
@@ -157,9 +157,11 @@ private struct WebhookSheet: View {
                     .split(separator: ",")
                     .map { $0.trimmingCharacters(in: .whitespaces) }
                     .filter { !$0.isEmpty }
-                onSave(name, url,
-                       accessToken.isEmpty ? nil : accessToken,
-                       eventList.isEmpty ? nil : eventList)
+                onSave(
+                    name,
+                    url,
+                    accessToken.isEmpty ? nil : accessToken,
+                    eventList.isEmpty ? nil : eventList)
                 dismiss()
             })
             ScrollView {
@@ -167,8 +169,10 @@ private struct WebhookSheet: View {
                     field("Name", text: $name, placeholder: "My webhook")
                     field("URL", text: $url, placeholder: "https://…", url: true)
                     field("Access token (optional)", text: $accessToken, placeholder: "secret", secure: true)
-                    field("Events (comma-separated, empty = all)",
-                          text: $events, placeholder: "cardCreate, cardUpdate")
+                    field(
+                        "Events (comma-separated, empty = all)",
+                        text: $events,
+                        placeholder: "cardCreate, cardUpdate")
                 }
                 .padding(20)
             }
@@ -176,9 +180,13 @@ private struct WebhookSheet: View {
         .background(Color.boardlyBackground)
     }
 
-    @ViewBuilder
-    private func field(_ label: String, text: Binding<String>, placeholder: String,
-                       url: Bool = false, secure: Bool = false) -> some View {
+    private func field(
+        _ label: String,
+        text: Binding<String>,
+        placeholder: String,
+        url: Bool = false,
+        secure: Bool = false) -> some View
+    {
         VStack(alignment: .leading, spacing: 6) {
             BoardlyFieldLabel(label)
             Group {

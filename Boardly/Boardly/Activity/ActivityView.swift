@@ -1,5 +1,5 @@
-import SwiftUI
 import BoardlyKit
+import SwiftUI
 
 /// The Activity tab: the current user's unread notifications, grouped by recency.
 /// Functional for Phase 5; Phase 6 restyles it to the polished design (screen 11).

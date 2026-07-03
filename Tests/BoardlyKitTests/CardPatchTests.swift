@@ -1,10 +1,9 @@
-import Testing
 import Foundation
+import Testing
 @testable import BoardlyKit
 
 @Suite("CardPatch encoding")
 struct CardPatchTests {
-
     private func encoded(_ patch: CardPatch) throws -> [String: Any] {
         let data = try JSONEncoder().encode(patch)
         return try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])

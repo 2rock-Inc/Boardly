@@ -1,5 +1,5 @@
-import Testing
 import Foundation
+import Testing
 @testable import BoardlyKit
 
 @Suite("PlankaClient — project edit endpoints")
@@ -7,9 +7,10 @@ struct PlankaClientProjectEditTests {
     let profile = makeProfile(baseURL: URL(string: "https://planka.example.com")!)
     let mockHTTP = MockHTTPClient()
     var client: PlankaClient {
-        PlankaClient(profile: profile,
-                     tokenStore: TokenStore(profileID: profile.id, keychainStore: MockKeychainStore()),
-                     httpClient: mockHTTP)
+        PlankaClient(
+            profile: profile,
+            tokenStore: TokenStore(profileID: profile.id, keychainStore: MockKeychainStore()),
+            httpClient: mockHTTP)
     }
 
     private func body(of req: URLRequest) throws -> [String: Any] {
@@ -19,7 +20,9 @@ struct PlankaClientProjectEditTests {
 
     @Test("deleteProject DELETEs /projects/{id}")
     func deleteProject() async throws {
-        mockHTTP.stub(json: #"{"item":{"id":"p1","ownerProjectManagerId":null,"backgroundImageId":null,"name":"P","description":null,"backgroundType":null,"backgroundGradient":null,"isHidden":false,"isFavorite":null,"createdAt":null,"updatedAt":null}}"#)
+        mockHTTP
+            .stub(
+                json: #"{"item":{"id":"p1","ownerProjectManagerId":null,"backgroundImageId":null,"name":"P","description":null,"backgroundType":null,"backgroundGradient":null,"isHidden":false,"isFavorite":null,"createdAt":null,"updatedAt":null}}"#)
         try await client.deleteProject(id: "p1")
         let req = try #require(mockHTTP.lastRequest)
         #expect(req.httpMethod == "DELETE")
@@ -57,7 +60,9 @@ struct PlankaClientProjectEditTests {
 
     @Test("createBaseCustomField POSTs to the group with name + position")
     func createBaseField() async throws {
-        mockHTTP.stub(json: #"{"item":{"id":"cf1","baseCustomFieldGroupId":"g1","customFieldGroupId":null,"position":65536,"name":"Priority","showOnFrontOfCard":null,"createdAt":null,"updatedAt":null}}"#)
+        mockHTTP
+            .stub(
+                json: #"{"item":{"id":"cf1","baseCustomFieldGroupId":"g1","customFieldGroupId":null,"position":65536,"name":"Priority","showOnFrontOfCard":null,"createdAt":null,"updatedAt":null}}"#)
         _ = try await client.createBaseCustomField(groupId: "g1", name: "Priority", position: 65536)
         let req = try #require(mockHTTP.lastRequest)
         #expect(req.httpMethod == "POST")
@@ -107,17 +112,26 @@ struct ProjectsPayloadEditTests {
         #expect(payload.fields(in: groups[0]).map(\.name) == ["A", "B"])
     }
 
-    // Helpers
+    /// Helpers
     private func decodeUser(_ id: String, _ name: String) -> User {
-        try! JSONDecoder.planka.decode(User.self, from: Data(#"{"id":"\#(id)","role":"member","name":"\#(name)","isDeactivated":false}"#.utf8))
+        try! JSONDecoder.planka.decode(
+            User.self,
+            from: Data(#"{"id":"\#(id)","role":"member","name":"\#(name)","isDeactivated":false}"#.utf8))
     }
+
     private func pm(_ id: String, _ pid: String, _ uid: String) -> ProjectManager {
         try! JSONDecoder.planka.decode(ProjectManager.self, from: Data(#"{"id":"\#(id)","projectId":"\#(pid)","userId":"\#(uid)"}"#.utf8))
     }
+
     private func bg(_ id: String, _ pid: String, _ name: String) -> BaseCustomFieldGroup {
-        try! JSONDecoder.planka.decode(BaseCustomFieldGroup.self, from: Data(#"{"id":"\#(id)","projectId":"\#(pid)","name":"\#(name)"}"#.utf8))
+        try! JSONDecoder.planka.decode(
+            BaseCustomFieldGroup.self,
+            from: Data(#"{"id":"\#(id)","projectId":"\#(pid)","name":"\#(name)"}"#.utf8))
     }
+
     private func cf(_ id: String, _ gid: String, _ name: String, _ pos: Double) -> CustomField {
-        try! JSONDecoder.planka.decode(CustomField.self, from: Data(#"{"id":"\#(id)","baseCustomFieldGroupId":"\#(gid)","name":"\#(name)","position":\#(pos)}"#.utf8))
+        try! JSONDecoder.planka.decode(
+            CustomField.self,
+            from: Data(#"{"id":"\#(id)","baseCustomFieldGroupId":"\#(gid)","name":"\#(name)","position":\#(pos)}"#.utf8))
     }
 }

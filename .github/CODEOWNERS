@@ -1,0 +1,14 @@
+# Code owners for Boardly.
+# Required by the `protect-main` ruleset (require_code_owner_review).
+# The maintainers team owns everything by default; add a contributor to
+# @2rock-Inc/maintainers rather than editing this file per-person.
+
+* @2rock-Inc/maintainers
+
+# Security- and CI-sensitive paths (explicit, for emphasis).
+/.github/                 @2rock-Inc/maintainers
+/SECURITY.md              @2rock-Inc/maintainers
+
+# Networking / auth core (highest-trust code).
+/Sources/BoardlyKit/      @2rock-Inc/maintainers
+/Package.swift            @2rock-Inc/maintainers
