@@ -12,6 +12,9 @@ public struct BoardPayload: Sendable {
     public var users: [User]
     public var attachments: [Attachment]
     public var boardMemberships: [BoardMembership]
+    public var customFieldGroups: [CustomFieldGroup]
+    public var customFields: [CustomField]
+    public var customFieldValues: [CustomFieldValue]
 
     public init(
         board: Board,
@@ -24,7 +27,10 @@ public struct BoardPayload: Sendable {
         cardLabels: [CardLabel],
         users: [User],
         attachments: [Attachment] = [],
-        boardMemberships: [BoardMembership] = [])
+        boardMemberships: [BoardMembership] = [],
+        customFieldGroups: [CustomFieldGroup] = [],
+        customFields: [CustomField] = [],
+        customFieldValues: [CustomFieldValue] = [])
     {
         self.board = board
         self.lists = lists
@@ -37,6 +43,9 @@ public struct BoardPayload: Sendable {
         self.users = users
         self.attachments = attachments
         self.boardMemberships = boardMemberships
+        self.customFieldGroups = customFieldGroups
+        self.customFields = customFields
+        self.customFieldValues = customFieldValues
     }
 
     public func sortedLists() -> [PlankaList] {
@@ -94,6 +103,34 @@ public struct BoardPayload: Sendable {
     public func boardMembers() -> [User] {
         let ids = Set(boardMemberships.map(\.userId))
         return users.filter { ids.contains($0.id) }
+    }
+
+    // MARK: - Custom fields (Phase 7)
+
+    /// Board-level custom-field groups, in position order (for board management).
+    public func boardCustomFieldGroups() -> [CustomFieldGroup] {
+        customFieldGroups.filter { $0.boardId == board.id }
+            .sorted { ($0.position ?? 0) < ($1.position ?? 0) }
+    }
+
+    /// Custom-field groups applicable to a card — the board's groups plus any
+    /// card-specific ones — in position order.
+    public func customFieldGroups(for card: Card) -> [CustomFieldGroup] {
+        customFieldGroups.filter { $0.boardId == board.id || $0.cardId == card.id }
+            .sorted { ($0.position ?? 0) < ($1.position ?? 0) }
+    }
+
+    /// Fields belonging to a board/card-level custom-field group, in position order.
+    public func fields(in group: CustomFieldGroup) -> [CustomField] {
+        customFields.filter { $0.customFieldGroupId == group.id }
+            .sorted { ($0.position ?? 0) < ($1.position ?? 0) }
+    }
+
+    /// The value a card holds for a given field within a group, if set.
+    public func value(on card: Card, group: CustomFieldGroup, field: CustomField) -> CustomFieldValue? {
+        customFieldValues.first {
+            $0.cardId == card.id && $0.customFieldGroupId == group.id && $0.customFieldId == field.id
+        }
     }
 
     /// Update a card's comment count locally (keeps the board card badge in sync

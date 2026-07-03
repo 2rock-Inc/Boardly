@@ -549,6 +549,106 @@ public struct PlankaClient: Sendable {
         return response.item
     }
 
+    // MARK: - Board custom field groups, fields & values (Phase 7)
+
+    /// Instantiate a custom-field group on a board — either cloned from a base
+    /// group (`baseCustomFieldGroupId`) or ad-hoc (`name`). Exactly one is provided.
+    public func createBoardCustomFieldGroup(
+        boardId: String,
+        position: Double,
+        baseCustomFieldGroupId: String? = nil,
+        name: String? = nil) async throws -> CustomFieldGroup
+    {
+        struct Body: Encodable { let position: Double; let baseCustomFieldGroupId: String?; let name: String? }
+        struct Response: Decodable { let item: CustomFieldGroup }
+        let body = try JSONEncoder().encode(Body(position: position, baseCustomFieldGroupId: baseCustomFieldGroupId, name: name))
+        let request = try buildRequest(method: "POST", path: "/boards/\(boardId)/custom-field-groups", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    public func updateCustomFieldGroup(id: String, position: Double? = nil, name: String? = nil) async throws -> CustomFieldGroup {
+        struct Body: Encodable { let position: Double?; let name: String? }
+        struct Response: Decodable { let item: CustomFieldGroup }
+        let body = try JSONEncoder().encode(Body(position: position, name: name))
+        let request = try buildRequest(method: "PATCH", path: "/custom-field-groups/\(id)", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    @discardableResult
+    public func deleteCustomFieldGroup(id: String) async throws -> CustomFieldGroup {
+        struct Response: Decodable { let item: CustomFieldGroup }
+        let request = try buildRequest(method: "DELETE", path: "/custom-field-groups/\(id)")
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    public func createCustomFieldInGroup(
+        groupId: String,
+        name: String,
+        position: Double,
+        showOnFrontOfCard: Bool? = nil) async throws -> CustomField
+    {
+        struct Body: Encodable { let name: String; let position: Double; let showOnFrontOfCard: Bool? }
+        struct Response: Decodable { let item: CustomField }
+        let body = try JSONEncoder().encode(Body(name: name, position: position, showOnFrontOfCard: showOnFrontOfCard))
+        let request = try buildRequest(method: "POST", path: "/custom-field-groups/\(groupId)/custom-fields", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    public func updateCustomField(
+        id: String,
+        name: String? = nil,
+        position: Double? = nil,
+        showOnFrontOfCard: Bool? = nil) async throws -> CustomField
+    {
+        struct Body: Encodable { let name: String?; let position: Double?; let showOnFrontOfCard: Bool? }
+        struct Response: Decodable { let item: CustomField }
+        let body = try JSONEncoder().encode(Body(name: name, position: position, showOnFrontOfCard: showOnFrontOfCard))
+        let request = try buildRequest(method: "PATCH", path: "/custom-fields/\(id)", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    @discardableResult
+    public func deleteCustomField(id: String) async throws -> CustomField {
+        struct Response: Decodable { let item: CustomField }
+        let request = try buildRequest(method: "DELETE", path: "/custom-fields/\(id)")
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    /// Set (upsert) a card's value for a field. PLANKA encodes the group+field IDs
+    /// into the path segment — note the literal `$` before the field id and the
+    /// **plural** `custom-field-values`.
+    public func setCustomFieldValue(
+        cardId: String,
+        groupId: String,
+        fieldId: String,
+        content: String) async throws -> CustomFieldValue
+    {
+        struct Body: Encodable { let content: String }
+        struct Response: Decodable { let item: CustomFieldValue }
+        let body = try JSONEncoder().encode(Body(content: content))
+        let path = "/cards/\(cardId)/custom-field-values/customFieldGroupId:\(groupId):customFieldId:$\(fieldId)"
+        let request = try buildRequest(method: "PATCH", path: path, body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    /// Clear a card's value for a field. Note the **singular** `custom-field-value`
+    /// (differs from the set endpoint above) and the literal `$` before the field id.
+    @discardableResult
+    public func clearCustomFieldValue(cardId: String, groupId: String, fieldId: String) async throws -> CustomFieldValue {
+        struct Response: Decodable { let item: CustomFieldValue }
+        let path = "/cards/\(cardId)/custom-field-value/customFieldGroupId:\(groupId):customFieldId:$\(fieldId)"
+        let request = try buildRequest(method: "DELETE", path: path)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
     // MARK: - Webhooks (admin)
 
     public func getWebhooks() async throws -> [Webhook] {
