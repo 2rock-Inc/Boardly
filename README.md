@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/banner.png" alt="Boardly" width="720" />
+<img src="docs/banner.png" alt="Boardly" width="100%" />
 
 # Boardly
 
