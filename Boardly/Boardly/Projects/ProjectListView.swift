@@ -18,26 +18,19 @@ final class ProjectListViewModel {
             let payload = try await client.getProjects()
             self.payload = payload
             resolveCurrentUser(in: payload, client: client)
-            await loadCardCounts(payload: payload, client: client)
         } catch {
             self.error = localizedErrorMessage(error)
         }
     }
 
-    /// Per-board card counts for the list rows (design shows "N cards"); the
-    /// /projects payload has no counts, so fetch each board concurrently.
-    private func loadCardCounts(payload: ProjectsPayload, client: PlankaClient) async {
-        await withTaskGroup(of: (String, Int)?.self) { group in
-            for board in payload.boards {
-                let id = board.id
-                group.addTask {
-                    guard let board = try? await client.getBoard(id: id) else { return nil }
-                    return (id, board.cards.count)
-                }
-            }
-            for await result in group {
-                if let (id, count) = result { cardCounts[id] = count }
-            }
+    /// Per-board card count for a list row ("N cards"). PLANKA has no lightweight
+    /// count endpoint, so each count is a full `getBoard` — loaded lazily when the
+    /// row appears (not eagerly for every board) and cached for the session, to
+    /// avoid a request burst across all projects on large instances.
+    func loadCardCount(_ boardId: String, using client: PlankaClient) async {
+        guard cardCounts[boardId] == nil else { return }
+        if let board = try? await client.getBoard(id: boardId) {
+            cardCounts[boardId] = board.cards.count
         }
     }
 
@@ -81,7 +74,9 @@ struct ProjectListView: View {
         let favorites = projects.filter { $0.isFavorite == true && !payload.boards(for: $0).isEmpty }
 
         ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
+            // Lazy so off-screen project cards (and their board rows) don't render
+            // — each board row loads its card count on appear, bounding the burst.
+            LazyVStack(alignment: .leading, spacing: 18) {
                 header
                 searchField
 
@@ -102,6 +97,7 @@ struct ProjectListView: View {
                                 boards: boards,
                                 members: payload.members(for: project),
                                 cardCounts: viewModel.cardCounts,
+                                loadCount: { boardId in Task { await viewModel.loadCardCount(boardId, using: client) } },
                                 onOpenBoard: { path.append(.board(id: $0.id, name: $0.name, projectName: project.name)) },
                                 onOpenProject: { path.append(.project(id: project.id, name: project.name)) })
                         }
@@ -249,6 +245,7 @@ private struct ProjectCard: View {
     let boards: [Board]
     let members: [User]
     let cardCounts: [String: Int]
+    let loadCount: (String) -> Void
     let onOpenBoard: (Board) -> Void
     let onOpenProject: () -> Void
 
@@ -273,6 +270,7 @@ private struct ProjectCard: View {
                 ForEach(Array(boards.enumerated()), id: \.element.id) { index, board in
                     Button { onOpenBoard(board) } label: {
                         BoardRow(board: board, cardCount: cardCounts[board.id])
+                            .task { loadCount(board.id) }
                     }
                     .buttonStyle(.plain)
                     if index < boards.count - 1 {
