@@ -102,6 +102,9 @@ public struct PlankaClient: Sendable {
             let users: [User]?
             let boardMemberships: [BoardMembership]?
             let backgroundImages: [BackgroundImage]?
+            let projectManagers: [ProjectManager]?
+            let baseCustomFieldGroups: [BaseCustomFieldGroup]?
+            let customFields: [CustomField]?
         }
         struct Response: Decodable {
             let items: [Project]
@@ -114,7 +117,10 @@ public struct PlankaClient: Sendable {
             boards: response.included.boards ?? [],
             users: response.included.users ?? [],
             boardMemberships: response.included.boardMemberships ?? [],
-            backgroundImages: response.included.backgroundImages ?? []
+            backgroundImages: response.included.backgroundImages ?? [],
+            projectManagers: response.included.projectManagers ?? [],
+            baseCustomFieldGroups: response.included.baseCustomFieldGroups ?? [],
+            customFields: response.included.customFields ?? []
         )
     }
 
@@ -473,6 +479,70 @@ public struct PlankaClient: Sendable {
     public func deleteBackgroundImage(id: String) async throws -> BackgroundImage {
         struct Response: Decodable { let item: BackgroundImage }
         let request = try buildRequest(method: "DELETE", path: "/background-images/\(id)")
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    // MARK: - Project management
+
+    @discardableResult
+    public func deleteProject(id: String) async throws -> Project {
+        struct Response: Decodable { let item: Project }
+        let request = try buildRequest(method: "DELETE", path: "/projects/\(id)")
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    public func addProjectManager(projectId: String, userId: String) async throws -> ProjectManager {
+        struct Body: Encodable { let userId: String }
+        struct Response: Decodable { let item: ProjectManager }
+        let body = try JSONEncoder().encode(Body(userId: userId))
+        let request = try buildRequest(method: "POST", path: "/projects/\(projectId)/project-managers", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    @discardableResult
+    public func removeProjectManager(id: String) async throws -> ProjectManager {
+        struct Response: Decodable { let item: ProjectManager }
+        let request = try buildRequest(method: "DELETE", path: "/project-managers/\(id)")
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    // MARK: - Base custom field groups (project-level)
+
+    public func createBaseCustomFieldGroup(projectId: String, name: String) async throws -> BaseCustomFieldGroup {
+        struct Body: Encodable { let name: String }
+        struct Response: Decodable { let item: BaseCustomFieldGroup }
+        let body = try JSONEncoder().encode(Body(name: name))
+        let request = try buildRequest(method: "POST", path: "/projects/\(projectId)/base-custom-field-groups", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    public func updateBaseCustomFieldGroup(id: String, name: String) async throws -> BaseCustomFieldGroup {
+        struct Body: Encodable { let name: String }
+        struct Response: Decodable { let item: BaseCustomFieldGroup }
+        let body = try JSONEncoder().encode(Body(name: name))
+        let request = try buildRequest(method: "PATCH", path: "/base-custom-field-groups/\(id)", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    @discardableResult
+    public func deleteBaseCustomFieldGroup(id: String) async throws -> BaseCustomFieldGroup {
+        struct Response: Decodable { let item: BaseCustomFieldGroup }
+        let request = try buildRequest(method: "DELETE", path: "/base-custom-field-groups/\(id)")
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    public func createBaseCustomField(groupId: String, name: String, position: Double) async throws -> CustomField {
+        struct Body: Encodable { let name: String; let position: Double }
+        struct Response: Decodable { let item: CustomField }
+        let body = try JSONEncoder().encode(Body(name: name, position: position))
+        let request = try buildRequest(method: "POST", path: "/base-custom-field-groups/\(groupId)/custom-fields", body: body)
         let response: Response = try await execute(request)
         return response.item
     }

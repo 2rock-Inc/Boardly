@@ -7,6 +7,8 @@ import Foundation
 /// it entirely.
 public struct ProjectPatch: Encodable, Sendable {
     public var name: String?
+    public var description: String?
+    public var isHidden: Bool?
     public var backgroundType: String?
     public var backgroundGradient: String?
     public var backgroundImageId: String?
@@ -14,12 +16,16 @@ public struct ProjectPatch: Encodable, Sendable {
 
     public init(
         name: String? = nil,
+        description: String? = nil,
+        isHidden: Bool? = nil,
         backgroundType: String? = nil,
         backgroundGradient: String? = nil,
         backgroundImageId: String? = nil,
         clearBackground: Bool = false
     ) {
         self.name = name
+        self.description = description
+        self.isHidden = isHidden
         self.backgroundType = backgroundType
         self.backgroundGradient = backgroundGradient
         self.backgroundImageId = backgroundImageId
@@ -27,12 +33,14 @@ public struct ProjectPatch: Encodable, Sendable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case name, backgroundType, backgroundGradient, backgroundImageId
+        case name, description, isHidden, backgroundType, backgroundGradient, backgroundImageId
     }
 
     public func encode(to encoder: any Encoder) throws {
         var c = encoder.container(keyedBy: CodingKeys.self)
         try c.encodeIfPresent(name, forKey: .name)
+        try c.encodeIfPresent(description, forKey: .description)
+        try c.encodeIfPresent(isHidden, forKey: .isHidden)
         if clearBackground {
             try c.encodeNil(forKey: .backgroundType)
         } else {
