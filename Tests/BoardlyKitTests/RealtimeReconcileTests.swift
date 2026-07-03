@@ -272,3 +272,66 @@ struct RealtimeReconcileTests {
         #expect(result.cards.map(\.id) == ["c2", "c3"])
     }
 }
+
+// MARK: - Custom fields (Phase 7)
+
+@Suite("Realtime custom fields")
+struct RealtimeCustomFieldsTests {
+    @Test("customFieldValueUpdate parses the full value")
+    func parseValue() {
+        let e = event(
+            "customFieldValueUpdate",
+            #"{"item":{"id":"v1","cardId":"c1","customFieldGroupId":"g1","customFieldId":"f1","content":"High"}}"#)
+        guard case let .customFieldValueUpdated(value) = e else { Issue.record("wrong case"); return }
+        #expect(value.id == "v1")
+        #expect(value.content == "High")
+    }
+
+    @Test("customFieldGroupDelete parses the id")
+    func parseGroupDelete() {
+        let e = event("customFieldGroupDelete", #"{"item":{"id":"g1"}}"#)
+        guard case let .customFieldGroupDeleted(id) = e else { Issue.record("wrong case"); return }
+        #expect(id == "g1")
+    }
+
+    @Test("group create → update → delete lifecycle")
+    func groupLifecycle() {
+        var p = makePayload()
+        p = p.applying(event(
+            "customFieldGroupCreate",
+            #"{"item":{"id":"g1","boardId":"b1","cardId":null,"baseCustomFieldGroupId":"bg1","position":1,"name":"Tracking"}}"#))
+        #expect(p.customFieldGroups.map(\.id) == ["g1"])
+        p = p.applying(event(
+            "customFieldGroupUpdate",
+            #"{"item":{"id":"g1","boardId":"b1","cardId":null,"baseCustomFieldGroupId":"bg1","position":1,"name":"Renamed"}}"#))
+        #expect(p.customFieldGroups.first?.name == "Renamed")
+        p = p.applying(event("customFieldGroupDelete", #"{"item":{"id":"g1"}}"#))
+        #expect(p.customFieldGroups.isEmpty)
+    }
+
+    @Test("field create → delete lifecycle")
+    func fieldLifecycle() {
+        var p = makePayload()
+        p = p.applying(event(
+            "customFieldCreate",
+            #"{"item":{"id":"f1","customFieldGroupId":"g1","position":1,"name":"Priority"}}"#))
+        #expect(p.customFields.map(\.id) == ["f1"])
+        p = p.applying(event("customFieldDelete", #"{"item":{"id":"f1"}}"#))
+        #expect(p.customFields.isEmpty)
+    }
+
+    @Test("value create → update content → delete lifecycle")
+    func valueLifecycle() {
+        var p = makePayload()
+        p = p.applying(event(
+            "customFieldValueCreate",
+            #"{"item":{"id":"v1","cardId":"c1","customFieldGroupId":"g1","customFieldId":"f1","content":"Low"}}"#))
+        #expect(p.customFieldValues.first?.content == "Low")
+        p = p.applying(event(
+            "customFieldValueUpdate",
+            #"{"item":{"id":"v1","cardId":"c1","customFieldGroupId":"g1","customFieldId":"f1","content":"High"}}"#))
+        #expect(p.customFieldValues.first?.content == "High")
+        p = p.applying(event("customFieldValueDelete", #"{"item":{"id":"v1"}}"#))
+        #expect(p.customFieldValues.isEmpty)
+    }
+}
