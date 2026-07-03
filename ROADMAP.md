@@ -182,33 +182,105 @@ switch).
 
 ## Phase 7 — Custom fields
 
-**Goal:** the one piece of rich card content deferred out of Phase 4. Card-level
-and board-level, so it slots cleanly on top of the Phase 4 card detail screen.
+**Goal:** the one piece of rich card content deferred out of Phase 4 — reading
+and writing custom-field **values** on cards, plus board-level group management.
 
-- BoardlyKit models: flesh out `CustomFieldGroup`, `CustomField`,
-  `CustomFieldValue`, `BaseCustomFieldGroup` against `Reference/planka-openapi.json`
-  (they currently exist only as Phase 1 stubs)
-- `PlankaClient` endpoints: create/update/delete custom field groups and fields;
-  set/clear a custom field value on a card
-- `BoardPayload`: sideload `customFieldGroups` / `customFields` / `customFieldValues`
-  (already present-but-ignored in the `included` payload) + a
-  `customFields(for: card)` accessor
-- Realtime: custom field group/field/value create-update-delete events wired into
-  the pure reconciler (live sync, same pattern as labels/attachments)
-- UI: a "Champs personnalisés" section on the card detail + an edit sheet
-  (types: text, number, date, dropdown, checkbox — per PLANKA)
-- Board-level management of custom field groups/fields
+### Current state (already shipped — do NOT redo)
 
-**Testing expectations:** unit tests for model decoding of custom field
-groups/fields/values, the realtime reconciler for each event, and the view
-model managing values on the card detail screen.
+- The **4 models** are complete DTOs in `Sources/BoardlyKit/Models/`:
+  `BaseCustomFieldGroup`, `CustomFieldGroup`, `CustomField`, `CustomFieldValue`.
+- **Project/base level is done** (PR #12): `ProjectsPayload` sideloads
+  `baseCustomFieldGroups` + `customFields` (accessors `baseGroups(for:)`,
+  `fields(in:)`); `PlankaClient` has `createBaseCustomFieldGroup` / `update` /
+  `delete` + `createBaseCustomField`; the **"Custom Fields" tab in
+  `EditProjectSheet`** is a functional base-group CRUD editor.
+
+### ⚠️ Scope correction — NO typed fields
+
+This PLANKA version's `CustomField` has **no `type`** — a value is just a
+`content` **string (≤512 chars)**. The design mockups show type chips
+(Liste/Nombre/Date/Texte) but those are **decorative on the field definition
+only**. Do **not** build typed inputs (number/date/dropdown/checkbox): the value
+UI is a **free-text field per custom field**. Clearing the text deletes the value.
+
+### Part A — BoardlyKit foundation (back only, not mockup-driven)
+
+- **`BoardPayload`** does NOT currently decode custom fields (confirmed absent —
+  not "present-but-ignored"). Add, mirroring `labels`/`attachments`:
+  stored `customFieldGroups` / `customFields` / `customFieldValues` +
+  `init` params; the 3 optional arrays in the private `Included` struct in
+  `BoardPayload+Decode.swift`; accessors `customFieldGroups(for board:)`,
+  `fields(in group:)`, `value(card:field:group:)`.
+- **`PlankaClient`** board/card + value endpoints (same `struct Body/Response{item}`
+  + `buildRequest` pattern as `createLabel`/`addCardLabel`):
+  - `createBoardCustomFieldGroup` → `POST /boards/{boardId}/custom-field-groups`
+    body `{position, baseCustomFieldGroupId?, name?}` (one of the two)
+  - `updateCustomFieldGroup` `PATCH /custom-field-groups/{id}`;
+    `deleteCustomFieldGroup` `DELETE /custom-field-groups/{id}`
+  - `createCustomFieldInGroup` `POST /custom-field-groups/{groupId}/custom-fields`
+    body `{name, position, showOnFrontOfCard?}`; `updateCustomField` /
+    `deleteCustomField` on `/custom-fields/{id}`
+  - `setCustomFieldValue` → **PATCH** (upsert)
+    `/cards/{cardId}/custom-field-values/customFieldGroupId:{gid}:customFieldId:${fid}`
+    body `{content}`
+  - `clearCustomFieldValue` → **DELETE**
+    `/cards/{cardId}/custom-field-value/customFieldGroupId:{gid}:customFieldId:${fid}`
+  - ⚠️ **URL gotchas**: literal `$` before `{customFieldId}`; set uses **plural**
+    `custom-field-values`, clear uses **singular** `custom-field-value`.
+- **Tests** (mirror `PlankaClientProjectEditTests` / `RichCardPayloadTests`):
+  board `included` decode of the 3 collections + request-building per method.
+
+### Part B — Realtime (back only)
+
+Mirror the **label** pattern (full record, not partial) in
+`Sources/BoardlyKit/Realtime/`:
+- `BoardRealtimeEvent`: `customFieldGroup`/`customField`/`customFieldValue`
+  `Created/Updated/Deleted` cases; add the PLANKA event strings to `handledNames`;
+  `parse` uses `item(T.self)` (create/update) / `id()` (delete).
+- `BoardPayload+Reconcile.applying(_:)`: 3×3 merge cases (`upsert` / `map`-replace
+  / `removeAll`). Tests for the reconciler per event.
+- ⚠️ **Verify the exact socket event names on a live PLANKA instance**
+  (`todo.2rock.fr`) before freezing `handledNames` — same caveat as Phase 3.
+
+### Part C — Card value UI (the core; mockups 08 + 08e)
+
+- `Board/CardDetailView.swift`: a **"Champs personnalisés"** section (mockup 08) —
+  grouped label/value rows, value shown, **"Vide" in italics** when `content`
+  absent; opens the sheet (mirror `labelRow` → `.sheet`).
+- New `Board/Sheets/CardCustomFieldsSheet.swift` (mockup 08e): same shape as
+  `CardLabelsSheet` (`SheetHeader`, `presentationDetents`, `(cardId:, boardVM:)`) —
+  one `TextField` per field grouped by group; on commit →
+  `boardVM.setCustomFieldValue(...)`, or `clearCustomFieldValue(...)` when emptied.
+  Footer: "Texte libre · 512 caractères max par champ."
+- `Board/BoardViewModel.swift`: `setCustomFieldValue(_:groupId:fieldId:card:)` +
+  `clearCustomFieldValue(...)` — exact mirror of `addLabel` (call client → mutate
+  local `payload.customFieldValues` via upsert/remove → reassign → `catch { error }`).
+
+### Part D — Board-level group management (mockup 05quinquies)
+
+- Board-level sheet (from `BoardView` toolbar): toggle **ON** an inherited base
+  group → `createBoardCustomFieldGroup` with `baseCustomFieldGroupId`; toggle
+  **OFF** → `deleteCustomFieldGroup`; "Champs propres au tableau" → ad-hoc group
+  (`name`) + `createCustomFieldInGroup`.
+- `BoardViewModel`: `addCustomFieldGroup(fromBase:)` / `(name:)`,
+  `deleteCustomFieldGroup`, `addCustomField(to:name:)`, `deleteCustomField`.
+
+### Sequencing
+
+Suggested PRs: **(1) Part A + tests**, **(2) Part B + tests**, **(3) Part C**,
+**(4) Part D** (A+B and C+D can be paired into 2 PRs).
+
+**Testing expectations:** unit tests for board-payload decoding of custom-field
+groups/fields/values, the realtime reconciler for each event, and the view model
+managing values on the card detail screen. Run `swift test` + `xcodebuild test`
+before each merge.
 
 **Suggested kickoff prompt:**
-> Read CLAUDE.md and ROADMAP.md. Implement Phase 7: custom fields (groups, fields,
-> values) on the card detail screen and board-level management, including realtime
-> reconciliation. Complete the BoardlyKit models against the OpenAPI spec first.
-> Include unit tests per the "Testing expectations" in ROADMAP.md. Plan first,
-> then implement.
+> Read CLAUDE.md and ROADMAP.md. Implement Phase 7 Part A (BoardlyKit foundation):
+> wire custom-field groups/fields/values into `BoardPayload` (+ `Included` decode +
+> accessors) and add the board/card `PlankaClient` endpoints incl. set/clear value
+> (mind the `$` and plural/singular URL gotchas). Values are free-text strings — no
+> typed inputs. Include unit tests per the "Testing expectations". Plan first.
 
 ---
 

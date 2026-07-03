@@ -12,6 +12,9 @@ extension BoardPayload {
         let users: [User]?
         let attachments: [Attachment]?
         let boardMemberships: [BoardMembership]?
+        let customFieldGroups: [CustomFieldGroup]?
+        let customFields: [CustomField]?
+        let customFieldValues: [CustomFieldValue]?
     }
 
     private struct Response: Decodable {
@@ -35,6 +38,9 @@ extension BoardPayload {
             cardLabels: inc.cardLabels ?? [],
             users: inc.users ?? [],
             attachments: inc.attachments ?? [],
-            boardMemberships: inc.boardMemberships ?? [])
+            boardMemberships: inc.boardMemberships ?? [],
+            customFieldGroups: inc.customFieldGroups ?? [],
+            customFields: inc.customFields ?? [],
+            customFieldValues: inc.customFieldValues ?? [])
     }
 }
