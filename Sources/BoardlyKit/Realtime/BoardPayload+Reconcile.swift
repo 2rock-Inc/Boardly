@@ -49,6 +49,24 @@ extension BoardPayload {
             var copy = self; copy.attachments = attachments.map { $0.id == attachment.id ? attachment : $0 }; return copy
         case let .attachmentDeleted(id):
             var copy = self; copy.attachments.removeAll { $0.id == id }; return copy
+        case let .customFieldGroupCreated(group):
+            var copy = self; copy.customFieldGroups = upsert(customFieldGroups, group); return copy
+        case let .customFieldGroupUpdated(group):
+            var copy = self; copy.customFieldGroups = customFieldGroups.map { $0.id == group.id ? group : $0 }; return copy
+        case let .customFieldGroupDeleted(id):
+            var copy = self; copy.customFieldGroups.removeAll { $0.id == id }; return copy
+        case let .customFieldCreated(field):
+            var copy = self; copy.customFields = upsert(customFields, field); return copy
+        case let .customFieldUpdated(field):
+            var copy = self; copy.customFields = customFields.map { $0.id == field.id ? field : $0 }; return copy
+        case let .customFieldDeleted(id):
+            var copy = self; copy.customFields.removeAll { $0.id == id }; return copy
+        case let .customFieldValueCreated(value):
+            var copy = self; copy.customFieldValues = upsert(customFieldValues, value); return copy
+        case let .customFieldValueUpdated(value):
+            var copy = self; copy.customFieldValues = customFieldValues.map { $0.id == value.id ? value : $0 }; return copy
+        case let .customFieldValueDeleted(id):
+            var copy = self; copy.customFieldValues.removeAll { $0.id == id }; return copy
         }
     }
 

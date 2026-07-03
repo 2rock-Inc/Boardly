@@ -75,6 +75,15 @@ public enum BoardRealtimeEvent: Sendable {
     case attachmentCreated(Attachment)
     case attachmentUpdated(Attachment)
     case attachmentDeleted(id: String)
+    case customFieldGroupCreated(CustomFieldGroup)
+    case customFieldGroupUpdated(CustomFieldGroup)
+    case customFieldGroupDeleted(id: String)
+    case customFieldCreated(CustomField)
+    case customFieldUpdated(CustomField)
+    case customFieldDeleted(id: String)
+    case customFieldValueCreated(CustomFieldValue)
+    case customFieldValueUpdated(CustomFieldValue)
+    case customFieldValueDeleted(id: String)
 }
 
 public extension BoardRealtimeEvent {
@@ -87,6 +96,13 @@ public extension BoardRealtimeEvent {
         "cardLabelCreate", "cardLabelDelete",
         "cardMembershipCreate", "cardMembershipDelete",
         "attachmentCreate", "attachmentUpdate", "attachmentDelete",
+        // Phase 7 custom fields. ⚠️ These socket event names follow PLANKA's
+        // <model><Action> convention but were NOT confirmed against a running
+        // instance — verify on a live PLANKA (e.g. todo.2rock.fr) before relying
+        // on live sync, same caveat as the original Phase 3 event set.
+        "customFieldGroupCreate", "customFieldGroupUpdate", "customFieldGroupDelete",
+        "customFieldCreate", "customFieldUpdate", "customFieldDelete",
+        "customFieldValueCreate", "customFieldValueUpdate", "customFieldValueDelete",
     ]
 
     /// Parse a PLANKA socket event from its name and the JSON of its `{ item: … }`
@@ -123,6 +139,15 @@ public extension BoardRealtimeEvent {
         case "attachmentCreate": return item(Attachment.self).map(BoardRealtimeEvent.attachmentCreated)
         case "attachmentUpdate": return item(Attachment.self).map(BoardRealtimeEvent.attachmentUpdated)
         case "attachmentDelete": return id().map { .attachmentDeleted(id: $0) }
+        case "customFieldGroupCreate": return item(CustomFieldGroup.self).map(BoardRealtimeEvent.customFieldGroupCreated)
+        case "customFieldGroupUpdate": return item(CustomFieldGroup.self).map(BoardRealtimeEvent.customFieldGroupUpdated)
+        case "customFieldGroupDelete": return id().map { .customFieldGroupDeleted(id: $0) }
+        case "customFieldCreate": return item(CustomField.self).map(BoardRealtimeEvent.customFieldCreated)
+        case "customFieldUpdate": return item(CustomField.self).map(BoardRealtimeEvent.customFieldUpdated)
+        case "customFieldDelete": return id().map { .customFieldDeleted(id: $0) }
+        case "customFieldValueCreate": return item(CustomFieldValue.self).map(BoardRealtimeEvent.customFieldValueCreated)
+        case "customFieldValueUpdate": return item(CustomFieldValue.self).map(BoardRealtimeEvent.customFieldValueUpdated)
+        case "customFieldValueDelete": return id().map { .customFieldValueDeleted(id: $0) }
         default: return nil
         }
     }
