@@ -149,7 +149,7 @@ struct BoardView: View {
             HStack(spacing: 4) {
                 ForEach(BoardViewMode.allCases, id: \.self) { item in
                     let active = mode == item
-                    Text(item.rawValue)
+                    Text(LocalizedStringKey(item.rawValue))
                         .font(.sans(14, .semibold))
                         .foregroundStyle(active ? Color.boardlyInk : Color.boardlyTextSecondary)
                         .padding(.horizontal, 16)

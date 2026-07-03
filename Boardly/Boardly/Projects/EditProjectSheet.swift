@@ -82,7 +82,7 @@ struct EditProjectSheet: View {
                 ForEach(EditTab.allCases) { item in
                     let active = tab == item
                     Button { tab = item } label: {
-                        Text(item.rawValue)
+                        Text(LocalizedStringKey(item.rawValue))
                             .font(.sans(14, .semibold))
                             .foregroundStyle(active ? .white : Color.boardlyTextSecondary)
                             .padding(.horizontal, 14)

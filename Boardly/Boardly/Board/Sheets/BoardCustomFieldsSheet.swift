@@ -85,7 +85,7 @@ struct BoardCustomFieldsSheet: View {
                     Text(base.name)
                         .font(.sans(15, .semibold))
                         .foregroundStyle(Color.boardlyInk)
-                    Text("\(count) field\(count == 1 ? "" : "s")")
+                    Text("\(count) fields")
                         .font(.boardlyMonoCaption)
                         .foregroundStyle(Color.boardlyTextTertiary)
                 }

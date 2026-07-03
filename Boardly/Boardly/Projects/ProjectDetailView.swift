@@ -426,7 +426,7 @@ private struct BoardGridCard: View {
 
     private var metaText: String {
         guard let cards = stat.cardCount, let lists = stat.listCount else { return "…" }
-        return "\(cards) card\(cards > 1 ? "s" : "") · \(lists) list\(lists > 1 ? "s" : "")"
+        return "\(String(localized: "\(cards) cards")) · \(String(localized: "\(lists) lists"))"
     }
 }
 
