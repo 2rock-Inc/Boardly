@@ -61,10 +61,9 @@ extension BoardPayload {
             var copy = self; copy.customFields = customFields.map { $0.id == field.id ? field : $0 }; return copy
         case let .customFieldDeleted(id):
             var copy = self; copy.customFields.removeAll { $0.id == id }; return copy
-        case let .customFieldValueCreated(value):
-            var copy = self; copy.customFieldValues = upsert(customFieldValues, value); return copy
         case let .customFieldValueUpdated(value):
-            var copy = self; copy.customFieldValues = customFieldValues.map { $0.id == value.id ? value : $0 }; return copy
+            // Upsert: PLANKA emits this even on first set (no separate create event).
+            var copy = self; copy.customFieldValues = upsert(customFieldValues, value); return copy
         case let .customFieldValueDeleted(id):
             var copy = self; copy.customFieldValues.removeAll { $0.id == id }; return copy
         }

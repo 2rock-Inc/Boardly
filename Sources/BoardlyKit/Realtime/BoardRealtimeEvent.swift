@@ -81,7 +81,8 @@ public enum BoardRealtimeEvent: Sendable {
     case customFieldCreated(CustomField)
     case customFieldUpdated(CustomField)
     case customFieldDeleted(id: String)
-    case customFieldValueCreated(CustomFieldValue)
+    // PLANKA has no `customFieldValueCreate`: setting a value is an upsert that
+    // broadcasts `customFieldValueUpdate` even on first set (see reconciler).
     case customFieldValueUpdated(CustomFieldValue)
     case customFieldValueDeleted(id: String)
 }
@@ -96,13 +97,12 @@ public extension BoardRealtimeEvent {
         "cardLabelCreate", "cardLabelDelete",
         "cardMembershipCreate", "cardMembershipDelete",
         "attachmentCreate", "attachmentUpdate", "attachmentDelete",
-        // Phase 7 custom fields. ⚠️ These socket event names follow PLANKA's
-        // <model><Action> convention but were NOT confirmed against a running
-        // instance — verify on a live PLANKA (e.g. todo.2rock.fr) before relying
-        // on live sync, same caveat as the original Phase 3 event set.
+        // Phase 7 custom fields. Confirmed against PLANKA's own event names
+        // (server/api/models/Webhook.js). Note: values have no `Create` event —
+        // setting a value is an upsert broadcast as `customFieldValueUpdate`.
         "customFieldGroupCreate", "customFieldGroupUpdate", "customFieldGroupDelete",
         "customFieldCreate", "customFieldUpdate", "customFieldDelete",
-        "customFieldValueCreate", "customFieldValueUpdate", "customFieldValueDelete",
+        "customFieldValueUpdate", "customFieldValueDelete",
     ]
 
     /// Parse a PLANKA socket event from its name and the JSON of its `{ item: … }`
@@ -145,7 +145,6 @@ public extension BoardRealtimeEvent {
         case "customFieldCreate": return item(CustomField.self).map(BoardRealtimeEvent.customFieldCreated)
         case "customFieldUpdate": return item(CustomField.self).map(BoardRealtimeEvent.customFieldUpdated)
         case "customFieldDelete": return id().map { .customFieldDeleted(id: $0) }
-        case "customFieldValueCreate": return item(CustomFieldValue.self).map(BoardRealtimeEvent.customFieldValueCreated)
         case "customFieldValueUpdate": return item(CustomFieldValue.self).map(BoardRealtimeEvent.customFieldValueUpdated)
         case "customFieldValueDelete": return id().map { .customFieldValueDeleted(id: $0) }
         default: return nil
