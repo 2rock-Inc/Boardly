@@ -71,7 +71,7 @@ struct MainView: View {
 /// Placeholder for tabs whose feature lands in Phase 5 (search, notifications,
 /// profile/settings).
 struct ComingSoonView: View {
-    let title: String
+    let title: LocalizedStringKey
     let systemImage: String
 
     var body: some View {

@@ -54,7 +54,7 @@ struct CardCustomFieldsSheet: View {
     private func groupSection(_ group: CustomFieldGroup) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             if let name = group.name, !name.isEmpty {
-                BoardlyFieldLabel(name)
+                BoardlyFieldLabel(verbatim: name)
             }
             ForEach(fields(in: group)) { field in
                 VStack(alignment: .leading, spacing: 6) {

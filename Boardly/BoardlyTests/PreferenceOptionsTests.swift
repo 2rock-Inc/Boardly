@@ -16,15 +16,15 @@ struct PreferenceOptionsTests {
     func homeView() {
         #expect(HomeViewOption.from("groupedProjects") == .grouped)
         #expect(HomeViewOption.from("gridProjects") == .grid)
-        #expect(HomeViewOption.grouped.label == "Grouped")
-        #expect(HomeViewOption.grid.label == "Grid")
+        #expect(HomeViewOption.grouped.localizedName.key == "Grouped")
+        #expect(HomeViewOption.grid.localizedName.key == "Grid")
     }
 
     @Test("editor mode maps raw values to labels")
     func editorMode() {
         #expect(EditorModeOption.from("wysiwyg") == .wysiwyg)
         #expect(EditorModeOption.from("markup") == .markup)
-        #expect(EditorModeOption.markup.label == "Markdown")
+        #expect(EditorModeOption.markup.localizedName.key == "Markdown")
     }
 
     @Test("unknown or nil raw value falls back to the PLANKA default")
@@ -39,6 +39,6 @@ struct PreferenceOptionsTests {
         #expect(AppTheme.system.colorScheme == nil)
         #expect(AppTheme.light.colorScheme == .light)
         #expect(AppTheme.dark.colorScheme == .dark)
-        #expect(AppTheme.system.label == "System")
+        #expect(AppTheme.system.localizedName.key == "System")
     }
 }

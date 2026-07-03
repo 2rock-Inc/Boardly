@@ -20,7 +20,7 @@ final class ProjectListViewModel {
             resolveCurrentUser(in: payload, client: client)
             await loadCardCounts(payload: payload, client: client)
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 
@@ -134,7 +134,7 @@ struct ProjectListView: View {
         .padding(.top, 8)
     }
 
-    private func sectionLabel(_ text: String) -> some View {
+    private func sectionLabel(_ text: LocalizedStringKey) -> some View {
         Text(text)
             .font(.boardlyMonoLabel)
             .tracking(1.5)
@@ -302,7 +302,7 @@ private struct BoardRow: View {
         var parts: [String] = []
         if let cardCount { parts.append(String(localized: "\(cardCount) cards")) }
         if let updated = board.updatedAt {
-            parts.append("updated \(updated.formatted(.relative(presentation: .named)))")
+            parts.append(String(localized: "updated \(updated.formatted(.relative(presentation: .named)))"))
         }
         return parts.joined(separator: " · ")
     }
@@ -313,12 +313,12 @@ private struct BoardRow: View {
                 .fill(dotColor)
                 .frame(width: 8, height: 8)
             VStack(alignment: .leading, spacing: 2) {
-                Text(board.name)
+                Text(verbatim: board.name)
                     .font(.sans(15, .semibold))
                     .foregroundStyle(Color.boardlyInk)
                     .lineLimit(1)
                 if !meta.isEmpty {
-                    Text(meta)
+                    Text(verbatim: meta)
                         .font(.boardlyMonoCaption)
                         .foregroundStyle(Color.boardlyTextSecondary)
                         .lineLimit(1)

@@ -16,12 +16,12 @@ final class AddServerViewModel {
     func validateAndAdd(profileStore: ProfileStore) async -> ServerProfile? {
         let raw = urlText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard var components = URLComponents(string: raw) else {
-            error = "Invalid URL format."
+            error = String(localized: "Invalid URL format.")
             return nil
         }
         if components.scheme == nil { components.scheme = "https" }
         guard let url = components.url else {
-            error = "Could not construct a valid URL."
+            error = String(localized: "Could not construct a valid URL.")
             return nil
         }
 
@@ -42,11 +42,11 @@ final class AddServerViewModel {
             profileStore.addProfile(profile)
             return profile
         } catch PlankaAPIError.instanceUnreachable {
-            error = "Could not reach a PLANKA instance at that URL."
+            error = String(localized: "Could not reach a PLANKA instance at that URL.")
         } catch PlankaAPIError.networkError {
-            error = "Network error. Check the URL and your connection."
+            error = String(localized: "Network error. Check the URL and your connection.")
         } catch {
-            self.error = "Unexpected error: \(error.localizedDescription)"
+            self.error = String(localized: "Unexpected error: \(error.localizedDescription)")
         }
         return nil
     }

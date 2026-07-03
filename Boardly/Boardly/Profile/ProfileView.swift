@@ -52,13 +52,13 @@ struct ProfileView: View {
                 // Appearance — app-local theme.
                 Menu {
                     Picker("Appearance", selection: $appearanceRaw) {
-                        ForEach(AppTheme.allCases) { Text($0.label).tag($0.rawValue) }
+                        ForEach(AppTheme.allCases) { Text($0.localizedName).tag($0.rawValue) }
                     }
                 } label: {
                     SettingsRow(
                         icon: "sun.max",
                         title: "Appearance",
-                        value: AppTheme(rawValue: appearanceRaw)?.label,
+                        value: AppTheme(rawValue: appearanceRaw).map { String(localized: $0.localizedName) },
                         showsChevron: true)
                 }
 
@@ -67,7 +67,7 @@ struct ProfileView: View {
                 // Home view — PLANKA pref.
                 Menu {
                     ForEach(HomeViewOption.allCases) { option in
-                        prefButton(option.label, selected: viewModel.homeView == option) {
+                        prefButton(option.localizedName, selected: viewModel.homeView == option) {
                             viewModel.setHomeView(option)
                         }
                     }
@@ -75,7 +75,7 @@ struct ProfileView: View {
                     SettingsRow(
                         icon: "square.grid.2x2",
                         title: "Home View",
-                        value: viewModel.homeView.label,
+                        value: String(localized: viewModel.homeView.localizedName),
                         showsChevron: true)
                 }
 
@@ -84,7 +84,7 @@ struct ProfileView: View {
                 // Markdown editor — PLANKA pref.
                 Menu {
                     ForEach(EditorModeOption.allCases) { option in
-                        prefButton(option.label, selected: viewModel.editorMode == option) {
+                        prefButton(option.localizedName, selected: viewModel.editorMode == option) {
                             viewModel.setEditorMode(option)
                         }
                     }
@@ -92,7 +92,7 @@ struct ProfileView: View {
                     SettingsRow(
                         icon: "text.alignleft",
                         title: "Markdown Editor",
-                        value: viewModel.editorMode.label,
+                        value: String(localized: viewModel.editorMode.localizedName),
                         showsChevron: true)
                 }
             }
@@ -100,9 +100,13 @@ struct ProfileView: View {
         }
     }
 
-    private func prefButton(_ title: String, selected: Bool, action: @escaping () -> Void) -> some View {
+    private func prefButton(_ title: LocalizedStringResource, selected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            if selected { Label(title, systemImage: "checkmark") } else { Text(title) }
+            if selected {
+                Label { Text(title) } icon: { Image(systemName: "checkmark") }
+            } else {
+                Text(title)
+            }
         }
     }
 
@@ -126,16 +130,16 @@ struct ProfileView: View {
         HStack(spacing: 14) {
             AvatarView(name: user?.name ?? profile.name, size: 60, bordered: false)
             VStack(alignment: .leading, spacing: 3) {
-                Text(user?.name ?? profile.name)
+                Text(verbatim: user?.name ?? profile.name)
                     .font(.sans(20, .bold))
                     .foregroundStyle(Color.boardlyInk)
                 if let username = user?.username {
-                    Text("@\(username)")
+                    Text(verbatim: "@\(username)")
                         .font(.boardlyMonoCaption)
                         .foregroundStyle(Color.boardlyTextSecondary)
                 }
                 if let subtitle = subtitle(for: user) {
-                    Text(subtitle)
+                    Text(verbatim: subtitle)
                         .font(.boardlyCallout)
                         .foregroundStyle(Color.boardlyTextTertiary)
                 }
@@ -146,12 +150,12 @@ struct ProfileView: View {
 
     private func subtitle(for user: User?) -> String? {
         guard let user else { return nil }
-        let role = roleLabel(user.role)
+        let role = String(localized: roleLabel(user.role))
         if let org = user.organization, !org.isEmpty { return "\(org) · \(role)" }
         return role
     }
 
-    private func roleLabel(_ role: String) -> String {
+    private func roleLabel(_ role: String) -> LocalizedStringResource {
         switch role {
         case "admin": "Administrator"
         case "projectOwner": "Project Owner"
@@ -236,7 +240,8 @@ struct ProfileView: View {
     }
 
     private func footer(_ viewModel: ProfileViewModel) -> some View {
-        Text(footerText(viewModel))
+        // Version string — proper nouns + numbers, rendered verbatim.
+        Text(verbatim: footerText(viewModel))
             .font(.boardlyMonoCaption)
             .foregroundStyle(Color.boardlyTextTertiary)
             .frame(maxWidth: .infinity)
@@ -258,7 +263,8 @@ struct ProfileView: View {
 
 struct SettingsRow: View {
     let icon: String
-    let title: String
+    let title: LocalizedStringKey
+    /// Pre-resolved data (a server name, a localized enum name) — rendered verbatim.
     var value: String?
     var showsChevron: Bool
 
@@ -273,7 +279,7 @@ struct SettingsRow: View {
                 .foregroundStyle(Color.boardlyInk)
             Spacer(minLength: 8)
             if let value {
-                Text(value)
+                Text(verbatim: value)
                     .font(.boardlyCallout)
                     .foregroundStyle(Color.boardlyTextSecondary)
                     .lineLimit(1)

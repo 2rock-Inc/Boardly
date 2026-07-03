@@ -24,11 +24,16 @@ struct EditProjectSheet: View {
     }
 
     enum EditTab: String, CaseIterable, Identifiable {
-        case general = "General"
-        case managers = "Managers"
-        case background = "Background"
-        case customFields = "Custom Fields"
+        case general, managers, background, customFields
         var id: String { rawValue }
+        var localizedName: LocalizedStringResource {
+            switch self {
+            case .general: "General"
+            case .managers: "Managers"
+            case .background: "Background"
+            case .customFields: "Custom Fields"
+            }
+        }
     }
 
     var body: some View {
@@ -82,7 +87,7 @@ struct EditProjectSheet: View {
                 ForEach(EditTab.allCases) { item in
                     let active = tab == item
                     Button { tab = item } label: {
-                        Text(LocalizedStringKey(item.rawValue))
+                        Text(item.localizedName)
                             .font(.sans(14, .semibold))
                             .foregroundStyle(active ? .white : Color.boardlyTextSecondary)
                             .padding(.horizontal, 14)
@@ -348,7 +353,7 @@ private struct BackgroundTab: View {
             {
                 _ = await viewModel.uploadImage(data: jpeg, fileName: "background.jpg", mimeType: "image/jpeg", using: client)
             } else {
-                viewModel.error = "Unreadable image."
+                viewModel.error = String(localized: "Unreadable image.")
             }
         }
     }

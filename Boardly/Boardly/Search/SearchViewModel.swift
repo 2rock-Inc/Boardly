@@ -2,11 +2,16 @@ import BoardlyKit
 import Foundation
 
 enum SearchScope: String, CaseIterable, Identifiable {
-    case all = "All"
-    case cards = "Cards"
-    case boards = "Boards"
-    case projects = "Projects"
+    case all, cards, boards, projects
     var id: String { rawValue }
+    var localizedName: LocalizedStringResource {
+        switch self {
+        case .all: "All"
+        case .cards: "Cards"
+        case .boards: "Boards"
+        case .projects: "Projects"
+        }
+    }
 }
 
 /// A card matched by search, carrying the context needed to display and open it.
@@ -74,7 +79,7 @@ final class SearchViewModel {
             // for the session; leaving `indexed == false` lets a later call rebuild.
             indexed = complete
         } catch {
-            self.error = "Couldn’t index the search."
+            self.error = String(localized: "Couldn’t index the search.")
         }
     }
 

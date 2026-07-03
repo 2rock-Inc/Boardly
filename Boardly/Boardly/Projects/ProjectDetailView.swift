@@ -30,7 +30,7 @@ final class ProjectDetailViewModel {
         do {
             let payload = try await client.getProjects()
             guard let project = payload.projects.first(where: { $0.id == projectId }) else {
-                error = "Project not found."
+                error = String(localized: "Project not found.")
                 return
             }
             self.project = project
@@ -45,7 +45,7 @@ final class ProjectDetailViewModel {
             stats = boards.map { BoardStat(board: $0) }
             await loadCounts(client: client)
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 
@@ -74,7 +74,7 @@ final class ProjectDetailViewModel {
             project = try await client.updateProject(id: id, patch: ProjectPatch(name: name, description: description))
             return true
         } catch {
-            self.error = "Couldn’t save the project."
+            self.error = String(localized: "Couldn’t save the project.")
             return false
         }
     }
@@ -85,7 +85,7 @@ final class ProjectDetailViewModel {
         do {
             project = try await client.updateProject(id: id, patch: ProjectPatch(isHidden: hidden))
         } catch {
-            self.error = "Couldn’t change visibility."
+            self.error = String(localized: "Couldn’t change visibility.")
         }
     }
 
@@ -97,7 +97,7 @@ final class ProjectDetailViewModel {
             try await client.deleteProject(id: id)
             return true
         } catch {
-            self.error = "Couldn’t delete the project."
+            self.error = String(localized: "Couldn’t delete the project.")
             return false
         }
     }
@@ -118,7 +118,7 @@ final class ProjectDetailViewModel {
             managers.append(manager)
             if let user = user(userId) { managerUsers.append(user) }
         } catch {
-            self.error = "Couldn’t add the manager."
+            self.error = String(localized: "Couldn’t add the manager.")
         }
     }
 
@@ -135,7 +135,7 @@ final class ProjectDetailViewModel {
         } catch {
             managers = previousManagers
             managerUsers = previousUsers
-            self.error = "Couldn’t remove the manager."
+            self.error = String(localized: "Couldn’t remove the manager.")
         }
     }
 
@@ -148,7 +148,7 @@ final class ProjectDetailViewModel {
             let group = try await client.createBaseCustomFieldGroup(projectId: id, name: name)
             baseGroups.append(group)
         } catch {
-            self.error = "Couldn’t add the group."
+            self.error = String(localized: "Couldn’t add the group.")
         }
     }
 
@@ -161,7 +161,7 @@ final class ProjectDetailViewModel {
             customFields.removeAll { $0.baseCustomFieldGroupId == group.id }
         } catch {
             baseGroups = previous
-            self.error = "Couldn’t delete the group."
+            self.error = String(localized: "Couldn’t delete the group.")
         }
     }
 
@@ -172,7 +172,7 @@ final class ProjectDetailViewModel {
             let field = try await client.createBaseCustomField(groupId: group.id, name: name, position: position)
             customFields.append(field)
         } catch {
-            self.error = "Couldn’t add the field."
+            self.error = String(localized: "Couldn’t add the field.")
         }
     }
 
@@ -193,7 +193,7 @@ final class ProjectDetailViewModel {
                 id: id, patch: ProjectPatch(backgroundType: "gradient", backgroundGradient: name))
             return true
         } catch {
-            self.error = "Couldn’t change the background."
+            self.error = String(localized: "Couldn’t change the background.")
             return false
         }
     }
@@ -210,7 +210,7 @@ final class ProjectDetailViewModel {
                 id: id, patch: ProjectPatch(backgroundType: "image", backgroundImageId: image.id))
             return true
         } catch {
-            self.error = "Failed to upload the background image."
+            self.error = String(localized: "Failed to upload the background image.")
             return false
         }
     }
@@ -223,7 +223,7 @@ final class ProjectDetailViewModel {
             project = try await client.updateProject(id: id, patch: ProjectPatch(clearBackground: true))
             return true
         } catch {
-            self.error = "Couldn’t remove the background."
+            self.error = String(localized: "Couldn’t remove the background.")
             return false
         }
     }

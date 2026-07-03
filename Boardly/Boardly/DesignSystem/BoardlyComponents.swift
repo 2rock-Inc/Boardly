@@ -108,22 +108,22 @@ struct AvatarView: View {
 
 /// Bottom-sheet header: Cancel / title / OK, with a grabber.
 struct SheetHeader: View {
-    let title: String
-    var cancelLabel = "Cancel"
-    var doneLabel = "OK"
+    let title: LocalizedStringKey
+    var cancelLabel: LocalizedStringKey = "Cancel"
+    var doneLabel: LocalizedStringKey = "OK"
     let onCancel: () -> Void
     let onDone: () -> Void
 
     var body: some View {
         HStack {
-            Button(LocalizedStringKey(cancelLabel), action: onCancel)
+            Button(cancelLabel, action: onCancel)
                 .foregroundStyle(Color.boardlyTextSecondary)
             Spacer()
-            Text(LocalizedStringKey(title))
+            Text(title)
                 .font(.sans(16, .bold))
                 .foregroundStyle(Color.boardlyInk)
             Spacer()
-            Button(LocalizedStringKey(doneLabel), action: onDone)
+            Button(doneLabel, action: onDone)
                 .foregroundStyle(Color.accentColor)
         }
         .font(.sans(16, .semibold))
@@ -148,12 +148,14 @@ struct SelectionToggle: View {
 
 /// Uppercase mono field label, per the design.
 struct BoardlyFieldLabel: View {
-    let text: String
-    init(_ text: String) { self.text = text }
+    private let content: Text
+    /// Localized copy (the default). A string literal at the call site is a
+    /// `LocalizedStringKey` and is looked up in the catalog.
+    init(_ text: LocalizedStringKey) { content = Text(text) }
+    /// Non-localized data (e.g. a custom-field group name).
+    init(verbatim: String) { content = Text(verbatim: verbatim) }
     var body: some View {
-        // Literal call-site strings are localized via the catalog; dynamic ones
-        // (e.g. a group name) fall through to their verbatim value.
-        Text(LocalizedStringKey(text))
+        content
             .font(.boardlyMonoLabel)
             .tracking(1.5)
             .textCase(.uppercase)
