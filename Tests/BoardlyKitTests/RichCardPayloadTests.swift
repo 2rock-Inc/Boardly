@@ -13,15 +13,15 @@ struct RichCardPayloadTests {
         "taskLists": [], "tasks": [],
         "labels": [
           { "id": "lb1", "boardId": "b1", "name": "Design", "color": "berry-red", "position": 1 },
-          { "id": "lb2", "boardId": "b1", "name": "Priorité", "color": "pumpkin-orange", "position": 2 }
+          { "id": "lb2", "boardId": "b1", "name": "Priority", "color": "pumpkin-orange", "position": 2 }
         ],
         "cardLabels": [{ "id": "cl1", "cardId": "c1", "labelId": "lb1" }],
         "users": [
-          { "id": "u1", "role": "admin", "name": "Marie Dupont", "isDeactivated": false },
-          { "id": "u2", "role": "member", "name": "Paul Lemaire", "isDeactivated": false }
+          { "id": "u1", "role": "admin", "name": "Alice Johnson", "isDeactivated": false },
+          { "id": "u2", "role": "member", "name": "Bob Williams", "isDeactivated": false }
         ],
         "cardMemberships": [{ "id": "cm1", "cardId": "c1", "userId": "u1", "role": "editor" }],
-        "attachments": [{ "id": "a1", "cardId": "c1", "type": "file", "data": { "url": "x" }, "name": "maquette.png" }],
+        "attachments": [{ "id": "a1", "cardId": "c1", "type": "file", "data": { "url": "x" }, "name": "mockup.png" }],
         "boardMemberships": [
           { "id": "bm1", "projectId": "p1", "boardId": "b1", "userId": "u1", "role": "editor" },
           { "id": "bm2", "projectId": "p1", "boardId": "b1", "userId": "u2", "role": "editor" }
