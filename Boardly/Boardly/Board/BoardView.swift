@@ -21,6 +21,7 @@ struct BoardView: View {
     @State private var mode: BoardViewMode = .kanban
     @State private var showAddCard = false
     @State private var newCardTitle = ""
+    @State private var showCustomFieldsSheet = false
     @Environment(\.dismiss) private var dismiss
 
     init(
@@ -82,6 +83,9 @@ struct BoardView: View {
         .navigationDestination(item: $selectedCardId) { selected in
             CardDetailView(cardId: selected.id, boardVM: viewModel)
         }
+        .sheet(isPresented: $showCustomFieldsSheet) {
+            BoardCustomFieldsSheet(boardVM: viewModel)
+        }
         .alert("New Card", isPresented: $showAddCard) {
             TextField("Card title", text: $newCardTitle)
             Button("Add") { addCardToFirstList() }
@@ -125,8 +129,14 @@ struct BoardView: View {
             Spacer(minLength: 0)
             Image(systemName: "line.3.horizontal.decrease")
                 .foregroundStyle(Color.boardlyTextSecondary)
-            Image(systemName: "ellipsis")
-                .foregroundStyle(Color.boardlyTextSecondary)
+            Menu {
+                Button { showCustomFieldsSheet = true } label: {
+                    Label("Custom Fields", systemImage: "square.grid.2x2")
+                }
+            } label: {
+                Image(systemName: "ellipsis")
+                    .foregroundStyle(Color.boardlyTextSecondary)
+            }
         }
         .font(.system(size: 17, weight: .semibold))
         .padding(.horizontal, 20)
