@@ -10,7 +10,7 @@ Boardly brings your self-hosted [PLANKA](https://github.com/plankanban/planka) k
 
 <br />
 
-[![Platform](https://img.shields.io/badge/platform-iOS%2026-000000?logo=apple&logoColor=white)](https://developer.apple.com/ios/)
+[![Platform](https://img.shields.io/badge/platform-iOS%2018.4%2B-000000?logo=apple&logoColor=white)](https://developer.apple.com/ios/)
 [![SwiftUI](https://img.shields.io/badge/built%20with-SwiftUI-0A84FF?logo=swift&logoColor=white)](https://developer.apple.com/xcode/swiftui/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
@@ -82,7 +82,7 @@ Boardly is a native iOS app for **PLANKA**, the open-source Trello-style kanban 
 
 ## Requirements
 
-- An **iPhone on iOS 26** (or the iOS 26 Simulator)
+- An **iPhone on iOS 18.4 or later** (or the iOS 18.4+ Simulator)
 - A reachable **PLANKA instance** and an account on it — Boardly does not host anything for you
 
 ---
