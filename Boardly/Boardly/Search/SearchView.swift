@@ -1,5 +1,5 @@
-import SwiftUI
 import BoardlyKit
+import SwiftUI
 
 struct SearchView: View {
     let client: PlankaClient
@@ -32,11 +32,15 @@ struct SearchView: View {
             }
             .navigationDestination(for: AppRoute.self) { route in
                 switch route {
-                case .project(let id, let name):
+                case let .project(id, name):
                     ProjectDetailView(client: client, projectId: id, projectName: name, path: $path)
-                case .board(let id, let name, let projectName, let focusCardId):
-                    BoardView(client: client, boardId: id, boardName: name,
-                              projectName: projectName, focusCardId: focusCardId)
+                case let .board(id, name, projectName, focusCardId):
+                    BoardView(
+                        client: client,
+                        boardId: id,
+                        boardName: name,
+                        projectName: projectName,
+                        focusCardId: focusCardId)
                 }
             }
             .toolbar(.hidden, for: .navigationBar)
@@ -81,8 +85,9 @@ struct SearchView: View {
                         .foregroundStyle(active ? .white : Color.boardlyTextSecondary)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 7)
-                        .background(active ? Color.accentColor : Color.boardlySurface,
-                                    in: Capsule())
+                        .background(
+                            active ? Color.accentColor : Color.boardlySurface,
+                            in: Capsule())
                         .overlay(active ? nil : Capsule().stroke(Color.boardlySeparator, lineWidth: 1))
                 }
                 .buttonStyle(.plain)
@@ -133,8 +138,11 @@ struct SearchView: View {
         }
     }
 
-    private func section<Content: View>(_ title: String, count: Int,
-                                        @ViewBuilder content: () -> Content) -> some View {
+    private func section(
+        _ title: String,
+        count: Int,
+        @ViewBuilder content: () -> some View) -> some View
+    {
         VStack(alignment: .leading, spacing: 8) {
             BoardlyFieldLabel("\(title) · \(count)")
             VStack(spacing: 0) {
@@ -146,8 +154,11 @@ struct SearchView: View {
 
     private func cardRow(_ hit: CardHit) -> some View {
         Button {
-            path.append(.board(id: hit.boardId, name: hit.boardName,
-                               projectName: hit.projectName, focusCardId: hit.card.id))
+            path.append(.board(
+                id: hit.boardId,
+                name: hit.boardName,
+                projectName: hit.projectName,
+                focusCardId: hit.card.id))
         } label: {
             HStack(spacing: 12) {
                 Image(systemName: "doc.text")
@@ -292,4 +303,3 @@ struct SearchView: View {
         .padding(.top, 60)
     }
 }
-

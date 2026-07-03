@@ -15,9 +15,9 @@ public struct Stopwatch: Codable, Sendable {
     }
 }
 
-extension Card {
+public extension Card {
     /// Decode the card's stopwatch (`AnyCodable`) into a typed value.
-    public var stopwatchValue: Stopwatch? {
+    var stopwatchValue: Stopwatch? {
         guard let stopwatch,
               let data = try? JSONEncoder().encode(stopwatch)
         else { return nil }

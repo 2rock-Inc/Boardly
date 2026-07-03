@@ -1,5 +1,5 @@
-import SwiftUI
 import BoardlyKit
+import SwiftUI
 
 struct MainView: View {
     let profile: ServerProfile
@@ -21,11 +21,15 @@ struct MainView: View {
                 ProjectListView(client: client, path: $path)
                     .navigationDestination(for: AppRoute.self) { route in
                         switch route {
-                        case .project(let id, let name):
+                        case let .project(id, name):
                             ProjectDetailView(client: client, projectId: id, projectName: name, path: $path)
-                        case .board(let id, let name, let projectName, let focusCardId):
-                            BoardView(client: client, boardId: id, boardName: name,
-                                      projectName: projectName, focusCardId: focusCardId)
+                        case let .board(id, name, projectName, focusCardId):
+                            BoardView(
+                                client: client,
+                                boardId: id,
+                                boardName: name,
+                                projectName: projectName,
+                                focusCardId: focusCardId)
                         }
                     }
             }

@@ -1,5 +1,5 @@
-import SwiftUI
 import BoardlyKit
+import SwiftUI
 
 struct ListColumnView: View {
     let list: PlankaList
@@ -40,8 +40,7 @@ struct ListColumnView: View {
                                 taskLists: payload.taskLists(for: card),
                                 tasks: payload.taskLists(for: card).flatMap { payload.tasks(for: $0) },
                                 labels: payload.labels(for: card),
-                                members: payload.members(for: card)
-                            )
+                                members: payload.members(for: card))
                         }
                         .buttonStyle(.plain)
                     }
@@ -53,8 +52,7 @@ struct ListColumnView: View {
                             .background(Color.boardlySurface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .stroke(Color.accentColor, lineWidth: 1)
-                            )
+                                    .stroke(Color.accentColor, lineWidth: 1))
                             .focused($addFieldFocused)
                             .onSubmit { submitNewCard() }
                     }

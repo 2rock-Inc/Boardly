@@ -1,5 +1,5 @@
-import SwiftUI
 import BoardlyKit
+import SwiftUI
 
 @Observable
 @MainActor

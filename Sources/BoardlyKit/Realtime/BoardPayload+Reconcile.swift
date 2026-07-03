@@ -9,52 +9,45 @@ import Foundation
 extension BoardPayload {
     public func applying(_ event: BoardRealtimeEvent) -> BoardPayload {
         switch event {
-        case .resynced(let payload):
+        case let .resynced(payload):
             return payload
-
-        case .cardCreated(let card):
+        case let .cardCreated(card):
             return with(cards: upsert(cards, card))
-        case .cardUpdated(let partial):
+        case let .cardUpdated(partial):
             return with(cards: applyCardUpdate(partial))
-        case .cardDeleted(let id):
+        case let .cardDeleted(id):
             return with(cards: cards.filter { $0.id != id })
-
-        case .listCreated(let list):
+        case let .listCreated(list):
             return with(lists: upsert(lists, list))
-        case .listUpdated(let partial):
+        case let .listUpdated(partial):
             return with(lists: applyListUpdate(partial))
-        case .listDeleted(let id):
+        case let .listDeleted(id):
             return with(lists: lists.filter { $0.id != id })
-
-        case .taskCreated(let task):
+        case let .taskCreated(task):
             return with(tasks: upsert(tasks, task))
-        case .taskUpdated(let partial):
+        case let .taskUpdated(partial):
             return with(tasks: applyTaskUpdate(partial))
-        case .taskDeleted(let id):
+        case let .taskDeleted(id):
             return with(tasks: tasks.filter { $0.id != id })
-
-        case .labelCreated(let label):
+        case let .labelCreated(label):
             var copy = self; copy.labels = upsert(labels, label); return copy
-        case .labelUpdated(let label):
+        case let .labelUpdated(label):
             var copy = self; copy.labels = labels.map { $0.id == label.id ? label : $0 }; return copy
-        case .labelDeleted(let id):
+        case let .labelDeleted(id):
             var copy = self; copy.labels.removeAll { $0.id == id }; return copy
-
-        case .cardLabelCreated(let cardLabel):
+        case let .cardLabelCreated(cardLabel):
             var copy = self; copy.cardLabels = upsert(cardLabels, cardLabel); return copy
-        case .cardLabelDeleted(let id):
+        case let .cardLabelDeleted(id):
             var copy = self; copy.cardLabels.removeAll { $0.id == id }; return copy
-
-        case .cardMembershipCreated(let membership):
+        case let .cardMembershipCreated(membership):
             var copy = self; copy.cardMemberships = upsert(cardMemberships, membership); return copy
-        case .cardMembershipDeleted(let id):
+        case let .cardMembershipDeleted(id):
             var copy = self; copy.cardMemberships.removeAll { $0.id == id }; return copy
-
-        case .attachmentCreated(let attachment):
+        case let .attachmentCreated(attachment):
             var copy = self; copy.attachments = upsert(attachments, attachment); return copy
-        case .attachmentUpdated(let attachment):
+        case let .attachmentUpdated(attachment):
             var copy = self; copy.attachments = attachments.map { $0.id == attachment.id ? attachment : $0 }; return copy
-        case .attachmentDeleted(let id):
+        case let .attachmentDeleted(id):
             var copy = self; copy.attachments.removeAll { $0.id == id }; return copy
         }
     }
@@ -127,8 +120,7 @@ extension Card {
             isClosed: p.isClosed ?? isClosed,
             listChangedAt: p.listChangedAt ?? listChangedAt,
             createdAt: p.createdAt ?? createdAt,
-            updatedAt: p.updatedAt ?? updatedAt
-        )
+            updatedAt: p.updatedAt ?? updatedAt)
     }
 }
 
@@ -142,8 +134,7 @@ extension PartialCard {
             prevListId: prevListId, coverAttachmentId: coverAttachmentId, type: type,
             position: position, name: name, description: description, dueDate: dueDate,
             isDueCompleted: isDueCompleted, stopwatch: stopwatch, commentsTotal: commentsTotal,
-            isClosed: isClosed, listChangedAt: listChangedAt, createdAt: createdAt, updatedAt: updatedAt
-        )
+            isClosed: isClosed, listChangedAt: listChangedAt, createdAt: createdAt, updatedAt: updatedAt)
     }
 }
 
@@ -157,8 +148,7 @@ extension PlankaList {
             name: p.name ?? name,
             color: p.color ?? color,
             createdAt: p.createdAt ?? createdAt,
-            updatedAt: p.updatedAt ?? updatedAt
-        )
+            updatedAt: p.updatedAt ?? updatedAt)
     }
 }
 
@@ -167,8 +157,7 @@ extension PartialList {
         guard let boardId else { return nil }
         return PlankaList(
             id: id, boardId: boardId, type: type, position: position,
-            name: name, color: color, createdAt: createdAt, updatedAt: updatedAt
-        )
+            name: name, color: color, createdAt: createdAt, updatedAt: updatedAt)
     }
 }
 
@@ -183,8 +172,7 @@ extension PlankaTask {
             name: p.name ?? name,
             isCompleted: p.isCompleted ?? isCompleted,
             createdAt: p.createdAt ?? createdAt,
-            updatedAt: p.updatedAt ?? updatedAt
-        )
+            updatedAt: p.updatedAt ?? updatedAt)
     }
 }
 
@@ -194,7 +182,6 @@ extension PartialTask {
         return PlankaTask(
             id: id, taskListId: taskListId, linkedCardId: linkedCardId,
             assigneeUserId: assigneeUserId, position: position, name: name,
-            isCompleted: isCompleted, createdAt: createdAt, updatedAt: updatedAt
-        )
+            isCompleted: isCompleted, createdAt: createdAt, updatedAt: updatedAt)
     }
 }

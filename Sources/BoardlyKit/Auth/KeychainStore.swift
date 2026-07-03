@@ -19,8 +19,7 @@ public struct KeychainStore: KeychainStoring {
 
         let status = SecItemUpdate(
             query as CFDictionary,
-            [kSecValueData: data] as CFDictionary
-        )
+            [kSecValueData: data] as CFDictionary)
 
         if status == errSecItemNotFound {
             var addQuery = query

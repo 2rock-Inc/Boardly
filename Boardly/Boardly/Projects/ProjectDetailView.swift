@@ -1,6 +1,6 @@
-import SwiftUI
-import PhotosUI
 import BoardlyKit
+import PhotosUI
+import SwiftUI
 
 struct BoardStat: Identifiable {
     let board: Board
@@ -34,13 +34,13 @@ final class ProjectDetailViewModel {
                 return
             }
             self.project = project
-            self.backgroundImages = payload.backgroundImages
-            self.managers = payload.managers(for: project)
-            self.managerUsers = payload.managerUsers(for: project)
-            self.allUsers = payload.users
-            self.baseGroups = payload.baseGroups(for: project)
-            self.customFields = payload.customFields
-            self.currentUserId = client.currentUserId()
+            backgroundImages = payload.backgroundImages
+            managers = payload.managers(for: project)
+            managerUsers = payload.managerUsers(for: project)
+            allUsers = payload.users
+            baseGroups = payload.baseGroups(for: project)
+            customFields = payload.customFields
+            currentUserId = client.currentUserId()
             let boards = payload.boards(for: project)
             stats = boards.map { BoardStat(board: $0) }
             await loadCounts(client: client)
@@ -228,7 +228,7 @@ final class ProjectDetailViewModel {
         }
     }
 
-    // One board fetch per board (bounded drill-in) to surface real card/list counts.
+    /// One board fetch per board (bounded drill-in) to surface real card/list counts.
     private func loadCounts(client: PlankaClient) async {
         await withTaskGroup(of: (String, Int, Int)?.self) { group in
             for stat in stats {
@@ -284,8 +284,10 @@ struct ProjectDetailView: View {
         ZStack(alignment: .bottomLeading) {
             heroBackground
             // Scrim so white text stays legible over light gradients/images.
-            LinearGradient(colors: [.clear, .black.opacity(0.35)],
-                           startPoint: .center, endPoint: .bottom)
+            LinearGradient(
+                colors: [.clear, .black.opacity(0.35)],
+                startPoint: .center,
+                endPoint: .bottom)
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Button { dismiss() } label: {
@@ -330,18 +332,19 @@ struct ProjectDetailView: View {
         if let project = viewModel.project,
            project.backgroundType == "image",
            let image = viewModel.currentBackgroundImage,
-           let url = client.resourceURL(image.url) {
+           let url = client.resourceURL(image.url)
+        {
             BackgroundImageView(url: url) { await client.imageData(url: $0) }
         } else if let project = viewModel.project,
                   project.backgroundType == "gradient",
-                  let name = project.backgroundGradient {
+                  let name = project.backgroundGradient
+        {
             PlankaGradient.linear(name)
         } else {
             projectColor(projectId)
         }
     }
 
-    @ViewBuilder
     private func body(for project: Project?) -> some View {
         VStack(alignment: .leading, spacing: 18) {
             if let description = project?.description, !description.isEmpty {
@@ -407,8 +410,7 @@ private struct BoardGridCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(Color.boardlySeparator, lineWidth: 0.5)
-        )
+                .stroke(Color.boardlySeparator, lineWidth: 0.5))
     }
 
     private var miniBar: some View {
@@ -442,8 +444,7 @@ private struct NewBoardCard: View {
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
-                .foregroundStyle(Color.boardlySeparator)
-        )
+                .foregroundStyle(Color.boardlySeparator))
     }
 }
 

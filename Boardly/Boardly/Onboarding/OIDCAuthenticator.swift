@@ -2,16 +2,16 @@ import BoardlyKit
 import SwiftUI
 import WebKit
 
-/// Native OIDC/SSO login for PLANKA via an intercepting `WKWebView`.
-///
-/// PLANKA advertises a ready-made `authorizationUrl` in `Bootstrap.oidc` and,
-/// being a web-first app, configures its OIDC `redirect_uri` as an **https URL on
-/// its own host** (e.g. `https://todo.2rock.fr/oidc-callback`). A custom-scheme
-/// approach (`ASWebAuthenticationSession`) can't capture that, so we host the auth
-/// flow in a `WKWebView` and intercept the navigation to the redirect URL,
-/// pulling the `code` out before the page loads. The matching `nonce` is the one
-/// PLANKA embedded in `authorizationUrl`; we read it back and hand `(code, nonce)`
-/// to `PlankaClient.exchangeOIDC(code:nonce:)`.
+// Native OIDC/SSO login for PLANKA via an intercepting `WKWebView`.
+//
+// PLANKA advertises a ready-made `authorizationUrl` in `Bootstrap.oidc` and,
+// being a web-first app, configures its OIDC `redirect_uri` as an **https URL on
+// its own host** (e.g. `https://todo.2rock.fr/oidc-callback`). A custom-scheme
+// approach (`ASWebAuthenticationSession`) can't capture that, so we host the auth
+// flow in a `WKWebView` and intercept the navigation to the redirect URL,
+// pulling the `code` out before the page loads. The matching `nonce` is the one
+// PLANKA embedded in `authorizationUrl`; we read it back and hand `(code, nonce)`
+// to `PlankaClient.exchangeOIDC(code:nonce:)`.
 
 // MARK: - Session
 
@@ -50,13 +50,14 @@ struct OIDCSession: Identifiable {
         // before we rebuild the query.
         let advertisedRedirect = components.queryItems?.first(where: { $0.name == "redirect_uri" })?.value
         if let redirect = advertisedRedirect,
-           let rc = URLComponents(string: redirect), let scheme = rc.scheme, let host = rc.host {
+           let rc = URLComponents(string: redirect), let scheme = rc.scheme, let host = rc.host
+        {
             let port = rc.port.map { ":\($0)" } ?? ""
-            self.redirectPrefix = "\(scheme)://\(host)\(port)\(rc.path)"
+            redirectPrefix = "\(scheme)://\(host)\(port)\(rc.path)"
         } else if let scheme = baseURL.scheme, let host = baseURL.host {
             let port = baseURL.port.map { ":\($0)" } ?? ""
             let basePath = baseURL.path.hasSuffix("/") ? String(baseURL.path.dropLast()) : baseURL.path
-            self.redirectPrefix = "\(scheme)://\(host)\(port)\(basePath)/oidc-callback"
+            redirectPrefix = "\(scheme)://\(host)\(port)\(basePath)/oidc-callback"
         } else {
             return nil
         }
@@ -89,9 +90,9 @@ enum OIDCError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .notConfigured: return "Invalid OIDC configuration (missing URL, nonce, or redirect)."
-        case .missingCode: return "No authorization code was received from the provider."
-        case .providerError(let message): return "The SSO provider returned an error: \(message)."
+        case .notConfigured: "Invalid OIDC configuration (missing URL, nonce, or redirect)."
+        case .missingCode: "No authorization code was received from the provider."
+        case let .providerError(message): "The SSO provider returned an error: \(message)."
         }
     }
 }
@@ -109,7 +110,7 @@ struct OIDCWebFlow: View {
         NavigationStack {
             OIDCWebAuthView(session: session) { result in
                 switch result {
-                case .success(let code): onCode(code)
+                case let .success(code): onCode(code)
                 case .failure: onCancel()
                 }
             }
@@ -149,7 +150,7 @@ private struct OIDCWebAuthView: UIViewRepresentable {
         return webView
     }
 
-    func updateUIView(_ webView: WKWebView, context: Context) {}
+    func updateUIView(_: WKWebView, context _: Context) {}
 
     final class Coordinator: NSObject, WKNavigationDelegate {
         private let session: OIDCSession
@@ -161,9 +162,11 @@ private struct OIDCWebAuthView: UIViewRepresentable {
             self.onResult = onResult
         }
 
-        func webView(_ webView: WKWebView,
-                     decidePolicyFor navigationAction: WKNavigationAction,
-                     decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        func webView(
+            _: WKWebView,
+            decidePolicyFor navigationAction: WKNavigationAction,
+            decisionHandler: @escaping (WKNavigationActionPolicy) -> Void)
+        {
             guard !finished, let url = navigationAction.request.url else {
                 decisionHandler(.allow)
                 return
@@ -183,8 +186,8 @@ private struct OIDCWebAuthView: UIViewRepresentable {
             else { return false }
             let port = components.port.map { ":\($0)" } ?? ""
             let base = "\(scheme)://\(host)\(port)\(components.path)"
-            // Compare with trailing slashes normalized so a provider callback that
-            // differs only by a trailing "/" is still intercepted.
+            /// Compare with trailing slashes normalized so a provider callback that
+            /// differs only by a trailing "/" is still intercepted.
             func normalized(_ value: String) -> String {
                 value.hasSuffix("/") ? String(value.dropLast()) : value
             }

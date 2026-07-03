@@ -1,6 +1,6 @@
+import BoardlyKit
 import Foundation
 import SwiftUI
-import BoardlyKit
 
 @Observable
 @MainActor
@@ -39,8 +39,7 @@ final class NotificationsViewModel {
         guard let current = payload else { return }
         payload = NotificationsPayload(
             notifications: current.notifications.filter { $0.id != notification.id },
-            users: current.users
-        )
+            users: current.users)
         do {
             _ = try await client.setNotificationRead(id: notification.id, isRead: true)
         } catch {
@@ -85,13 +84,12 @@ final class NotificationsViewModel {
     func line(for notification: PlankaNotification) -> AttributedString {
         let actor = creatorName(notification)
         let card = cardName(notification) ?? "a card"
-        let phrasing: (prefix: String, suffix: String)
-        switch notification.type {
-        case "mentionInComment": phrasing = (" mentioned you in ", "")
-        case "commentCard": phrasing = (" commented on ", "")
-        case "addMemberToCard": phrasing = (" assigned you to ", "")
-        case "moveCard": phrasing = (" moved ", "")
-        default: phrasing = (" updated ", "")
+        let phrasing: (prefix: String, suffix: String) = switch notification.type {
+        case "mentionInComment": (" mentioned you in ", "")
+        case "commentCard": (" commented on ", "")
+        case "addMemberToCard": (" assigned you to ", "")
+        case "moveCard": (" moved ", "")
+        default: (" updated ", "")
         }
 
         var result = AttributedString(actor)
@@ -119,7 +117,7 @@ final class NotificationsViewModel {
     func bucket(_ notification: PlankaNotification) -> Int {
         guard let date = notification.createdAt else { return 2 }
         if Calendar.current.isDateInToday(date) { return 0 }
-        if date > Date().addingTimeInterval(-7 * 86_400) { return 1 }
+        if date > Date().addingTimeInterval(-7 * 86400) { return 1 }
         return 2
     }
 

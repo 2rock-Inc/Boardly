@@ -1,5 +1,5 @@
-import SwiftUI
 import BoardlyKit
+import SwiftUI
 
 struct RootView: View {
     @Environment(ProfileStore.self) private var profileStore
@@ -12,7 +12,7 @@ struct RootView: View {
                     switch route {
                     case .addServer:
                         AddServerView(path: $path)
-                    case .login(let profileID):
+                    case let .login(profileID):
                         if let profile = profileStore.profiles.first(where: { $0.id == profileID }) {
                             LoginView(profile: profile, path: $path)
                         }
@@ -21,8 +21,8 @@ struct RootView: View {
         }
         .fullScreenCover(isPresented: Binding(
             get: { profileStore.activeProfile != nil },
-            set: { _ in }
-        )) {
+            set: { _ in }))
+        {
             if let profile = profileStore.activeProfile {
                 MainView(profile: profile)
             }

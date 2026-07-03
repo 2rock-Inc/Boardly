@@ -20,8 +20,8 @@ public struct ConfigPatch: Encodable, Sendable {
         smtpTlsRejectUnauthorized: Bool? = nil,
         smtpUser: String? = nil,
         smtpPassword: String? = nil,
-        smtpFrom: String? = nil
-    ) {
+        smtpFrom: String? = nil)
+    {
         self.smtpHost = smtpHost
         self.smtpPort = smtpPort
         self.smtpName = smtpName

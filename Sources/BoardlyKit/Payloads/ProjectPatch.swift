@@ -21,8 +21,8 @@ public struct ProjectPatch: Encodable, Sendable {
         backgroundType: String? = nil,
         backgroundGradient: String? = nil,
         backgroundImageId: String? = nil,
-        clearBackground: Bool = false
-    ) {
+        clearBackground: Bool = false)
+    {
         self.name = name
         self.description = description
         self.isHidden = isHidden

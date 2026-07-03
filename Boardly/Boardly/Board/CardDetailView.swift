@@ -1,6 +1,6 @@
+import BoardlyKit
 import SwiftUI
 import UIKit
-import BoardlyKit
 
 struct CardDetailView: View {
     let cardId: String
@@ -69,8 +69,8 @@ struct CardDetailView: View {
         }
         .alert("Couldn’t save card", isPresented: Binding(
             get: { boardVM.error != nil },
-            set: { if !$0 { boardVM.error = nil } }
-        )) {
+            set: { if !$0 { boardVM.error = nil } }))
+        {
             Button("OK", role: .cancel) {}
         } message: {
             Text(boardVM.error ?? "")
@@ -199,8 +199,7 @@ struct CardDetailView: View {
                     .padding(.vertical, 4)
                     .overlay(
                         RoundedRectangle(cornerRadius: 7, style: .continuous)
-                            .stroke(Color.boardlySeparator, style: StrokeStyle(lineWidth: 1, dash: [3, 2]))
-                    )
+                            .stroke(Color.boardlySeparator, style: StrokeStyle(lineWidth: 1, dash: [3, 2])))
             }
             .buttonStyle(.plain)
             Spacer(minLength: 0)
@@ -249,7 +248,7 @@ struct CardDetailView: View {
 
     // MARK: - Quick actions (Due date functional; others land in Phase 4)
 
-    private func quickActions(card: Card) -> some View {
+    private func quickActions(card _: Card) -> some View {
         HStack(spacing: 8) {
             quickAction("Members", systemImage: "person.2") { showMembersSheet = true }
             quickAction("Due date", systemImage: "calendar") { showDueDateSheet = true }
@@ -272,8 +271,7 @@ struct CardDetailView: View {
             .background(Color.boardlySurface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(Color.boardlySeparator, lineWidth: 1)
-            )
+                    .stroke(Color.boardlySeparator, lineWidth: 1))
         }
         .buttonStyle(.plain)
     }
@@ -494,7 +492,7 @@ struct CardDetailView: View {
                 Spacer(minLength: 0)
             }
 
-            if commentsLoaded && comments.isEmpty {
+            if commentsLoaded, comments.isEmpty {
                 Text("No comments yet.")
                     .font(.boardlyCallout)
                     .foregroundStyle(Color.boardlyTextTertiary)
@@ -509,8 +507,7 @@ struct CardDetailView: View {
                                     comments.removeAll { $0.id == comment.id }
                                 }
                             }
-                        }
-                    )
+                        })
                 }
             }
         }
@@ -628,8 +625,7 @@ private struct CoverImageView: View {
             } else {
                 LinearGradient(
                     colors: [Color.accentColor, Color.accentColor.opacity(0.7)],
-                    startPoint: .topLeading, endPoint: .bottomTrailing
-                )
+                    startPoint: .topLeading, endPoint: .bottomTrailing)
             }
         }
         .frame(maxWidth: .infinity)

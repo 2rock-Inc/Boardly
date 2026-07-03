@@ -1,7 +1,7 @@
-import SwiftUI
-import CoreText
-import UIKit
 import BoardlyKit
+import CoreText
+import SwiftUI
+import UIKit
 
 enum BoardlyFonts {
     static let sans = "Manrope"
@@ -22,31 +22,37 @@ enum BoardlyFonts {
             }
         }
         #if DEBUG
-        for family in UIFont.familyNames where family.contains("Manrope") || family.contains("JetBrains") {
-            BoardlyLog.tag(.ui).icon("🔤").info("Registered font", metadata: [
-                "family": family,
-                "names": "\(UIFont.fontNames(forFamilyName: family))",
-            ])
-        }
+            for family in UIFont.familyNames where family.contains("Manrope") || family.contains("JetBrains") {
+                BoardlyLog.tag(.ui).icon("🔤").info("Registered font", metadata: [
+                    "family": family,
+                    "names": "\(UIFont.fontNames(forFamilyName: family))",
+                ])
+            }
         #endif
     }
 }
 
 extension Font {
     /// Manrope at an explicit weight, scaling with Dynamic Type relative to `textStyle`.
-    static func sans(_ size: CGFloat, _ weight: Font.Weight = .regular,
-                     relativeTo textStyle: Font.TextStyle = .body) -> Font {
+    static func sans(
+        _ size: CGFloat,
+        _ weight: Font.Weight = .regular,
+        relativeTo textStyle: Font.TextStyle = .body) -> Font
+    {
         .custom(BoardlyFonts.sans, size: size, relativeTo: textStyle).weight(weight)
     }
 
     /// JetBrains Mono — used for meta labels, counts and tags.
-    static func mono(_ size: CGFloat, _ weight: Font.Weight = .regular,
-                     relativeTo textStyle: Font.TextStyle = .caption) -> Font {
+    static func mono(
+        _ size: CGFloat,
+        _ weight: Font.Weight = .regular,
+        relativeTo textStyle: Font.TextStyle = .caption) -> Font
+    {
         .custom(BoardlyFonts.mono, size: size, relativeTo: textStyle).weight(weight)
     }
 }
 
-// Semantic text styles. Views use these names rather than ad-hoc sizes.
+/// Semantic text styles. Views use these names rather than ad-hoc sizes.
 extension Font {
     static let boardlyLargeTitle = sans(34, .heavy, relativeTo: .largeTitle)
     static let boardlyTitle = sans(26, .bold, relativeTo: .title)

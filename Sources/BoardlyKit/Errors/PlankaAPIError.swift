@@ -22,12 +22,12 @@ extension PlankaAPIError: Equatable {
         case (.notFound, .notFound): true
         case (.conflict, .conflict): true
         case (.invalidParams, .invalidParams): true
-        case (.serverError(let l), .serverError(let r)): l == r
+        case let (.serverError(l), .serverError(r)): l == r
         case (.networkError, .networkError): true
         case (.decodingError, .decodingError): true
         case (.invalidURL, .invalidURL): true
         case (.instanceUnreachable, .instanceUnreachable): true
-        case (.keychainFailure(let l), .keychainFailure(let r)): l == r
+        case let (.keychainFailure(l), .keychainFailure(r)): l == r
         default: false
         }
     }
@@ -41,12 +41,12 @@ extension PlankaAPIError: LocalizedError {
         case .notFound: "The requested resource was not found."
         case .conflict: "A conflict occurred with the current state of the resource."
         case .invalidParams: "Invalid parameters were sent to the server."
-        case .serverError(let code): "Server error (\(code))."
-        case .networkError(let error): "Network error: \(error.localizedDescription)"
-        case .decodingError(let error): "Failed to parse server response: \(error.localizedDescription)"
+        case let .serverError(code): "Server error (\(code))."
+        case let .networkError(error): "Network error: \(error.localizedDescription)"
+        case let .decodingError(error): "Failed to parse server response: \(error.localizedDescription)"
         case .invalidURL: "The server URL is invalid."
         case .instanceUnreachable: "Could not reach the PLANKA instance. Check the URL and try again."
-        case .keychainFailure(let status): "Keychain operation failed (OSStatus \(status))."
+        case let .keychainFailure(status): "Keychain operation failed (OSStatus \(status))."
         }
     }
 }

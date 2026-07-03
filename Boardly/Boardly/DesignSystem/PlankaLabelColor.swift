@@ -1,8 +1,8 @@
 import SwiftUI
 
-// PLANKA labels carry a named color (e.g. "berry-red", "lagoon-blue"). The full
-// palette is mapped to our label colors by keyword, with a stable hash fallback
-// so every label renders a consistent, readable chip color.
+/// PLANKA labels carry a named color (e.g. "berry-red", "lagoon-blue"). The full
+/// palette is mapped to our label colors by keyword, with a stable hash fallback
+/// so every label renders a consistent, readable chip color.
 extension Color {
     init(plankaLabel name: String) {
         let n = name.lowercased()

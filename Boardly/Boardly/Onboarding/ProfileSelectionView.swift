@@ -1,5 +1,5 @@
-import SwiftUI
 import BoardlyKit
+import SwiftUI
 
 struct ProfileSelectionView: View {
     @Environment(ProfileStore.self) private var profileStore
@@ -73,17 +73,16 @@ struct ProfileSelectionView: View {
                     ProfileRowView(
                         profile: profile,
                         onSelect: { selectServer(profile) },
-                        onDelete: { profileStore.removeProfile(id: profile.id) }
-                    )
+                        onDelete: { profileStore.removeProfile(id: profile.id) })
                 }
             }
             .padding(20)
         }
     }
 
-    // A saved server keeps its token: go straight in if we have one, otherwise
-    // route to login. (Selecting must not activate a profile with no token, or
-    // the app would drop into a session it can't authenticate.)
+    /// A saved server keeps its token: go straight in if we have one, otherwise
+    /// route to login. (Selecting must not activate a profile with no token, or
+    /// the app would drop into a session it can't authenticate.)
     private func selectServer(_ profile: ServerProfile) {
         if profileStore.tokenStore(for: profile).hasToken() {
             profileStore.setActiveProfile(id: profile.id)

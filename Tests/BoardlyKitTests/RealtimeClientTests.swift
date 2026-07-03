@@ -1,5 +1,5 @@
-import Testing
 import Foundation
+import Testing
 @testable import BoardlyKit
 
 private final class MockSocketTransport: SocketTransport, @unchecked Sendable {
@@ -14,7 +14,7 @@ private final class MockSocketTransport: SocketTransport, @unchecked Sendable {
     func connect() { connectCount += 1; connectHandler?() }
     func disconnect() { disconnectCount += 1 }
     func onConnect(_ handler: @escaping @Sendable () -> Void) { connectHandler = handler }
-    func onDisconnect(_ handler: @escaping @Sendable () -> Void) {}
+    func onDisconnect(_: @escaping @Sendable () -> Void) {}
     func on(event: String, _ handler: @escaping @Sendable (Data) -> Void) { eventHandlers[event] = handler }
 
     func request(_ request: SailsRequest) async throws -> SailsResponse {
@@ -35,7 +35,6 @@ private let boardBody = """
 
 @Suite("BoardRealtimeClient lifecycle")
 struct RealtimeClientTests {
-
     private func makeClient() -> (BoardRealtimeClient, MockSocketTransport) {
         let transport = MockSocketTransport()
         transport.requestHandler = { _ in SailsResponse(statusCode: 200, body: Data(boardBody.utf8)) }
@@ -49,7 +48,7 @@ struct RealtimeClientTests {
         var it = stream.makeAsyncIterator()
 
         let first = await it.next()
-        guard case .resynced(let payload) = first else { Issue.record("expected resynced"); return }
+        guard case let .resynced(payload) = first else { Issue.record("expected resynced"); return }
         #expect(payload.cards.count == 1)
         #expect(transport.requests.count == 1)
         #expect(transport.requests.first?.url == "/api/boards/b1?subscribe=true")
@@ -78,7 +77,7 @@ struct RealtimeClientTests {
         _ = await it.next() // resync
         transport.push(event: "cardUpdate", json: #"{"item":{"id":"c1","position":42}}"#)
         let event = await it.next()
-        guard case .cardUpdated(let partial) = event else { Issue.record("expected cardUpdated"); return }
+        guard case let .cardUpdated(partial) = event else { Issue.record("expected cardUpdated"); return }
         #expect(partial.id == "c1")
         #expect(partial.position == 42)
     }

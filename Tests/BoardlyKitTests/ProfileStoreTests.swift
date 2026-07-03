@@ -1,5 +1,5 @@
-import Testing
 import Foundation
+import Testing
 @testable import BoardlyKit
 
 @Suite("ProfileStore")
@@ -89,8 +89,8 @@ struct ProfileStoreTests {
     }
 
     @Test("profiles persist across instances via same UserDefaults")
-    func profilesPersist() {
-        let defaults = UserDefaults(suiteName: "persist-test-\(UUID().uuidString)")!
+    func profilesPersist() throws {
+        let defaults = try #require(UserDefaults(suiteName: "persist-test-\(UUID().uuidString)"))
         let sut1 = ProfileStore(userDefaults: defaults)
         let profile = makeProfile(name: "Persistent Server")
         sut1.addProfile(profile)

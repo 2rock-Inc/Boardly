@@ -1,5 +1,5 @@
-import SwiftUI
 import BoardlyKit
+import SwiftUI
 
 /// Design 08b — set or clear a card's due date via a calendar bottom sheet.
 struct CardDueDateSheet: View {
@@ -18,8 +18,7 @@ struct CardDueDateSheet: View {
                 cancelLabel: "Cancel",
                 doneLabel: "Save",
                 onCancel: { dismiss() },
-                onDone: { save() }
-            )
+                onDone: { save() })
             ScrollView {
                 VStack(spacing: 16) {
                     HStack {
@@ -63,12 +62,12 @@ struct CardDueDateSheet: View {
         dismiss()
     }
 
-    // Avoid a redundant PATCH (and a spurious activity entry) on a no-op save.
+    /// Avoid a redundant PATCH (and a spurious activity entry) on a no-op save.
     private func changed(current: Date?, new: Date?) -> Bool {
         switch (current, new) {
-        case (nil, nil): return false
-        case (nil, _), (_, nil): return true
-        case let (a?, b?): return abs(a.timeIntervalSince(b)) >= 1
+        case (nil, nil): false
+        case (nil, _), (_, nil): true
+        case let (a?, b?): abs(a.timeIntervalSince(b)) >= 1
         }
     }
 }

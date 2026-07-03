@@ -53,14 +53,12 @@ public actor BoardRealtimeClient {
         let request = SailsRequest(
             method: "get",
             url: "/api/boards/\(boardId)?subscribe=true",
-            headers: ["Authorization": "Bearer \(token)"]
-        )
+            headers: ["Authorization": "Bearer \(token)"])
         do {
             let response = try await transport.request(request)
             guard (200 ... 299).contains(response.statusCode) else {
                 BoardlyLog.tag(.sync).icon("⚠️").warning(
-                    "Subscribe rejected", metadata: ["status": "\(response.statusCode)", "board": boardId]
-                )
+                    "Subscribe rejected", metadata: ["status": "\(response.statusCode)", "board": boardId])
                 return
             }
             let payload = try BoardPayload.decode(from: response.body)

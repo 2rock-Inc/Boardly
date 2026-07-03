@@ -1,5 +1,5 @@
-import Testing
 import Foundation
+import Testing
 @testable import BoardlyKit
 
 @Suite("ProjectsPayload — background images")
@@ -18,17 +18,16 @@ struct ProjectsPayloadTests {
     @Test("resolves the project's background image by id")
     func resolvesBackgroundImage() throws {
         let p = try project(id: "p1", backgroundImageId: "bg1")
-        let payload = ProjectsPayload(
+        let payload = try ProjectsPayload(
             projects: [p], boards: [],
-            backgroundImages: [try image(id: "bg1", projectId: "p1"), try image(id: "bg2", projectId: "p1")]
-        )
+            backgroundImages: [image(id: "bg1", projectId: "p1"), image(id: "bg2", projectId: "p1")])
         #expect(payload.backgroundImage(for: p)?.id == "bg1")
     }
 
     @Test("returns nil when the project has no background image")
     func noBackgroundImage() throws {
         let p = try project(id: "p1", backgroundImageId: nil)
-        let payload = ProjectsPayload(projects: [p], boards: [], backgroundImages: [try image(id: "bg1", projectId: "p1")])
+        let payload = try ProjectsPayload(projects: [p], boards: [], backgroundImages: [image(id: "bg1", projectId: "p1")])
         #expect(payload.backgroundImage(for: p) == nil)
     }
 }

@@ -1,5 +1,5 @@
-import SwiftUI
 import BoardlyKit
+import SwiftUI
 
 struct CardRowView: View {
     let card: Card
@@ -44,14 +44,16 @@ struct CardRowView: View {
             if hasMeta {
                 HStack(spacing: 10) {
                     if let due = card.dueDate {
-                        metaChip(systemImage: "calendar",
-                                 text: due.formatted(.dateTime.month(.abbreviated).day()),
-                                 color: dueDateColor)
+                        metaChip(
+                            systemImage: "calendar",
+                            text: due.formatted(.dateTime.month(.abbreviated).day()),
+                            color: dueDateColor)
                     }
                     if hasTasks {
-                        metaChip(systemImage: "checklist",
-                                 text: "\(completedTasks)/\(totalTasks)",
-                                 color: completedTasks == totalTasks ? .labelGreen : .boardlyTextSecondary)
+                        metaChip(
+                            systemImage: "checklist",
+                            text: "\(completedTasks)/\(totalTasks)",
+                            color: completedTasks == totalTasks ? .labelGreen : .boardlyTextSecondary)
                     }
                     if commentsTotal > 0 {
                         metaChip(systemImage: "bubble.left", text: "\(commentsTotal)", color: .boardlyTextSecondary)
@@ -72,8 +74,7 @@ struct CardRowView: View {
         .background(Color.boardlySurface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(Color.boardlySeparator, lineWidth: 0.5)
-        )
+                .stroke(Color.boardlySeparator, lineWidth: 0.5))
     }
 
     private func metaChip(systemImage: String, text: String, color: Color) -> some View {

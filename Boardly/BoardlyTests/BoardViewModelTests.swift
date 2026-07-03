@@ -8,9 +8,9 @@
 //  with no real network.
 //
 
+import BoardlyKit
 import Foundation
 import Testing
-import BoardlyKit
 @testable import Boardly
 
 // MARK: - Test doubles
@@ -39,15 +39,15 @@ private final class StubHTTPClient: HTTPClient, @unchecked Sendable {
         requests.last {
             let method = $0.httpMethod ?? "?"
             let path = URLComponents(url: $0.url!, resolvingAgainstBaseURL: false)?.path ?? "?"
-            return "\(method) \(path)" == key
+            return key == "\(method) \(path)"
         }
     }
 }
 
 private final class InMemoryKeychain: KeychainStoring, @unchecked Sendable {
-    func save(_ value: String, for key: String) throws {}
-    func load(for key: String) throws -> String? { nil }
-    func delete(for key: String) throws {}
+    func save(_: String, for _: String) throws {}
+    func load(for _: String) throws -> String? { nil }
+    func delete(for _: String) throws {}
 }
 
 // MARK: - Fixtures & helpers
@@ -99,7 +99,6 @@ private func bodyJSON(_ request: URLRequest?) -> [String: Any] {
 @MainActor
 @Suite("BoardViewModel — Phase 2 CRUD")
 struct BoardViewModelTests {
-
     @Test("load() populates the payload from getBoard")
     func loadPopulatesPayload() async {
         let stub = StubHTTPClient()
@@ -114,13 +113,13 @@ struct BoardViewModelTests {
     }
 
     @Test("createCard appends the returned card to the payload")
-    func createCardAppends() async {
+    func createCardAppends() async throws {
         let stub = StubHTTPClient()
         stub.routes["GET /api/boards/b1"] = (200, boardJSON)
         stub.routes["POST /api/lists/l2/cards"] = (200, card(id: "c2", listId: "l2", name: "New"))
         let vm = makeViewModel(stub)
         await vm.load()
-        let list2 = vm.payload!.sortedLists().first { $0.id == "l2" }!
+        let list2 = try #require(vm.payload?.sortedLists().first { $0.id == "l2" })
 
         await vm.createCard(in: list2, name: "New")
 
@@ -134,14 +133,14 @@ struct BoardViewModelTests {
     }
 
     @Test("moveCard updates the card's listId locally and PATCHes listId")
-    func moveCardUpdatesListId() async {
+    func moveCardUpdatesListId() async throws {
         let stub = StubHTTPClient()
         stub.routes["GET /api/boards/b1"] = (200, boardJSON)
         stub.routes["PATCH /api/cards/c1"] = (200, card(id: "c1", listId: "l2"))
         let vm = makeViewModel(stub)
         await vm.load()
-        let cardC1 = vm.payload!.cards.first { $0.id == "c1" }!
-        let list2 = vm.payload!.sortedLists().first { $0.id == "l2" }!
+        let cardC1 = try #require(vm.payload?.cards.first { $0.id == "c1" })
+        let list2 = try #require(vm.payload?.sortedLists().first { $0.id == "l2" })
 
         await vm.moveCard(cardC1, to: list2)
 
@@ -153,13 +152,13 @@ struct BoardViewModelTests {
     }
 
     @Test("deleteCard removes the card from the payload")
-    func deleteCardRemoves() async {
+    func deleteCardRemoves() async throws {
         let stub = StubHTTPClient()
         stub.routes["GET /api/boards/b1"] = (200, boardJSON)
         stub.routes["DELETE /api/cards/c1"] = (200, card(id: "c1", listId: "l1"))
         let vm = makeViewModel(stub)
         await vm.load()
-        let cardC1 = vm.payload!.cards.first { $0.id == "c1" }!
+        let cardC1 = try #require(vm.payload?.cards.first { $0.id == "c1" })
 
         await vm.deleteCard(cardC1)
 
@@ -168,13 +167,13 @@ struct BoardViewModelTests {
     }
 
     @Test("updateCard with a due date PATCHes an ISO-8601 dueDate string")
-    func updateCardDueDate() async {
+    func updateCardDueDate() async throws {
         let stub = StubHTTPClient()
         stub.routes["GET /api/boards/b1"] = (200, boardJSON)
         stub.routes["PATCH /api/cards/c1"] = (200, card(id: "c1", listId: "l1"))
         let vm = makeViewModel(stub)
         await vm.load()
-        let cardC1 = vm.payload!.cards.first { $0.id == "c1" }!
+        let cardC1 = try #require(vm.payload?.cards.first { $0.id == "c1" })
 
         let due = Date(timeIntervalSince1970: 1_700_000_000)
         await vm.updateCard(cardC1, patch: CardPatch(dueDate: due))
@@ -190,13 +189,13 @@ struct BoardViewModelTests {
     }
 
     @Test("updateCard clearing the due date PATCHes dueDate: null")
-    func updateCardClearDueDate() async {
+    func updateCardClearDueDate() async throws {
         let stub = StubHTTPClient()
         stub.routes["GET /api/boards/b1"] = (200, boardJSON)
         stub.routes["PATCH /api/cards/c1"] = (200, card(id: "c1", listId: "l1"))
         let vm = makeViewModel(stub)
         await vm.load()
-        let cardC1 = vm.payload!.cards.first { $0.id == "c1" }!
+        let cardC1 = try #require(vm.payload?.cards.first { $0.id == "c1" })
 
         await vm.updateCard(cardC1, patch: CardPatch(clearDueDate: true))
 
@@ -207,13 +206,13 @@ struct BoardViewModelTests {
     }
 
     @Test("updateDueDate(to:) sends an ISO date when set and null when cleared")
-    func updateDueDateChoosesPatchShape() async {
+    func updateDueDateChoosesPatchShape() async throws {
         let stub = StubHTTPClient()
         stub.routes["GET /api/boards/b1"] = (200, boardJSON)
         stub.routes["PATCH /api/cards/c1"] = (200, card(id: "c1", listId: "l1"))
         let vm = makeViewModel(stub)
         await vm.load()
-        let cardC1 = vm.payload!.cards.first { $0.id == "c1" }!
+        let cardC1 = try #require(vm.payload?.cards.first { $0.id == "c1" })
 
         // Set → ISO-8601 string.
         await vm.updateDueDate(cardC1, to: Date(timeIntervalSince1970: 1_700_000_000))
@@ -227,7 +226,7 @@ struct BoardViewModelTests {
     }
 
     @Test("toggleTask flips isCompleted locally and PATCHes the new value")
-    func toggleTaskFlips() async {
+    func toggleTaskFlips() async throws {
         let stub = StubHTTPClient()
         stub.routes["GET /api/boards/b1"] = (200, boardJSON)
         stub.routes["PATCH /api/tasks/t1"] = (200, """
@@ -235,7 +234,7 @@ struct BoardViewModelTests {
         """)
         let vm = makeViewModel(stub)
         await vm.load()
-        let task = vm.payload!.tasks.first { $0.id == "t1" }!
+        let task = try #require(vm.payload?.tasks.first { $0.id == "t1" })
 
         await vm.toggleTask(task)
 
@@ -246,7 +245,7 @@ struct BoardViewModelTests {
     }
 
     @Test("createTask appends the returned task")
-    func createTaskAppends() async {
+    func createTaskAppends() async throws {
         let stub = StubHTTPClient()
         stub.routes["GET /api/boards/b1"] = (200, boardJSON)
         stub.routes["POST /api/task-lists/tl1/tasks"] = (200, """
@@ -254,7 +253,7 @@ struct BoardViewModelTests {
         """)
         let vm = makeViewModel(stub)
         await vm.load()
-        let taskList = vm.payload!.taskLists.first { $0.id == "tl1" }!
+        let taskList = try #require(vm.payload?.taskLists.first { $0.id == "tl1" })
 
         await vm.createTask(in: taskList, name: "Step 2")
 
@@ -264,7 +263,7 @@ struct BoardViewModelTests {
     }
 
     @Test("deleteTask removes the task from the payload")
-    func deleteTaskRemoves() async {
+    func deleteTaskRemoves() async throws {
         let stub = StubHTTPClient()
         stub.routes["GET /api/boards/b1"] = (200, boardJSON)
         stub.routes["DELETE /api/tasks/t1"] = (200, """
@@ -272,7 +271,7 @@ struct BoardViewModelTests {
         """)
         let vm = makeViewModel(stub)
         await vm.load()
-        let task = vm.payload!.tasks.first { $0.id == "t1" }!
+        let task = try #require(vm.payload?.tasks.first { $0.id == "t1" })
 
         await vm.deleteTask(task)
 
@@ -281,14 +280,14 @@ struct BoardViewModelTests {
     }
 
     @Test("a failed mutation sets error and leaves the payload unchanged")
-    func failedMutationKeepsState() async {
+    func failedMutationKeepsState() async throws {
         let stub = StubHTTPClient()
         stub.routes["GET /api/boards/b1"] = (200, boardJSON)
         stub.routes["PATCH /api/cards/c1"] = (403, #"{ "code": "E_FORBIDDEN" }"#)
         let vm = makeViewModel(stub)
         await vm.load()
-        let cardC1 = vm.payload!.cards.first { $0.id == "c1" }!
-        let list2 = vm.payload!.sortedLists().first { $0.id == "l2" }!
+        let cardC1 = try #require(vm.payload?.cards.first { $0.id == "c1" })
+        let list2 = try #require(vm.payload?.sortedLists().first { $0.id == "l2" })
 
         await vm.moveCard(cardC1, to: list2)
 

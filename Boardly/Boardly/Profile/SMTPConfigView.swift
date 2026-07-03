@@ -1,5 +1,5 @@
-import SwiftUI
 import BoardlyKit
+import SwiftUI
 
 @Observable
 @MainActor
@@ -27,7 +27,7 @@ final class SMTPConfigViewModel {
         error = nil
         defer { isLoading = false }
         do {
-            apply(try await client.getConfig())
+            try await apply(client.getConfig())
         } catch PlankaAPIError.forbidden {
             error = "Admins only."
         } catch {
@@ -55,10 +55,9 @@ final class SMTPConfigViewModel {
             smtpSecure: secure,
             smtpUser: user.isEmpty ? nil : user,
             smtpPassword: password.isEmpty ? nil : password,
-            smtpFrom: from.isEmpty ? nil : from
-        )
+            smtpFrom: from.isEmpty ? nil : from)
         do {
-            apply(try await client.updateConfig(patch: patch))
+            try await apply(client.updateConfig(patch: patch))
             notice = "Configuration saved."
         } catch {
             self.error = "Couldn't save."
@@ -140,8 +139,13 @@ struct SMTPConfigView: View {
         .padding(20)
     }
 
-    private func field(_ label: String, text: Binding<String>, placeholder: String,
-                       url: Bool = false, number: Bool = false) -> some View {
+    private func field(
+        _ label: String,
+        text: Binding<String>,
+        placeholder: String,
+        url: Bool = false,
+        number: Bool = false) -> some View
+    {
         VStack(alignment: .leading, spacing: 6) {
             BoardlyFieldLabel(label)
             TextField(placeholder, text: text)

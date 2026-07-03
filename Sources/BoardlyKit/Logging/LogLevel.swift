@@ -12,7 +12,7 @@ public enum LogLevel: Sendable, Equatable {
     var osLogType: OSLogType {
         switch self {
         case .info: .info
-        case .warning: .default  // OSLog has no "warning"; .default is the right tier
+        case .warning: .default // OSLog has no "warning"; .default is the right tier
         case .error: .error
         }
     }

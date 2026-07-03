@@ -9,8 +9,8 @@ enum HomeViewOption: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var label: String {
         switch self {
-        case .grouped: return "Grouped"
-        case .grid: return "Grid"
+        case .grouped: "Grouped"
+        case .grid: "Grid"
         }
     }
 
@@ -25,8 +25,8 @@ enum EditorModeOption: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var label: String {
         switch self {
-        case .wysiwyg: return "WYSIWYG"
-        case .markup: return "Markdown"
+        case .wysiwyg: "WYSIWYG"
+        case .markup: "Markdown"
         }
     }
 

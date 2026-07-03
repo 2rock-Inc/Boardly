@@ -10,6 +10,6 @@
 /// // sink receives: metadata["token"] = "<redacted>"
 /// ```
 public struct Redacted: CustomStringConvertible, Sendable {
-    public init(_ value: Any) {}
+    public init(_: Any) {}
     public var description: String { "<redacted>" }
 }

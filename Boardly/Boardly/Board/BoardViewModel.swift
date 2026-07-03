@@ -1,5 +1,5 @@
-import Foundation
 import BoardlyKit
+import Foundation
 
 @Observable
 @MainActor
@@ -31,16 +31,15 @@ final class BoardViewModel {
         let rt = BoardRealtimeClient(
             transport: SocketIOTransport(baseURL: client.profile.baseURL),
             boardId: boardId,
-            token: token
-        )
+            token: token)
         realtime = rt
         realtimeTask = Task { [weak self] in
             for await event in await rt.start() {
                 guard let self else { break }
-                if let current = self.payload {
-                    self.payload = current.applying(event)
-                } else if case .resynced(let fresh) = event {
-                    self.payload = fresh
+                if let current = payload {
+                    payload = current.applying(event)
+                } else if case let .resynced(fresh) = event {
+                    payload = fresh
                 }
             }
         }
@@ -86,8 +85,7 @@ final class BoardViewModel {
         do {
             let updated = try await client.updateCard(
                 id: card.id,
-                patch: CardPatch(listId: list.id, position: position)
-            )
+                patch: CardPatch(listId: list.id, position: position))
             replaceCard(updated)
         } catch {
             self.error = error.localizedDescription
@@ -112,8 +110,7 @@ final class BoardViewModel {
         do {
             let updated = try await client.updateTask(
                 id: task.id,
-                patch: TaskPatch(isCompleted: !task.isCompleted)
-            )
+                patch: TaskPatch(isCompleted: !task.isCompleted))
             replaceTask(updated)
         } catch {
             self.error = error.localizedDescription
@@ -127,8 +124,7 @@ final class BoardViewModel {
             let task = try await client.createTask(
                 taskListId: taskList.id,
                 name: name,
-                position: position
-            )
+                position: position)
             var updated = payload
             updated.tasks.append(task)
             self.payload = updated
@@ -288,8 +284,7 @@ final class BoardViewModel {
     func uploadAttachment(cardId: String, fileName: String, mimeType: String, data: Data) async {
         do {
             let attachment = try await client.uploadFileAttachment(
-                cardId: cardId, fileName: fileName, mimeType: mimeType, data: data
-            )
+                cardId: cardId, fileName: fileName, mimeType: mimeType, data: data)
             guard var copy = payload else { return }
             copy.attachments.append(attachment)
             payload = copy
@@ -337,11 +332,10 @@ final class BoardViewModel {
     func toggleStopwatch(_ card: Card) async {
         let sw = card.stopwatchValue
         do {
-            let updated: Card
-            if let sw, sw.isRunning {
-                updated = try await client.updateStopwatch(cardId: card.id, total: sw.elapsed(), startedAt: nil)
+            let updated: Card = if let sw, sw.isRunning {
+                try await client.updateStopwatch(cardId: card.id, total: sw.elapsed(), startedAt: nil)
             } else {
-                updated = try await client.updateStopwatch(cardId: card.id, total: sw?.total ?? 0, startedAt: Date())
+                try await client.updateStopwatch(cardId: card.id, total: sw?.total ?? 0, startedAt: Date())
             }
             replaceCard(updated)
         } catch {

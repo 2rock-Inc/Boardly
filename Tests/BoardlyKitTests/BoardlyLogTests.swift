@@ -80,8 +80,7 @@ final class BoardlyLogTests: XCTestCase {
         XCTAssertEqual(captured, "<redacted>", "Redacted value must appear as '<redacted>'")
         XCTAssertFalse(
             captured?.contains(secret) ?? false,
-            "Secret must never reach the sink in plaintext — got: \(captured ?? "nil")"
-        )
+            "Secret must never reach the sink in plaintext — got: \(captured ?? "nil")")
     }
 
     func testMultipleRedactedValuesInMetadata() {

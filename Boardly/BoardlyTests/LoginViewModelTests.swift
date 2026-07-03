@@ -6,9 +6,9 @@
 //  SSO button are shown, driven by the instance's advertised OIDC config.
 //
 
+import BoardlyKit
 import Foundation
 import Testing
-import BoardlyKit
 @testable import Boardly
 
 @Suite("LoginViewModel — OIDC gating")

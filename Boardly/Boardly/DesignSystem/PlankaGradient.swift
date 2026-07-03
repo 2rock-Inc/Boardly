@@ -47,8 +47,7 @@ enum PlankaGradient {
         return LinearGradient(
             colors: [Color(hex: pair.0), Color(hex: pair.1)],
             startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
+            endPoint: .bottomTrailing)
     }
 }
 
@@ -60,7 +59,6 @@ extension Color {
         self.init(
             red: Double((value >> 16) & 0xFF) / 255,
             green: Double((value >> 8) & 0xFF) / 255,
-            blue: Double(value & 0xFF) / 255
-        )
+            blue: Double(value & 0xFF) / 255)
     }
 }
