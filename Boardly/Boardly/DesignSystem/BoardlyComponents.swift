@@ -106,10 +106,10 @@ struct AvatarView: View {
     }
 }
 
-/// Bottom-sheet header: Annuler / title / OK, with a grabber.
+/// Bottom-sheet header: Cancel / title / OK, with a grabber.
 struct SheetHeader: View {
     let title: String
-    var cancelLabel = "Annuler"
+    var cancelLabel = "Cancel"
     var doneLabel = "OK"
     let onCancel: () -> Void
     let onDone: () -> Void

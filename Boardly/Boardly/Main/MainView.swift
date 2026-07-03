@@ -29,10 +29,10 @@ struct MainView: View {
                         }
                     }
             }
-            .tabItem { Label("Projets", systemImage: "house") }
+            .tabItem { Label("Projects", systemImage: "house") }
 
             SearchView(client: client)
-                .tabItem { Label("Recherche", systemImage: "magnifyingglass") }
+                .tabItem { Label("Search", systemImage: "magnifyingglass") }
 
             Group {
                 if let notificationsVM {
@@ -41,11 +41,11 @@ struct MainView: View {
                     Color.boardlyBackground.ignoresSafeArea()
                 }
             }
-            .tabItem { Label("Activité", systemImage: "bell") }
+            .tabItem { Label("Activity", systemImage: "bell") }
             .badge(notificationsVM?.unreadCount ?? 0)
 
             ProfileView(profile: profile, client: client)
-                .tabItem { Label("Profil", systemImage: "person") }
+                .tabItem { Label("Profile", systemImage: "person") }
         }
         .tint(.accentColor)
         .task {
@@ -80,7 +80,7 @@ struct ComingSoonView: View {
                 Text(title)
                     .font(.boardlyTitle)
                     .foregroundStyle(Color.boardlyInk)
-                Text("Bientôt disponible")
+                Text("Coming soon")
                     .font(.boardlyBody)
                     .foregroundStyle(Color.boardlyTextSecondary)
             }

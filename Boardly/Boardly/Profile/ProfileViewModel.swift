@@ -26,7 +26,7 @@ final class ProfileViewModel {
             user = payload.user
             services = payload.notificationServices
         } catch {
-            self.error = "Impossible de charger le profil."
+            self.error = "Couldn't load your profile."
         }
         // Best-effort, fetched once per session — used only for the version footer.
         if plankaVersion == nil {
@@ -61,7 +61,7 @@ final class ProfileViewModel {
             } catch is CancellationError {
                 // Superseded by a newer toggle — ignore.
             } catch {
-                if !Task.isCancelled { self.error = "Impossible d’enregistrer la préférence." }
+                if !Task.isCancelled { self.error = "Couldn't save your preference." }
             }
         }
     }
@@ -74,7 +74,7 @@ final class ProfileViewModel {
             let service = try await client.createUserNotificationService(userId: userId, url: url, format: format)
             services.append(service)
         } catch {
-            self.error = "Impossible d’ajouter le service."
+            self.error = "Couldn't add the service."
         }
     }
 
@@ -83,7 +83,7 @@ final class ProfileViewModel {
             let updated = try await client.updateNotificationService(id: id, url: url, format: format)
             if let index = services.firstIndex(where: { $0.id == id }) { services[index] = updated }
         } catch {
-            self.error = "Impossible de modifier le service."
+            self.error = "Couldn't update the service."
         }
     }
 
@@ -94,7 +94,7 @@ final class ProfileViewModel {
             try await client.deleteNotificationService(id: service.id)
         } catch {
             services = previous
-            self.error = "Impossible de supprimer le service."
+            self.error = "Couldn't delete the service."
         }
     }
 
@@ -104,7 +104,7 @@ final class ProfileViewModel {
             try await client.testNotificationService(id: service.id)
             return true
         } catch {
-            self.error = "Échec de l’envoi du test."
+            self.error = "Couldn't send the test."
             return false
         }
     }

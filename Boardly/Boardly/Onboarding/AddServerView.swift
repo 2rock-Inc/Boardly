@@ -63,23 +63,23 @@ struct AddServerView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    Text("NOUVEAU SERVEUR")
+                    Text("NEW SERVER")
                         .font(.boardlyMonoLabel)
                         .tracking(2)
                         .foregroundStyle(Color.boardlyTextTertiary)
                         .padding(.bottom, 8)
 
-                    Text("Ajouter un serveur")
+                    Text("Add a Server")
                         .font(.boardlyTitle)
                         .foregroundStyle(Color.boardlyInk)
 
-                    Text("Connecte Boardly à ton instance PLANKA auto-hébergée.")
+                    Text("Connect Boardly to your self-hosted PLANKA instance.")
                         .font(.boardlyBody)
                         .foregroundStyle(Color.boardlyTextSecondary)
                         .padding(.top, 4)
 
                     VStack(alignment: .leading, spacing: 6) {
-                        BoardlyFieldLabel("Adresse du serveur")
+                        BoardlyFieldLabel("Server address")
                         TextField("https://planka.example.com", text: $viewModel.urlText)
                             .textContentType(.URL)
                             .keyboardType(.URL)
@@ -90,8 +90,8 @@ struct AddServerView: View {
                     .padding(.top, 28)
 
                     VStack(alignment: .leading, spacing: 6) {
-                        BoardlyFieldLabel("Nom affiché (optionnel)")
-                        TextField("Mon serveur", text: $viewModel.name)
+                        BoardlyFieldLabel("Display name (optional)")
+                        TextField("My server", text: $viewModel.name)
                             .autocorrectionDisabled()
                             .boardlyField()
                     }
@@ -108,7 +108,7 @@ struct AddServerView: View {
                         if viewModel.isValidating {
                             ProgressView().tint(.white)
                         } else {
-                            Text("Se connecter")
+                            Text("Log In")
                         }
                     }
                     .buttonStyle(.boardlyPrimary)

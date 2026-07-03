@@ -2,8 +2,8 @@ import BoardlyKit
 import PhotosUI
 import SwiftUI
 
-/// "Modifier le projet" — a 4-tab editor sheet, shown from the project hero's
-/// pencil (managers only). Tabs: Général · Responsables · Arrière-plan · Champs perso.
+/// "Edit Project" — a 4-tab editor sheet, shown from the project hero's
+/// pencil (managers only). Tabs: General · Managers · Background · Custom Fields.
 struct EditProjectSheet: View {
     let viewModel: ProjectDetailViewModel
     let client: PlankaClient
@@ -20,10 +20,10 @@ struct EditProjectSheet: View {
     }
 
     enum EditTab: String, CaseIterable, Identifiable {
-        case general = "Général"
-        case managers = "Responsables"
-        case background = "Arrière-plan"
-        case customFields = "Champs perso"
+        case general = "General"
+        case managers = "Managers"
+        case background = "Background"
+        case customFields = "Custom Fields"
         var id: String { rawValue }
     }
 
@@ -55,7 +55,7 @@ struct EditProjectSheet: View {
 
     private var header: some View {
         HStack {
-            Text("Modifier le projet")
+            Text("Edit Project")
                 .font(.sans(20, .bold))
                 .foregroundStyle(Color.boardlyInk)
             Spacer()
@@ -94,7 +94,7 @@ struct EditProjectSheet: View {
     }
 }
 
-// MARK: - Général
+// MARK: - General
 
 private struct GeneralTab: View {
     let viewModel: ProjectDetailViewModel
@@ -114,8 +114,8 @@ private struct GeneralTab: View {
                 Text(error).font(.boardlyCallout).foregroundStyle(Color.labelRose)
             }
 
-            BoardlyFieldLabel("Titre")
-            TextField("Titre du projet", text: $name).boardlyField()
+            BoardlyFieldLabel("Title")
+            TextField("Project title", text: $name).boardlyField()
 
             BoardlyFieldLabel("Description")
             TextField("Description", text: $description, axis: .vertical)
@@ -130,15 +130,15 @@ private struct GeneralTab: View {
                     if ok { dismiss() }
                 }
             } label: {
-                if isSaving { ProgressView().tint(.white) } else { Text("Sauvegarder") }
+                if isSaving { ProgressView().tint(.white) } else { Text("Save") }
             }
             .buttonStyle(.boardlyPrimary)
             .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty || isSaving)
 
-            sectionSeparator("Affichage")
+            sectionSeparator("Display")
 
             Toggle(isOn: $isHidden) {
-                Text("Masquer de la liste des projets et des favoris")
+                Text("Hide from the projects list and favorites")
                     .font(.boardlyBody)
                     .foregroundStyle(Color.boardlyInk)
             }
@@ -147,7 +147,7 @@ private struct GeneralTab: View {
                 Task { await viewModel.setHidden(newValue, using: client) }
             }
 
-            sectionSeparator("Zone dangereuse")
+            sectionSeparator("Danger zone")
             dangerZone
         }
         // Seed from the project once it's available (it may still be loading when
@@ -164,7 +164,7 @@ private struct GeneralTab: View {
     @ViewBuilder
     private var dangerZone: some View {
         if viewModel.hasBoards {
-            Text("Supprimez tous les tableaux pour pouvoir supprimer ce projet.")
+            Text("Delete all boards before you can delete this project.")
                 .font(.boardlyCallout)
                 .foregroundStyle(Color.labelRose)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -179,7 +179,7 @@ private struct GeneralTab: View {
                     }
                 }
             } label: {
-                Text("Supprimer le projet")
+                Text("Delete Project")
                     .font(.sans(15, .semibold))
                     .foregroundStyle(Color.labelRose)
                     .frame(maxWidth: .infinity)
@@ -190,7 +190,7 @@ private struct GeneralTab: View {
     }
 }
 
-// MARK: - Responsables
+// MARK: - Managers
 
 private struct ManagersTab: View {
     let viewModel: ProjectDetailViewModel
@@ -202,17 +202,17 @@ private struct ManagersTab: View {
                 Text(error).font(.boardlyCallout).foregroundStyle(Color.labelRose)
             }
 
-            BoardlyFieldLabel("Responsables · \(viewModel.managerUsers.count)")
+            BoardlyFieldLabel("Managers · \(viewModel.managerUsers.count)")
 
             ForEach(viewModel.managers, id: \.id) { manager in
                 let user = viewModel.user(manager.userId)
                 HStack(spacing: 12) {
                     AvatarView(name: user?.name ?? "?", size: 40, bordered: false)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(user?.name ?? "Utilisateur")
+                        Text(user?.name ?? "User")
                             .font(.sans(15, .semibold))
                             .foregroundStyle(Color.boardlyInk)
-                        Text(viewModel.isMe(manager.userId) ? "Responsable · vous" : "Responsable")
+                        Text(viewModel.isMe(manager.userId) ? "Manager · you" : "Manager")
                             .font(.boardlyCallout)
                             .foregroundStyle(Color.boardlyTextSecondary)
                     }
@@ -232,7 +232,7 @@ private struct ManagersTab: View {
             Menu {
                 let candidates = viewModel.addableUsers()
                 if candidates.isEmpty {
-                    Text("Aucun membre à ajouter")
+                    Text("No members to add")
                 } else {
                     ForEach(candidates, id: \.id) { user in
                         Button(user.name) {
@@ -241,7 +241,7 @@ private struct ManagersTab: View {
                     }
                 }
             } label: {
-                Label("Ajouter un responsable", systemImage: "plus")
+                Label("Add Manager", systemImage: "plus")
                     .font(.sans(15, .semibold))
                     .foregroundStyle(Color.boardlyInk)
                     .frame(maxWidth: .infinity)
@@ -253,8 +253,8 @@ private struct ManagersTab: View {
                     )
             }
 
-            sectionSeparator("Zone dangereuse")
-            Text("Un seul responsable doit rester pour rendre ce projet privé.")
+            sectionSeparator("Danger zone")
+            Text("At least one manager must remain to keep this project private.")
                 .font(.boardlyCallout)
                 .foregroundStyle(Color.labelRose)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -264,7 +264,7 @@ private struct ManagersTab: View {
     }
 }
 
-// MARK: - Arrière-plan
+// MARK: - Background
 
 private struct BackgroundTab: View {
     let viewModel: ProjectDetailViewModel
@@ -284,10 +284,10 @@ private struct BackgroundTab: View {
                 Text(error).font(.boardlyCallout).foregroundStyle(Color.labelRose)
             }
 
-            BoardlyFieldLabel("Aperçu")
+            BoardlyFieldLabel("Preview")
             preview
 
-            BoardlyFieldLabel("Dégradés")
+            BoardlyFieldLabel("Gradients")
             LazyVGrid(columns: columns, spacing: 12) {
                 ForEach(PlankaGradient.names, id: \.self) { gradientName in
                     Button {
@@ -307,7 +307,7 @@ private struct BackgroundTab: View {
 
             BoardlyFieldLabel("Image")
             PhotosPicker(selection: $photoItem, matching: .images) {
-                Label("Importer une image", systemImage: "square.and.arrow.up")
+                Label("Import an Image", systemImage: "square.and.arrow.up")
                     .font(.sans(15, .semibold))
                     .foregroundStyle(Color.boardlyInk)
                     .frame(maxWidth: .infinity)
@@ -323,7 +323,7 @@ private struct BackgroundTab: View {
                 Button {
                     Task { await viewModel.clearBackground(using: client) }
                 } label: {
-                    Text("Aucun arrière-plan")
+                    Text("No background")
                         .font(.boardlyCallout)
                         .foregroundStyle(Color.boardlyTextSecondary)
                         .frame(maxWidth: .infinity)
@@ -346,7 +346,7 @@ private struct BackgroundTab: View {
                let jpeg = uiImage.jpegData(compressionQuality: 0.9) {
                 _ = await viewModel.uploadImage(data: jpeg, fileName: "background.jpg", mimeType: "image/jpeg", using: client)
             } else {
-                viewModel.error = "Image illisible."
+                viewModel.error = "Unreadable image."
             }
         }
     }
@@ -356,7 +356,7 @@ private struct BackgroundTab: View {
         ZStack(alignment: .bottomLeading) {
             previewBackground
             LinearGradient(colors: [.clear, .black.opacity(0.3)], startPoint: .center, endPoint: .bottom)
-            Text(viewModel.project?.name ?? "Projet")
+            Text(viewModel.project?.name ?? "Project")
                 .font(.sans(17, .bold))
                 .foregroundStyle(.white)
                 .padding(14)
@@ -381,7 +381,7 @@ private struct BackgroundTab: View {
     }
 }
 
-// MARK: - Champs perso de base
+// MARK: - Base custom fields
 
 private struct CustomFieldsTab: View {
     let viewModel: ProjectDetailViewModel
@@ -394,7 +394,7 @@ private struct CustomFieldsTab: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Groupes de champs réutilisables, hérités par tous les tableaux du projet.")
+            Text("Reusable field groups, inherited by every board in the project.")
                 .font(.boardlyCallout)
                 .foregroundStyle(Color.boardlyTextSecondary)
 
@@ -407,7 +407,7 @@ private struct CustomFieldsTab: View {
             }
 
             Button { showAddGroup = true } label: {
-                Label("Ajouter un groupe", systemImage: "plus")
+                Label("Add Group", systemImage: "plus")
                     .font(.sans(15, .semibold))
                     .foregroundStyle(Color.boardlyInk)
                     .frame(maxWidth: .infinity)
@@ -419,19 +419,19 @@ private struct CustomFieldsTab: View {
                     )
             }
         }
-        .alert("Nouveau groupe", isPresented: $showAddGroup) {
-            TextField("Nom du groupe", text: $newGroupName)
-            Button("Ajouter") {
+        .alert("New Group", isPresented: $showAddGroup) {
+            TextField("Group name", text: $newGroupName)
+            Button("Add") {
                 let name = newGroupName.trimmingCharacters(in: .whitespaces)
                 newGroupName = ""
                 guard !name.isEmpty else { return }
                 Task { await viewModel.addGroup(name: name, using: client) }
             }
-            Button("Annuler", role: .cancel) { newGroupName = "" }
+            Button("Cancel", role: .cancel) { newGroupName = "" }
         }
-        .alert("Nouveau champ", isPresented: Binding(get: { addFieldGroup != nil }, set: { if !$0 { addFieldGroup = nil } })) {
-            TextField("Nom du champ", text: $newFieldName)
-            Button("Ajouter") {
+        .alert("New Field", isPresented: Binding(get: { addFieldGroup != nil }, set: { if !$0 { addFieldGroup = nil } })) {
+            TextField("Field name", text: $newFieldName)
+            Button("Add") {
                 let name = newFieldName.trimmingCharacters(in: .whitespaces)
                 let group = addFieldGroup
                 newFieldName = ""
@@ -439,7 +439,7 @@ private struct CustomFieldsTab: View {
                 guard !name.isEmpty, let group else { return }
                 Task { await viewModel.addField(to: group, name: name, using: client) }
             }
-            Button("Annuler", role: .cancel) { newFieldName = ""; addFieldGroup = nil }
+            Button("Cancel", role: .cancel) { newFieldName = ""; addFieldGroup = nil }
         }
     }
 
@@ -451,10 +451,10 @@ private struct CustomFieldsTab: View {
                     .foregroundStyle(Color.boardlyInk)
                 Spacer()
                 Menu {
-                    Button { addFieldGroup = group } label: { Label("Ajouter un champ", systemImage: "plus") }
+                    Button { addFieldGroup = group } label: { Label("Add Field", systemImage: "plus") }
                     Button(role: .destructive) {
                         Task { await viewModel.deleteGroup(group, using: client) }
-                    } label: { Label("Supprimer le groupe", systemImage: "trash") }
+                    } label: { Label("Delete Group", systemImage: "trash") }
                 } label: {
                     Image(systemName: "ellipsis")
                         .font(.system(size: 16, weight: .semibold))
@@ -468,7 +468,7 @@ private struct CustomFieldsTab: View {
 
             let fields = viewModel.fields(in: group)
             if fields.isEmpty {
-                Text("Aucun champ")
+                Text("No fields")
                     .font(.boardlyCallout)
                     .foregroundStyle(Color.boardlyTextTertiary)
                     .padding(.horizontal, 16)
@@ -493,7 +493,7 @@ private struct CustomFieldsTab: View {
 
 // MARK: - Shared
 
-/// A centered uppercase mono section divider (e.g. "AFFICHAGE", "ZONE DANGEREUSE").
+/// A centered uppercase mono section divider (e.g. "DISPLAY", "DANGER ZONE").
 private func sectionSeparator(_ title: String) -> some View {
     HStack(spacing: 12) {
         Rectangle().fill(Color.boardlySeparator).frame(height: 1)

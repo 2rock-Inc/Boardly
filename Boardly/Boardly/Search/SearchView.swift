@@ -19,7 +19,7 @@ struct SearchView: View {
             ZStack {
                 Color.boardlyBackground.ignoresSafeArea()
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("Recherche")
+                    Text("Search")
                         .font(.boardlyTitle)
                         .foregroundStyle(Color.boardlyInk)
 
@@ -53,7 +53,7 @@ struct SearchView: View {
         HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(Color.boardlyTextTertiary)
-            TextField("Rechercher…", text: text)
+            TextField("Search…", text: text)
                 .font(.boardlyBody)
                 .foregroundStyle(Color.boardlyInk)
                 .autocorrectionDisabled()
@@ -104,7 +104,7 @@ struct SearchView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     if !viewModel.cardResults.isEmpty {
-                        section("Cartes", count: viewModel.cardResults.count) {
+                        section("Cards", count: viewModel.cardResults.count) {
                             ForEach(Array(viewModel.cardResults.enumerated()), id: \.element.id) { index, hit in
                                 if index > 0 { Divider().padding(.leading, 48) }
                                 cardRow(hit)
@@ -120,7 +120,7 @@ struct SearchView: View {
                         }
                     }
                     if !viewModel.projectResults.isEmpty {
-                        section("Projets", count: viewModel.projectResults.count) {
+                        section("Projects", count: viewModel.projectResults.count) {
                             ForEach(Array(viewModel.projectResults.enumerated()), id: \.element.id) { index, project in
                                 if index > 0 { Divider().padding(.leading, 48) }
                                 projectRow(project)
@@ -183,7 +183,7 @@ struct SearchView: View {
                         .font(.boardlyBody)
                         .foregroundStyle(Color.boardlyInk)
                         .lineLimit(1)
-                    Text(context(hit.projectName, "\(hit.cardCount) carte\(hit.cardCount > 1 ? "s" : "")"))
+                    Text(context(hit.projectName, "\(hit.cardCount) card\(hit.cardCount > 1 ? "s" : "")"))
                         .font(.boardlyMonoCaption)
                         .foregroundStyle(Color.boardlyTextTertiary)
                         .lineLimit(1)
@@ -246,14 +246,14 @@ struct SearchView: View {
         VStack(spacing: 12) {
             if viewModel.isIndexing {
                 ProgressView().tint(Color.boardlyTextTertiary)
-                Text("Indexation…")
+                Text("Indexing…")
                     .font(.boardlyCallout)
                     .foregroundStyle(Color.boardlyTextTertiary)
             } else {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 34, weight: .light))
                     .foregroundStyle(Color.boardlyTextTertiary)
-                Text("Cartes, boards et projets")
+                Text("Cards, boards, and projects")
                     .font(.boardlyBody)
                     .foregroundStyle(Color.boardlyTextSecondary)
             }
@@ -264,10 +264,10 @@ struct SearchView: View {
 
     private var emptyResults: some View {
         VStack(spacing: 10) {
-            Text("Aucun résultat")
+            Text("No results")
                 .font(.boardlyHeadline)
                 .foregroundStyle(Color.boardlyInk)
-            Text("pour « \(viewModel.query) »")
+            Text("for “\(viewModel.query)”")
                 .font(.boardlyCallout)
                 .foregroundStyle(Color.boardlyTextSecondary)
         }
@@ -284,7 +284,7 @@ struct SearchView: View {
                 .font(.boardlyBody)
                 .foregroundStyle(Color.boardlyTextSecondary)
                 .multilineTextAlignment(.center)
-            Button("Réessayer") { Task { await viewModel.loadIfNeeded() } }
+            Button("Retry") { Task { await viewModel.loadIfNeeded() } }
                 .buttonStyle(.boardlySecondary)
                 .fixedSize()
         }

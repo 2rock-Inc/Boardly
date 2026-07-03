@@ -29,9 +29,9 @@ final class SMTPConfigViewModel {
         do {
             apply(try await client.getConfig())
         } catch PlankaAPIError.forbidden {
-            error = "Accès réservé aux administrateurs."
+            error = "Admins only."
         } catch {
-            self.error = "Impossible de charger la configuration."
+            self.error = "Couldn't load the configuration."
         }
     }
 
@@ -59,9 +59,9 @@ final class SMTPConfigViewModel {
         )
         do {
             apply(try await client.updateConfig(patch: patch))
-            notice = "Configuration enregistrée."
+            notice = "Configuration saved."
         } catch {
-            self.error = "Échec de l’enregistrement."
+            self.error = "Couldn't save."
         }
     }
 
@@ -70,14 +70,14 @@ final class SMTPConfigViewModel {
         notice = nil
         do {
             try await client.testSMTP()
-            notice = "E-mail de test envoyé."
+            notice = "Test email sent."
         } catch {
-            self.error = "Échec de l’envoi du test (SMTP configuré via l’UI requis)."
+            self.error = "Couldn't send the test (SMTP must be configured through the UI)."
         }
     }
 }
 
-/// Profil → Configuration SMTP (admin only): edit instance mail settings + test.
+/// Profile → SMTP Configuration (admin only): edit instance mail settings + test.
 struct SMTPConfigView: View {
     let client: PlankaClient
     @State private var viewModel: SMTPConfigViewModel?
@@ -91,7 +91,7 @@ struct SMTPConfigView: View {
                 }
             }
         }
-        .navigationTitle("Configuration SMTP")
+        .navigationTitle("SMTP Configuration")
         .navigationBarTitleDisplayMode(.inline)
         .task {
             if viewModel == nil { viewModel = SMTPConfigViewModel(client: client) }
@@ -110,29 +110,29 @@ struct SMTPConfigView: View {
                 Text(error).font(.boardlyCallout).foregroundStyle(Color.labelRose)
             }
 
-            field("Serveur SMTP", text: $viewModel.host, placeholder: "smtp.example.com", url: true)
+            field("SMTP Server", text: $viewModel.host, placeholder: "smtp.example.com", url: true)
             field("Port", text: $viewModel.portText, placeholder: "587", number: true)
-            field("Expéditeur (From)", text: $viewModel.from, placeholder: "no-reply@example.com", url: true)
-            field("Utilisateur", text: $viewModel.user, placeholder: "utilisateur")
+            field("Sender (From)", text: $viewModel.from, placeholder: "no-reply@example.com", url: true)
+            field("Username", text: $viewModel.user, placeholder: "username")
 
             VStack(alignment: .leading, spacing: 6) {
-                BoardlyFieldLabel("Mot de passe")
+                BoardlyFieldLabel("Password")
                 SecureField("••••••••", text: $viewModel.password).boardlyField()
             }
 
-            Toggle("Connexion sécurisée (TLS)", isOn: $viewModel.secure)
+            Toggle("Secure connection (TLS)", isOn: $viewModel.secure)
                 .font(.boardlyBody)
                 .tint(.accentColor)
 
             Button {
                 Task { await viewModel.save() }
             } label: {
-                if viewModel.isSaving { ProgressView().tint(.white) } else { Text("Enregistrer") }
+                if viewModel.isSaving { ProgressView().tint(.white) } else { Text("Save") }
             }
             .buttonStyle(.boardlyPrimary)
             .padding(.top, 4)
 
-            Button("Envoyer un e-mail de test") {
+            Button("Send Test Email") {
                 Task { await viewModel.sendTest() }
             }
             .buttonStyle(.boardlySecondary)

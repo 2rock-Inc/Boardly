@@ -1,14 +1,14 @@
 import SwiftUI
 import BoardlyKit
 
-/// The Activité tab: the current user's unread notifications, grouped by recency.
+/// The Activity tab: the current user's unread notifications, grouped by recency.
 /// Functional for Phase 5; Phase 6 restyles it to the polished design (screen 11).
 struct ActivityView: View {
     let viewModel: NotificationsViewModel
 
     private var sections: [(title: String, items: [PlankaNotification])] {
         let all = viewModel.notifications
-        let titles = ["Aujourd’hui", "Cette semaine", "Plus tôt"]
+        let titles = ["Today", "This week", "Earlier"]
         return titles.enumerated().compactMap { index, title in
             let items = all.filter { viewModel.bucket($0) == index }
             return items.isEmpty ? nil : (title, items)
@@ -51,12 +51,12 @@ struct ActivityView: View {
 
     private var header: some View {
         HStack(alignment: .firstTextBaseline) {
-            Text("Activité")
+            Text("Activity")
                 .font(.boardlyTitle)
                 .foregroundStyle(Color.boardlyInk)
             Spacer()
             if !viewModel.notifications.isEmpty {
-                Button("Tout lire") { Task { await viewModel.markAllRead() } }
+                Button("Mark all as read") { Task { await viewModel.markAllRead() } }
                     .font(.boardlyCallout)
                     .foregroundStyle(Color.accentColor)
             }
@@ -107,10 +107,10 @@ struct ActivityView: View {
             Image(systemName: "bell.badge")
                 .font(.system(size: 36, weight: .light))
                 .foregroundStyle(Color.boardlyTextTertiary)
-            Text("Aucune notification")
+            Text("No notifications")
                 .font(.boardlyHeadline)
                 .foregroundStyle(Color.boardlyInk)
-            Text("Vous êtes à jour.")
+            Text("You’re all caught up.")
                 .font(.boardlyBody)
                 .foregroundStyle(Color.boardlyTextSecondary)
         }
@@ -128,7 +128,7 @@ struct ActivityView: View {
                 .font(.boardlyBody)
                 .foregroundStyle(Color.boardlyTextSecondary)
                 .multilineTextAlignment(.center)
-            Button("Réessayer") { Task { await viewModel.load() } }
+            Button("Retry") { Task { await viewModel.load() } }
                 .buttonStyle(.boardlySecondary)
                 .fixedSize()
         }

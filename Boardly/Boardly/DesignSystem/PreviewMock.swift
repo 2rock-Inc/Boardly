@@ -90,10 +90,10 @@ enum PreviewMock {
     nonisolated static let notificationsJSON = """
     {
       "items": [
-        { "id": "n1", "userId": "u1", "creatorUserId": "u2", "boardId": "b1", "cardId": "c1", "commentId": "cm1", "actionId": null, "type": "mentionInComment", "data": { "card": { "name": "Système de couleurs" }, "text": "on part là-dessus ?" }, "isRead": false, "createdAt": "2026-07-02T07:30:00.000Z", "updatedAt": "2026-07-02T07:30:00.000Z" },
-        { "id": "n2", "userId": "u1", "creatorUserId": "u3", "boardId": "b1", "cardId": "c2", "commentId": null, "actionId": "a2", "type": "moveCard", "data": { "card": { "name": "Navigation par onglets" } }, "isRead": false, "createdAt": "2026-07-02T05:30:00.000Z", "updatedAt": "2026-07-02T05:30:00.000Z" },
-        { "id": "n3", "userId": "u1", "creatorUserId": "u4", "boardId": "b1", "cardId": "c3", "commentId": null, "actionId": null, "type": "addMemberToCard", "data": { "card": { "name": "Tests VoiceOver" } }, "isRead": false, "createdAt": "2026-07-02T03:30:00.000Z", "updatedAt": "2026-07-02T03:30:00.000Z" },
-        { "id": "n4", "userId": "u1", "creatorUserId": "u5", "boardId": "b1", "cardId": "c4", "commentId": "cm4", "actionId": null, "type": "commentCard", "data": { "card": { "name": "Nouvelle page d’accueil" }, "text": "Super direction, je valide." }, "isRead": false, "createdAt": "2026-06-30T09:00:00.000Z", "updatedAt": "2026-06-30T09:00:00.000Z" }
+        { "id": "n1", "userId": "u1", "creatorUserId": "u2", "boardId": "b1", "cardId": "c1", "commentId": "cm1", "actionId": null, "type": "mentionInComment", "data": { "card": { "name": "Color system" }, "text": "shall we go with this?" }, "isRead": false, "createdAt": "2026-07-02T07:30:00.000Z", "updatedAt": "2026-07-02T07:30:00.000Z" },
+        { "id": "n2", "userId": "u1", "creatorUserId": "u3", "boardId": "b1", "cardId": "c2", "commentId": null, "actionId": "a2", "type": "moveCard", "data": { "card": { "name": "Tab navigation" } }, "isRead": false, "createdAt": "2026-07-02T05:30:00.000Z", "updatedAt": "2026-07-02T05:30:00.000Z" },
+        { "id": "n3", "userId": "u1", "creatorUserId": "u4", "boardId": "b1", "cardId": "c3", "commentId": null, "actionId": null, "type": "addMemberToCard", "data": { "card": { "name": "VoiceOver testing" } }, "isRead": false, "createdAt": "2026-07-02T03:30:00.000Z", "updatedAt": "2026-07-02T03:30:00.000Z" },
+        { "id": "n4", "userId": "u1", "creatorUserId": "u5", "boardId": "b1", "cardId": "c4", "commentId": "cm4", "actionId": null, "type": "commentCard", "data": { "card": { "name": "New home page" }, "text": "Great direction, I'm on board." }, "isRead": false, "createdAt": "2026-06-30T09:00:00.000Z", "updatedAt": "2026-06-30T09:00:00.000Z" }
       ],
       "included": {
         "users": [
@@ -119,8 +119,8 @@ enum PreviewMock {
     nonisolated static let commentsJSON = """
     {
       "items": [
-        { "id": "cm1", "cardId": "c1", "userId": "u2", "text": "La direction « hero produit » me parle bien, on part là-dessus pour le sprint ?", "createdAt": "2026-06-29T09:00:00.000Z" },
-        { "id": "cm2", "cardId": "c1", "userId": "u1", "text": "Oui — je prépare les specs et je partage la maquette hero dès demain.", "createdAt": "2026-06-29T11:00:00.000Z" }
+        { "id": "cm1", "cardId": "c1", "userId": "u2", "text": "I really like the “product hero” direction — shall we go with it for the sprint?", "createdAt": "2026-06-29T09:00:00.000Z" },
+        { "id": "cm2", "cardId": "c1", "userId": "u1", "text": "Yes — I'll prep the specs and share the hero mockup first thing tomorrow.", "createdAt": "2026-06-29T11:00:00.000Z" }
       ],
       "included": { "users": [] }
     }
@@ -129,15 +129,15 @@ enum PreviewMock {
     nonisolated static let projectsJSON = """
     {
       "items": [
-        { "id": "p1", "name": "Refonte 2026", "isHidden": false, "isFavorite": true, "description": "Refonte complète de l’app mobile et du back-office. Cible : livraison T2." },
+        { "id": "p1", "name": "Redesign 2026", "isHidden": false, "isFavorite": true, "description": "Complete redesign of the mobile app and back office. Target: Q2 delivery." },
         { "id": "p2", "name": "Marketing", "isHidden": false, "isFavorite": true },
         { "id": "p3", "name": "Infra", "isHidden": false, "isFavorite": false }
       ],
       "included": {
         "boards": [
-          { "id": "b1", "projectId": "p1", "name": "Sprint Produit", "position": 1, "updatedAt": "2026-07-02T04:30:00.000Z" },
-          { "id": "b2", "projectId": "p1", "name": "Recherche & specs", "position": 2, "updatedAt": "2026-07-01T09:00:00.000Z" },
-          { "id": "b3", "projectId": "p2", "name": "Campagne Été", "position": 1, "updatedAt": "2026-07-02T02:00:00.000Z" },
+          { "id": "b1", "projectId": "p1", "name": "Product Sprint", "position": 1, "updatedAt": "2026-07-02T04:30:00.000Z" },
+          { "id": "b2", "projectId": "p1", "name": "Research & specs", "position": 2, "updatedAt": "2026-07-01T09:00:00.000Z" },
+          { "id": "b3", "projectId": "p2", "name": "Summer Campaign", "position": 1, "updatedAt": "2026-07-02T02:00:00.000Z" },
           { "id": "b4", "projectId": "p3", "name": "Todo", "position": 1, "updatedAt": "2026-06-30T12:00:00.000Z" }
         ],
         "users": [
@@ -160,14 +160,14 @@ enum PreviewMock {
           { "id": "pm3", "projectId": "p1", "userId": "u3" }
         ],
         "baseCustomFieldGroups": [
-          { "id": "g1", "projectId": "p1", "name": "Suivi produit" },
+          { "id": "g1", "projectId": "p1", "name": "Product tracking" },
           { "id": "g2", "projectId": "p1", "name": "Client" }
         ],
         "customFields": [
-          { "id": "cf1", "baseCustomFieldGroupId": "g1", "name": "Priorité", "position": 1 },
-          { "id": "cf2", "baseCustomFieldGroupId": "g1", "name": "Estimation", "position": 2 },
-          { "id": "cf3", "baseCustomFieldGroupId": "g1", "name": "Échéance", "position": 3 },
-          { "id": "cf4", "baseCustomFieldGroupId": "g2", "name": "Compte", "position": 1 },
+          { "id": "cf1", "baseCustomFieldGroupId": "g1", "name": "Priority", "position": 1 },
+          { "id": "cf2", "baseCustomFieldGroupId": "g1", "name": "Estimate", "position": 2 },
+          { "id": "cf3", "baseCustomFieldGroupId": "g1", "name": "Due date", "position": 3 },
+          { "id": "cf4", "baseCustomFieldGroupId": "g2", "name": "Account", "position": 1 },
           { "id": "cf5", "baseCustomFieldGroupId": "g2", "name": "Segment", "position": 2 }
         ]
       }
@@ -176,49 +176,49 @@ enum PreviewMock {
 
     nonisolated static let boardJSON = """
     {
-      "item": { "id": "b1", "projectId": "p1", "name": "Sprint Produit" },
+      "item": { "id": "b1", "projectId": "p1", "name": "Product Sprint" },
       "included": {
         "lists": [
-          { "id": "l1", "boardId": "b1", "type": "active", "name": "À faire", "position": 1 },
-          { "id": "l2", "boardId": "b1", "type": "active", "name": "En cours", "position": 2 },
-          { "id": "l3", "boardId": "b1", "type": "active", "name": "Terminé", "position": 3 }
+          { "id": "l1", "boardId": "b1", "type": "active", "name": "To Do", "position": 1 },
+          { "id": "l2", "boardId": "b1", "type": "active", "name": "In Progress", "position": 2 },
+          { "id": "l3", "boardId": "b1", "type": "active", "name": "Done", "position": 3 }
         ],
         "cards": [
-          { "id": "c1", "boardId": "b1", "listId": "l1", "name": "Nouvelle page d’accueil — exploration visuelle", "position": 1, "dueDate": "2026-10-12T09:00:00.000Z", "commentsTotal": 2, "creatorUserId": "u1", "createdAt": "2026-06-29T09:00:00.000Z", "coverAttachmentId": "at1", "stopwatch": { "total": 5040, "startedAt": null } },
-          { "id": "c2", "boardId": "b1", "listId": "l1", "name": "Composant carte réutilisable en SwiftUI", "position": 2 },
-          { "id": "c3", "boardId": "b1", "listId": "l1", "name": "Lister les écrans à refondre", "position": 3 },
-          { "id": "c4", "boardId": "b1", "listId": "l2", "name": "Système de couleurs & tokens Pine Teal", "position": 1, "dueDate": "2026-06-29T09:00:00.000Z" },
-          { "id": "c5", "boardId": "b1", "listId": "l2", "name": "Navigation par onglets + deep links", "position": 2, "dueDate": "2026-06-29T09:00:00.000Z" },
-          { "id": "c6", "boardId": "b1", "listId": "l3", "name": "Écran de connexion", "position": 1, "dueDate": "2026-06-20T09:00:00.000Z", "isDueCompleted": true }
+          { "id": "c1", "boardId": "b1", "listId": "l1", "name": "New home page — visual exploration", "position": 1, "dueDate": "2026-10-12T09:00:00.000Z", "commentsTotal": 2, "creatorUserId": "u1", "createdAt": "2026-06-29T09:00:00.000Z", "coverAttachmentId": "at1", "stopwatch": { "total": 5040, "startedAt": null } },
+          { "id": "c2", "boardId": "b1", "listId": "l1", "name": "Reusable card component in SwiftUI", "position": 2 },
+          { "id": "c3", "boardId": "b1", "listId": "l1", "name": "List the screens to redesign", "position": 3 },
+          { "id": "c4", "boardId": "b1", "listId": "l2", "name": "Color system & Pine Teal tokens", "position": 1, "dueDate": "2026-06-29T09:00:00.000Z" },
+          { "id": "c5", "boardId": "b1", "listId": "l2", "name": "Tab navigation + deep links", "position": 2, "dueDate": "2026-06-29T09:00:00.000Z" },
+          { "id": "c6", "boardId": "b1", "listId": "l3", "name": "Login screen", "position": 1, "dueDate": "2026-06-20T09:00:00.000Z", "isDueCompleted": true }
         ],
         "taskLists": [
-          { "id": "tl1", "cardId": "c1", "name": "Sous-tâches", "position": 1 },
-          { "id": "tl2", "cardId": "c2", "name": "Sous-tâches", "position": 1 },
-          { "id": "tl4", "cardId": "c4", "name": "Sous-tâches", "position": 1 }
+          { "id": "tl1", "cardId": "c1", "name": "Subtasks", "position": 1 },
+          { "id": "tl2", "cardId": "c2", "name": "Subtasks", "position": 1 },
+          { "id": "tl4", "cardId": "c4", "name": "Subtasks", "position": 1 }
         ],
         "tasks": [
-          { "id": "t1", "taskListId": "tl1", "name": "Maquette", "isCompleted": true, "position": 1 },
+          { "id": "t1", "taskListId": "tl1", "name": "Mockup", "isCompleted": true, "position": 1 },
           { "id": "t2", "taskListId": "tl1", "name": "Tokens", "isCompleted": true, "position": 2 },
-          { "id": "t3", "taskListId": "tl1", "name": "Revue", "isCompleted": true, "position": 3 },
-          { "id": "t4", "taskListId": "tl1", "name": "Intégration", "isCompleted": false, "position": 4 },
+          { "id": "t3", "taskListId": "tl1", "name": "Review", "isCompleted": true, "position": 3 },
+          { "id": "t4", "taskListId": "tl1", "name": "Integration", "isCompleted": false, "position": 4 },
           { "id": "t5", "taskListId": "tl1", "name": "QA", "isCompleted": false, "position": 5 },
           { "id": "t6", "taskListId": "tl2", "name": "API", "isCompleted": false, "position": 1 },
-          { "id": "t7", "taskListId": "tl2", "name": "Vue", "isCompleted": false, "position": 2 },
+          { "id": "t7", "taskListId": "tl2", "name": "View", "isCompleted": false, "position": 2 },
           { "id": "t8", "taskListId": "tl2", "name": "Tests", "isCompleted": false, "position": 3 },
           { "id": "t9", "taskListId": "tl4", "name": "Light", "isCompleted": true, "position": 1 },
           { "id": "t10", "taskListId": "tl4", "name": "Dark", "isCompleted": true, "position": 2 },
-          { "id": "t11", "taskListId": "tl4", "name": "Contraste", "isCompleted": true, "position": 3 },
+          { "id": "t11", "taskListId": "tl4", "name": "Contrast", "isCompleted": true, "position": 3 },
           { "id": "t12", "taskListId": "tl4", "name": "Doc", "isCompleted": true, "position": 4 }
         ],
         "labels": [
           { "id": "lb1", "boardId": "b1", "name": "Design", "color": "lagoon-blue", "position": 1 },
-          { "id": "lb2", "boardId": "b1", "name": "Priorité", "color": "berry-red", "position": 2 }
+          { "id": "lb2", "boardId": "b1", "name": "Priority", "color": "berry-red", "position": 2 }
         ],
         "cardMemberships": [
           { "id": "cm1", "cardId": "c1", "userId": "u1", "role": "editor" }
         ],
         "attachments": [
-          { "id": "at1", "cardId": "c1", "type": "file", "data": { "url": "https://picsum.photos/id/1062/900/500" }, "name": "maquette-accueil.png" }
+          { "id": "at1", "cardId": "c1", "type": "file", "data": { "url": "https://picsum.photos/id/1062/900/500" }, "name": "home-mockup.png" }
         ],
         "cardLabels": [
           { "id": "cl1", "cardId": "c1", "labelId": "lb1" },
@@ -242,7 +242,7 @@ enum PreviewMock {
 struct MockBoardHarness: View {
     var body: some View {
         NavigationStack {
-            BoardView(client: PreviewMock.boardClient(), boardId: "b1", boardName: "Sprint Produit", projectName: "Refonte 2026")
+            BoardView(client: PreviewMock.boardClient(), boardId: "b1", boardName: "Product Sprint", projectName: "Redesign 2026")
         }
     }
 }
@@ -261,14 +261,14 @@ struct MockProjectDetailHarness: View {
     @State private var path: [AppRoute] = []
     var body: some View {
         NavigationStack(path: $path) {
-            ProjectDetailView(client: PreviewMock.projectsClient(), projectId: "p1", projectName: "Refonte 2026", path: $path)
+            ProjectDetailView(client: PreviewMock.projectsClient(), projectId: "p1", projectName: "Redesign 2026", path: $path)
         }
     }
 }
 
 struct MockLoginHarness: View {
     @State private var path: [OnboardingRoute] = []
-    private let profile = ServerProfile(name: "Équipe", baseURL: URL(string: "https://planka.equipe.fr")!)
+    private let profile = ServerProfile(name: "Team", baseURL: URL(string: "https://planka.equipe.fr")!)
     var body: some View {
         NavigationStack(path: $path) {
             LoginView(profile: profile, path: $path)
@@ -303,14 +303,14 @@ struct MockEditProjectHarness: View {
 
 struct MockSearchHarness: View {
     var body: some View {
-        SearchView(client: PreviewMock.projectsClient(), initialQuery: "accueil")
+        SearchView(client: PreviewMock.projectsClient(), initialQuery: "home")
     }
 }
 
 struct MockProfileHarness: View {
     var body: some View {
         ProfileView(
-            profile: ServerProfile(name: "Équipe", baseURL: URL(string: "https://todo.2rock.fr")!),
+            profile: ServerProfile(name: "Team", baseURL: URL(string: "https://todo.2rock.fr")!),
             client: PreviewMock.profileClient()
         )
         .environment(ProfileStore())
@@ -332,13 +332,13 @@ struct MockProjectsHarness: View {
                         }
                     }
             }
-            .tabItem { Label("Projets", systemImage: "house") }
-            ComingSoonView(title: "Recherche", systemImage: "magnifyingglass")
-                .tabItem { Label("Recherche", systemImage: "magnifyingglass") }
-            ComingSoonView(title: "Activité", systemImage: "bell")
-                .tabItem { Label("Activité", systemImage: "bell") }
-            ComingSoonView(title: "Profil", systemImage: "person")
-                .tabItem { Label("Profil", systemImage: "person") }
+            .tabItem { Label("Projects", systemImage: "house") }
+            ComingSoonView(title: "Search", systemImage: "magnifyingglass")
+                .tabItem { Label("Search", systemImage: "magnifyingglass") }
+            ComingSoonView(title: "Activity", systemImage: "bell")
+                .tabItem { Label("Activity", systemImage: "bell") }
+            ComingSoonView(title: "Profile", systemImage: "person")
+                .tabItem { Label("Profile", systemImage: "person") }
         }
         .tint(.accentColor)
     }

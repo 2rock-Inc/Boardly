@@ -23,7 +23,7 @@ struct CardAttachmentsSheet: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            SheetHeader(title: "Joindre", onCancel: { dismiss() }, onDone: { dismiss() })
+            SheetHeader(title: "Attach", onCancel: { dismiss() }, onDone: { dismiss() })
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     optionsCard
@@ -39,26 +39,26 @@ struct CardAttachmentsSheet: View {
             handleFile(result)
         }
         .onChange(of: photoItem) { _, item in Task { await handlePhoto(item) } }
-        .alert("Coller un lien", isPresented: $showLinkInput) {
+        .alert("Paste a link", isPresented: $showLinkInput) {
             TextField("https://…", text: $linkURL)
-            TextField("Nom (optionnel)", text: $linkName)
-            Button("Ajouter") { addLink() }
-            Button("Annuler", role: .cancel) { linkURL = ""; linkName = "" }
+            TextField("Name (optional)", text: $linkName)
+            Button("Add") { addLink() }
+            Button("Cancel", role: .cancel) { linkURL = ""; linkName = "" }
         }
     }
 
     private var optionsCard: some View {
         VStack(spacing: 0) {
             PhotosPicker(selection: $photoItem, matching: .images) {
-                optionRow("Photothèque", systemImage: "photo.on.rectangle")
+                optionRow("Photo Library", systemImage: "photo.on.rectangle")
             }
             Divider().padding(.leading, 62)
             Button { showFileImporter = true } label: {
-                optionRow("Choisir un fichier", systemImage: "doc")
+                optionRow("Choose a File", systemImage: "doc")
             }
             Divider().padding(.leading, 62)
             Button { showLinkInput = true } label: {
-                optionRow("Coller un lien", systemImage: "link")
+                optionRow("Paste a Link", systemImage: "link")
             }
         }
         .buttonStyle(.plain)
@@ -88,7 +88,7 @@ struct CardAttachmentsSheet: View {
 
     private var existingSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Sur la carte · \(attachments.count)")
+            Text("On this card · \(attachments.count)")
                 .font(.boardlyMonoLabel)
                 .tracking(1.5)
                 .textCase(.uppercase)

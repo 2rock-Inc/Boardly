@@ -42,7 +42,7 @@ struct ProfileSelectionView: View {
                 .tracking(-1)
                 .foregroundStyle(Color.boardlyInk)
 
-            Text("Vos tableaux, vos cartes et votre équipe — réunis dans une app pensée pour avancer.")
+            Text("Your boards, your cards, and your team — together in an app built to keep you moving.")
                 .font(.sans(16.5, .regular))
                 .foregroundStyle(Color.boardlyTextSecondary)
                 .multilineTextAlignment(.center)
@@ -52,7 +52,7 @@ struct ProfileSelectionView: View {
 
             Spacer()
 
-            Button("Configurer un serveur") { path.append(.addServer) }
+            Button("Set Up a Server") { path.append(.addServer) }
                 .buttonStyle(.boardlyPrimary)
                 .padding(.horizontal, 28)
                 .padding(.bottom, 28)
@@ -64,7 +64,7 @@ struct ProfileSelectionView: View {
     private var serverList: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
-                Text("Serveurs")
+                Text("Servers")
                     .font(.boardlyTitle)
                     .foregroundStyle(Color.boardlyInk)
                     .padding(.top, 8)
@@ -120,7 +120,7 @@ private struct ProfileRowView: View {
 
             Menu {
                 Button(role: .destructive, action: onDelete) {
-                    Label("Supprimer le serveur", systemImage: "trash")
+                    Label("Delete Server", systemImage: "trash")
                 }
             } label: {
                 Image(systemName: "ellipsis")

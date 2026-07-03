@@ -3,8 +3,8 @@ import BoardlyKit
 
 enum BoardViewMode: String, CaseIterable {
     case kanban = "Kanban"
-    case liste = "Liste"
-    case grille = "Grille"
+    case liste = "List"
+    case grille = "Grid"
 }
 
 struct BoardView: View {
@@ -76,16 +76,16 @@ struct BoardView: View {
         .navigationDestination(item: $selectedCardId) { selected in
             CardDetailView(cardId: selected.id, boardVM: viewModel)
         }
-        .alert("Nouvelle carte", isPresented: $showAddCard) {
-            TextField("Titre de la carte", text: $newCardTitle)
-            Button("Ajouter") { addCardToFirstList() }
-            Button("Annuler", role: .cancel) { newCardTitle = "" }
+        .alert("New Card", isPresented: $showAddCard) {
+            TextField("Card title", text: $newCardTitle)
+            Button("Add") { addCardToFirstList() }
+            Button("Cancel", role: .cancel) { newCardTitle = "" }
         } message: {
             if let list = viewModel.payload?.sortedLists().first {
-                Text("Ajoutée à « \(list.name ?? "—") »")
+                Text("Added to “\(list.name ?? "—")”")
             }
         }
-        .alert("Erreur", isPresented: Binding(
+        .alert("Error", isPresented: Binding(
             get: { viewModel.error != nil },
             set: { if !$0 { viewModel.error = nil } }
         )) {
@@ -162,9 +162,9 @@ struct BoardView: View {
         if let payload = viewModel.payload {
             if payload.sortedLists().isEmpty {
                 ContentUnavailableView(
-                    "Aucune liste",
+                    "No lists",
                     systemImage: "rectangle.split.3x1",
-                    description: Text("Ajoute des listes à ce board depuis l’app web.")
+                    description: Text("Add lists to this board from the web app.")
                 )
             } else {
                 switch mode {
@@ -217,7 +217,7 @@ struct BoardView: View {
                     let cards = payload.cards(for: list)
                     VStack(alignment: .leading, spacing: 10) {
                         HStack(spacing: 8) {
-                            Text(list.name ?? "Sans titre")
+                            Text(list.name ?? "Untitled")
                                 .font(.sans(16, .bold))
                                 .foregroundStyle(Color.boardlyInk)
                             Text("\(cards.count)")

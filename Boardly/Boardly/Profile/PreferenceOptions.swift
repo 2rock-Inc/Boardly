@@ -9,8 +9,8 @@ enum HomeViewOption: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var label: String {
         switch self {
-        case .grouped: return "Groupée"
-        case .grid: return "Grille"
+        case .grouped: return "Grouped"
+        case .grid: return "Grid"
         }
     }
 
