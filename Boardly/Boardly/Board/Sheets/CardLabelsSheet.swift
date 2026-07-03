@@ -27,7 +27,7 @@ struct CardLabelsSheet: View {
                         labelRow(label)
                     }
                     Button { showCreate = true } label: {
-                        SwiftUI.Label("Créer un label", systemImage: "plus")
+                        SwiftUI.Label("Create Label", systemImage: "plus")
                             .font(.boardlyCallout)
                             .foregroundStyle(Color.accentColor)
                     }
@@ -39,14 +39,14 @@ struct CardLabelsSheet: View {
         .background(Color.boardlyBackground)
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.hidden)
-        .alert("Nouveau label", isPresented: $showCreate) {
-            TextField("Nom", text: $newLabelName)
-            Button("Créer") {
+        .alert("New Label", isPresented: $showCreate) {
+            TextField("Name", text: $newLabelName)
+            Button("Create") {
                 let name = newLabelName.trimmingCharacters(in: .whitespacesAndNewlines)
                 if !name.isEmpty { Task { await boardVM.createLabel(name: name, color: "lagoon-blue") } }
                 newLabelName = ""
             }
-            Button("Annuler", role: .cancel) { newLabelName = "" }
+            Button("Cancel", role: .cancel) { newLabelName = "" }
         }
     }
 

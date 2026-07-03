@@ -16,7 +16,7 @@ struct ListColumnView: View {
         VStack(alignment: .leading, spacing: 10) {
             // Header — list name + count pill, sitting directly on the paper.
             HStack(spacing: 8) {
-                Text(list.name ?? "Sans titre")
+                Text(list.name ?? "Untitled")
                     .font(.sans(16, .bold))
                     .foregroundStyle(Color.boardlyInk)
                     .lineLimit(1)
@@ -47,7 +47,7 @@ struct ListColumnView: View {
                     }
 
                     if isAddingCard {
-                        TextField("Titre de la carte", text: $newCardName)
+                        TextField("Card title", text: $newCardName)
                             .font(.boardlyBody)
                             .padding(12)
                             .background(Color.boardlySurface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
@@ -67,7 +67,7 @@ struct ListColumnView: View {
                 isAddingCard = true
                 addFieldFocused = true
             } label: {
-                Label("Ajouter une carte", systemImage: "plus")
+                Label("Add a card", systemImage: "plus")
                     .font(.sans(14, .semibold))
                     .foregroundStyle(Color.boardlyTextSecondary)
                     .frame(maxWidth: .infinity, alignment: .leading)

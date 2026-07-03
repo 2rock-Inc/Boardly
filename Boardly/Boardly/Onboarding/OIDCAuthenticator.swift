@@ -89,9 +89,9 @@ enum OIDCError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .notConfigured: return "Configuration OIDC invalide (URL, nonce ou redirection manquants)."
-        case .missingCode: return "Aucun code d’autorisation reçu du fournisseur."
-        case .providerError(let message): return "Le fournisseur SSO a renvoyé une erreur : \(message)."
+        case .notConfigured: return "Invalid OIDC configuration (missing URL, nonce, or redirect)."
+        case .missingCode: return "No authorization code was received from the provider."
+        case .providerError(let message): return "The SSO provider returned an error: \(message)."
         }
     }
 }
@@ -114,11 +114,11 @@ struct OIDCWebFlow: View {
                 }
             }
             .ignoresSafeArea(edges: .bottom)
-            .navigationTitle("Connexion SSO")
+            .navigationTitle("SSO Login")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Annuler", action: onCancel)
+                    Button("Cancel", action: onCancel)
                 }
             }
         }

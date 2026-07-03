@@ -20,9 +20,9 @@ final class WebhooksViewModel {
         do {
             webhooks = try await client.getWebhooks()
         } catch PlankaAPIError.forbidden {
-            error = "Accès réservé aux administrateurs."
+            error = "Admins only."
         } catch {
-            self.error = "Impossible de charger les webhooks."
+            self.error = "Couldn't load the webhooks."
         }
     }
 
@@ -32,7 +32,7 @@ final class WebhooksViewModel {
                 name: name, url: url, accessToken: accessToken, events: events)
             webhooks.append(webhook)
         } catch {
-            self.error = "Impossible de créer le webhook."
+            self.error = "Couldn't create the webhook."
         }
     }
 
@@ -43,12 +43,12 @@ final class WebhooksViewModel {
             try await client.deleteWebhook(id: webhook.id)
         } catch {
             webhooks = previous
-            self.error = "Impossible de supprimer le webhook."
+            self.error = "Couldn't delete the webhook."
         }
     }
 }
 
-/// Profil → Webhooks (admin only): list and manage instance webhooks.
+/// Profile → Webhooks (admin only): list and manage instance webhooks.
 struct WebhooksView: View {
     let client: PlankaClient
     @State private var viewModel: WebhooksViewModel?
@@ -64,7 +64,7 @@ struct WebhooksView: View {
                             Text(error).font(.boardlyCallout).foregroundStyle(Color.labelRose)
                         }
                         if viewModel.webhooks.isEmpty, viewModel.error == nil {
-                            Text("Aucun webhook configuré.")
+                            Text("No webhooks configured.")
                                 .font(.boardlyBody)
                                 .foregroundStyle(Color.boardlyTextSecondary)
                         } else {
@@ -80,7 +80,7 @@ struct WebhooksView: View {
                         Button {
                             showAdd = true
                         } label: {
-                            Label("Ajouter un webhook", systemImage: "plus")
+                            Label("Add Webhook", systemImage: "plus")
                         }
                         .buttonStyle(.boardlySecondary)
                     }
@@ -129,7 +129,7 @@ struct WebhooksView: View {
     }
 
     private func eventsLabel(_ hook: Webhook) -> String {
-        guard let events = hook.events, !events.isEmpty else { return "Tous les événements" }
+        guard let events = hook.events, !events.isEmpty else { return "All events" }
         return events.joined(separator: ", ")
     }
 }
@@ -151,7 +151,7 @@ private struct WebhookSheet: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            SheetHeader(title: "Nouveau webhook", onCancel: { dismiss() }, onDone: {
+            SheetHeader(title: "New Webhook", onCancel: { dismiss() }, onDone: {
                 guard canSave else { return }
                 let eventList = events
                     .split(separator: ",")
@@ -164,10 +164,10 @@ private struct WebhookSheet: View {
             })
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    field("Nom", text: $name, placeholder: "Mon webhook")
+                    field("Name", text: $name, placeholder: "My webhook")
                     field("URL", text: $url, placeholder: "https://…", url: true)
-                    field("Token d’accès (optionnel)", text: $accessToken, placeholder: "secret", secure: true)
-                    field("Événements (séparés par des virgules, vide = tous)",
+                    field("Access token (optional)", text: $accessToken, placeholder: "secret", secure: true)
+                    field("Events (comma-separated, empty = all)",
                           text: $events, placeholder: "cardCreate, cardUpdate")
                 }
                 .padding(20)

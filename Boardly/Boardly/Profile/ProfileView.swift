@@ -18,7 +18,7 @@ struct ProfileView: View {
                     }
                 }
             }
-            .navigationTitle("Profil")
+            .navigationTitle("Profile")
             .navigationBarTitleDisplayMode(.large)
             .task {
                 if viewModel == nil { viewModel = ProfileViewModel(client: client) }
@@ -47,21 +47,21 @@ struct ProfileView: View {
 
     private func preferencesSection(_ viewModel: ProfileViewModel) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            BoardlyFieldLabel("Préférences")
+            BoardlyFieldLabel("Preferences")
             VStack(spacing: 0) {
-                // Apparence — app-local theme.
+                // Appearance — app-local theme.
                 Menu {
-                    Picker("Apparence", selection: $appearanceRaw) {
+                    Picker("Appearance", selection: $appearanceRaw) {
                         ForEach(AppTheme.allCases) { Text($0.label).tag($0.rawValue) }
                     }
                 } label: {
-                    SettingsRow(icon: "sun.max", title: "Apparence",
+                    SettingsRow(icon: "sun.max", title: "Appearance",
                                 value: AppTheme(rawValue: appearanceRaw)?.label, showsChevron: true)
                 }
 
                 Divider().padding(.leading, 52)
 
-                // Vue d'accueil — PLANKA pref.
+                // Home view — PLANKA pref.
                 Menu {
                     ForEach(HomeViewOption.allCases) { option in
                         prefButton(option.label, selected: viewModel.homeView == option) {
@@ -69,13 +69,13 @@ struct ProfileView: View {
                         }
                     }
                 } label: {
-                    SettingsRow(icon: "square.grid.2x2", title: "Vue d’accueil",
+                    SettingsRow(icon: "square.grid.2x2", title: "Home View",
                                 value: viewModel.homeView.label, showsChevron: true)
                 }
 
                 Divider().padding(.leading, 52)
 
-                // Éditeur Markdown — PLANKA pref.
+                // Markdown editor — PLANKA pref.
                 Menu {
                     ForEach(EditorModeOption.allCases) { option in
                         prefButton(option.label, selected: viewModel.editorMode == option) {
@@ -83,7 +83,7 @@ struct ProfileView: View {
                         }
                     }
                 } label: {
-                    SettingsRow(icon: "text.alignleft", title: "Éditeur Markdown",
+                    SettingsRow(icon: "text.alignleft", title: "Markdown Editor",
                                 value: viewModel.editorMode.label, showsChevron: true)
                 }
             }
@@ -103,7 +103,7 @@ struct ProfileView: View {
                 .font(.boardlyCallout)
                 .foregroundStyle(Color.labelRose)
             Spacer(minLength: 8)
-            Button("Réessayer", action: retry)
+            Button("Retry", action: retry)
                 .font(.boardlyCallout)
                 .foregroundStyle(Color.accentColor)
         }
@@ -144,9 +144,9 @@ struct ProfileView: View {
 
     private func roleLabel(_ role: String) -> String {
         switch role {
-        case "admin": return "Administrateur"
-        case "projectOwner": return "Chef de projet"
-        default: return "Membre"
+        case "admin": return "Administrator"
+        case "projectOwner": return "Project Owner"
+        default: return "Member"
         }
     }
 
@@ -154,7 +154,7 @@ struct ProfileView: View {
 
     private func accountSection(_ viewModel: ProfileViewModel) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            BoardlyFieldLabel("Compte & serveur")
+            BoardlyFieldLabel("Account & Server")
             VStack(spacing: 0) {
                 NavigationLink {
                     NotificationServicesView(viewModel: viewModel)
@@ -166,7 +166,7 @@ struct ProfileView: View {
 
                 Divider().padding(.leading, 52)
 
-                SettingsRow(icon: "globe", title: "Serveur",
+                SettingsRow(icon: "globe", title: "Server",
                             value: profile.baseURL.host ?? profile.baseURL.absoluteString,
                             showsChevron: false)
 
@@ -184,7 +184,7 @@ struct ProfileView: View {
                     NavigationLink {
                         SMTPConfigView(client: client)
                     } label: {
-                        SettingsRow(icon: "envelope", title: "Configuration SMTP",
+                        SettingsRow(icon: "envelope", title: "SMTP Configuration",
                                     value: nil, showsChevron: true)
                     }
                     .buttonStyle(.plain)
@@ -196,7 +196,7 @@ struct ProfileView: View {
 
     private var actions: some View {
         VStack(spacing: 12) {
-            Button("Changer de serveur") { profileStore.clearActiveProfile() }
+            Button("Switch Server") { profileStore.clearActiveProfile() }
                 .buttonStyle(.boardlySecondary)
 
             Button(role: .destructive) {
@@ -205,7 +205,7 @@ struct ProfileView: View {
                     profileStore.clearActiveProfile()
                 }
             } label: {
-                Text("Se déconnecter")
+                Text("Log Out")
                     .font(.sans(16, .semibold))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)

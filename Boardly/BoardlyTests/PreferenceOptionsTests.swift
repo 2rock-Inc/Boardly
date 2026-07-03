@@ -16,8 +16,8 @@ struct PreferenceOptionsTests {
     func homeView() {
         #expect(HomeViewOption.from("groupedProjects") == .grouped)
         #expect(HomeViewOption.from("gridProjects") == .grid)
-        #expect(HomeViewOption.grouped.label == "Groupée")
-        #expect(HomeViewOption.grid.label == "Grille")
+        #expect(HomeViewOption.grouped.label == "Grouped")
+        #expect(HomeViewOption.grid.label == "Grid")
     }
 
     @Test("editor mode maps raw values to labels")
@@ -39,6 +39,6 @@ struct PreferenceOptionsTests {
         #expect(AppTheme.system.colorScheme == nil)
         #expect(AppTheme.light.colorScheme == .light)
         #expect(AppTheme.dark.colorScheme == .dark)
-        #expect(AppTheme.system.label == "Automatique")
+        #expect(AppTheme.system.label == "System")
     }
 }

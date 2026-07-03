@@ -212,7 +212,7 @@ struct CardDetailView: View {
     @ViewBuilder
     private func titleField(card: Card) -> some View {
         if isEditingName {
-            TextField("Titre de la carte", text: $editedName, axis: .vertical)
+            TextField("Card title", text: $editedName, axis: .vertical)
                 .font(.boardlyTitle)
                 .foregroundStyle(Color.boardlyInk)
                 .onSubmit { saveCardName(card: card) }
@@ -234,11 +234,11 @@ struct CardDetailView: View {
 
         // Build with AttributedString (plain runs) so untrusted list/user names are
         // never parsed as markdown; only the list name is bolded programmatically.
-        var text = AttributedString("dans ")
+        var text = AttributedString("in ")
         var name = AttributedString(listName)
         name.font = .sans(13, .bold)
         text.append(name)
-        if let creator { text.append(AttributedString(" · créée par \(creator.name)")) }
+        if let creator { text.append(AttributedString(" · created by \(creator.name)")) }
         if let created = card.createdAt {
             text.append(AttributedString(" · \(created.formatted(.relative(presentation: .named)))"))
         }
@@ -247,13 +247,13 @@ struct CardDetailView: View {
             .foregroundStyle(Color.boardlyTextSecondary)
     }
 
-    // MARK: - Quick actions (Échéance functional; others land in Phase 4)
+    // MARK: - Quick actions (Due date functional; others land in Phase 4)
 
     private func quickActions(card: Card) -> some View {
         HStack(spacing: 8) {
-            quickAction("Membres", systemImage: "person.2") { showMembersSheet = true }
-            quickAction("Échéance", systemImage: "calendar") { showDueDateSheet = true }
-            quickAction("Joindre", systemImage: "paperclip") { showAttachmentsSheet = true }
+            quickAction("Members", systemImage: "person.2") { showMembersSheet = true }
+            quickAction("Due date", systemImage: "calendar") { showDueDateSheet = true }
+            quickAction("Attach", systemImage: "paperclip") { showAttachmentsSheet = true }
         }
     }
 
@@ -285,7 +285,7 @@ struct CardDetailView: View {
             BoardlyFieldLabel("Description")
             ZStack(alignment: .topLeading) {
                 if editedDescription.isEmpty {
-                    Text("Ajouter une description…")
+                    Text("Add a description…")
                         .font(.boardlyBody)
                         .foregroundStyle(Color.boardlyTextTertiary)
                         .padding(.top, 8)
@@ -298,7 +298,7 @@ struct CardDetailView: View {
                     .scrollContentBackground(.hidden)
             }
             if editedDescription != (card.description ?? "") {
-                Button("Enregistrer") { saveDescription(card: card) }
+                Button("Save") { saveDescription(card: card) }
                     .font(.boardlyCallout)
                     .foregroundStyle(Color.accentColor)
             }
@@ -310,7 +310,7 @@ struct CardDetailView: View {
 
     private func attachmentsSection(_ attachments: [Attachment]) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            BoardlyFieldLabel("Pièces jointes")
+            BoardlyFieldLabel("Attachments")
             VStack(spacing: 0) {
                 ForEach(Array(attachments.enumerated()), id: \.element.id) { index, attachment in
                     HStack(spacing: 12) {
@@ -379,14 +379,14 @@ struct CardDetailView: View {
                 .swipeActions(edge: .trailing) {
                     Button(role: .destructive) {
                         Task { await boardVM.deleteTask(task) }
-                    } label: { SwiftUI.Label("Supprimer", systemImage: "trash") }
+                    } label: { SwiftUI.Label("Delete", systemImage: "trash") }
                 }
             }
 
             if addingTaskInListId == taskList.id {
                 HStack(spacing: 12) {
                     Image(systemName: "circle").foregroundStyle(Color.boardlyTextTertiary).font(.system(size: 20))
-                    TextField("Nouvelle tâche", text: $newTaskName)
+                    TextField("New task", text: $newTaskName)
                         .font(.boardlyBody)
                         .focused($taskFieldFocused)
                         .onSubmit { submitTask(taskList: taskList) }
@@ -398,7 +398,7 @@ struct CardDetailView: View {
                 newTaskName = ""
                 taskFieldFocused = true
             } label: {
-                SwiftUI.Label("Ajouter une tâche", systemImage: "plus")
+                SwiftUI.Label("Add a task", systemImage: "plus")
                     .font(.boardlyCallout)
                     .foregroundStyle(Color.boardlyTextSecondary)
             }
@@ -415,7 +415,7 @@ struct CardDetailView: View {
             Image(systemName: "stopwatch")
                 .font(.system(size: 16, weight: .medium))
                 .foregroundStyle(Color.accentColor)
-            Text("Chrono")
+            Text("Timer")
                 .font(.boardlyHeadline)
                 .foregroundStyle(Color.boardlyInk)
             Spacer(minLength: 0)
@@ -443,7 +443,7 @@ struct CardDetailView: View {
                 Image(systemName: "clock.arrow.circlepath")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Color.boardlyTextSecondary)
-                Text("Activité")
+                Text("Activity")
                     .font(.boardlyHeadline)
                     .foregroundStyle(Color.boardlyInk)
                 Spacer(minLength: 0)
@@ -469,15 +469,15 @@ struct CardDetailView: View {
     }
 
     private func actionText(_ action: Action, author: User?) -> String {
-        let who = author?.name ?? "Quelqu’un"
+        let who = author?.name ?? "Someone"
         switch action.type {
-        case "createCard": return "\(who) a créé la carte"
-        case "moveCard": return "\(who) a déplacé la carte"
-        case "addMemberToCard": return "\(who) a ajouté un membre"
-        case "removeMemberFromCard": return "\(who) a retiré un membre"
-        case "completeTask": return "\(who) a terminé une tâche"
-        case "uncompleteTask": return "\(who) a rouvert une tâche"
-        default: return "\(who) a mis à jour la carte"
+        case "createCard": return "\(who) created the card"
+        case "moveCard": return "\(who) moved the card"
+        case "addMemberToCard": return "\(who) added a member"
+        case "removeMemberFromCard": return "\(who) removed a member"
+        case "completeTask": return "\(who) completed a task"
+        case "uncompleteTask": return "\(who) reopened a task"
+        default: return "\(who) updated the card"
         }
     }
 
@@ -488,14 +488,14 @@ struct CardDetailView: View {
                 Image(systemName: "bubble.left")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Color.boardlyTextSecondary)
-                Text("Commentaires · \(count)")
+                Text("Comments · \(count)")
                     .font(.boardlyHeadline)
                     .foregroundStyle(Color.boardlyInk)
                 Spacer(minLength: 0)
             }
 
             if commentsLoaded && comments.isEmpty {
-                Text("Aucun commentaire pour l’instant.")
+                Text("No comments yet.")
                     .font(.boardlyCallout)
                     .foregroundStyle(Color.boardlyTextTertiary)
             } else {
@@ -521,7 +521,7 @@ struct CardDetailView: View {
             if let user = boardVM.currentUser {
                 AvatarView(name: user.name, size: 32, bordered: false)
             }
-            TextField("Ajouter un commentaire…", text: $newComment, axis: .vertical)
+            TextField("Add a comment…", text: $newComment, axis: .vertical)
                 .font(.boardlyBody)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 9)
@@ -556,13 +556,13 @@ struct CardDetailView: View {
     private func moveSection(card: Card, payload: BoardPayload) -> some View {
         let otherLists = payload.sortedLists().filter { $0.id != card.listId }
         return VStack(alignment: .leading, spacing: 12) {
-            BoardlyFieldLabel("Déplacer vers")
+            BoardlyFieldLabel("Move to")
             ForEach(otherLists) { list in
                 Button {
                     Task { await boardVM.moveCard(card, to: list) }
                 } label: {
                     HStack {
-                        SwiftUI.Label(list.name ?? "Sans titre", systemImage: "arrow.right")
+                        SwiftUI.Label(list.name ?? "Untitled", systemImage: "arrow.right")
                             .font(.boardlyBody)
                             .foregroundStyle(Color.boardlyInk)
                         Spacer()
@@ -581,7 +581,7 @@ struct CardDetailView: View {
                 dismiss()
             }
         } label: {
-            SwiftUI.Label("Supprimer la carte", systemImage: "trash")
+            SwiftUI.Label("Delete Card", systemImage: "trash")
                 .font(.sans(15, .semibold))
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
@@ -652,7 +652,7 @@ private struct CommentBubble: View {
             AvatarView(name: author?.name ?? "?", size: 32, bordered: false)
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
-                    Text(author?.name ?? "Utilisateur")
+                    Text(author?.name ?? "User")
                         .font(.sans(14, .semibold))
                         .foregroundStyle(Color.boardlyInk)
                     if let date = comment.createdAt {
@@ -674,7 +674,7 @@ private struct CommentBubble: View {
         .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Color.boardlySeparator, lineWidth: 0.5))
         .contextMenu {
             Button(role: .destructive, action: onDelete) {
-                SwiftUI.Label("Supprimer", systemImage: "trash")
+                SwiftUI.Label("Delete", systemImage: "trash")
             }
         }
     }

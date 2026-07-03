@@ -9,7 +9,7 @@ private struct NotificationServiceDraft: Identifiable {
     var editingID: String { id ?? "new" }
 }
 
-/// Profil → Notifications: manage the current user's outbound notification
+/// Profile → Notifications: manage the current user's outbound notification
 /// services (a URL + message format PLANKA pushes notifications to).
 struct NotificationServicesView: View {
     let viewModel: ProfileViewModel
@@ -21,7 +21,7 @@ struct NotificationServicesView: View {
             Color.boardlyBackground.ignoresSafeArea()
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("Boardly enverra tes notifications à ces services externes (Apprise, chat, webhook…).")
+                    Text("Boardly will send your notifications to these external services (Apprise, chat, webhook…).")
                         .font(.boardlyCallout)
                         .foregroundStyle(Color.boardlyTextSecondary)
 
@@ -40,7 +40,7 @@ struct NotificationServicesView: View {
                     Button {
                         draft = NotificationServiceDraft()
                     } label: {
-                        Label("Ajouter un service", systemImage: "plus")
+                        Label("Add Service", systemImage: "plus")
                     }
                     .buttonStyle(.boardlySecondary)
                 }
@@ -100,7 +100,7 @@ struct NotificationServicesView: View {
             Image(systemName: "bell.slash")
                 .font(.system(size: 30, weight: .light))
                 .foregroundStyle(Color.boardlyTextTertiary)
-            Text("Aucun service configuré")
+            Text("No services configured")
                 .font(.boardlyHeadline)
                 .foregroundStyle(Color.boardlyInk)
         }
@@ -125,7 +125,7 @@ private struct NotificationServiceSheet: View {
     var body: some View {
         VStack(spacing: 0) {
             SheetHeader(
-                title: draft.id == nil ? "Nouveau service" : "Modifier",
+                title: draft.id == nil ? "New Service" : "Edit",
                 onCancel: { dismiss() },
                 onDone: {
                     guard canSave else { return }
@@ -134,7 +134,7 @@ private struct NotificationServiceSheet: View {
                 }
             )
             VStack(alignment: .leading, spacing: 16) {
-                BoardlyFieldLabel("URL du service")
+                BoardlyFieldLabel("Service URL")
                 TextField("https://…", text: $draft.url)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
@@ -143,7 +143,7 @@ private struct NotificationServiceSheet: View {
 
                 BoardlyFieldLabel("Format")
                 Picker("Format", selection: $draft.format) {
-                    Text("Texte").tag("text")
+                    Text("Text").tag("text")
                     Text("Markdown").tag("markdown")
                     Text("HTML").tag("html")
                 }

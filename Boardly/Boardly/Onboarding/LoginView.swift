@@ -63,7 +63,7 @@ final class LoginViewModel {
         guard let session = OIDCSession(oidc: oidc, baseURL: baseURL) else {
             #if DEBUG
             // Surface the raw URL so we can diagnose a parsing failure.
-            error = "OIDC: URL d’autorisation illisible. authorizationUrl = \(oidc.authorizationUrl)"
+            error = "OIDC: authorization URL could not be parsed. authorizationUrl = \(oidc.authorizationUrl)"
             #else
             error = OIDCError.notConfigured.errorDescription
             #endif
@@ -86,9 +86,9 @@ final class LoginViewModel {
             return true
         } catch let apiError as PlankaAPIError {
             switch apiError {
-            case .unauthorized: error = "Échec de l’authentification SSO (code ou nonce invalide)."
-            case .forbidden: error = "Connexion SSO refusée par le serveur."
-            default: error = "Erreur réseau pendant la connexion SSO."
+            case .unauthorized: error = "SSO authentication failed (invalid code or nonce)."
+            case .forbidden: error = "SSO login was refused by the server."
+            default: error = "Network error during SSO login."
             }
         } catch {
             self.error = error.localizedDescription
@@ -113,13 +113,13 @@ struct LoginView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    Text("Connexion")
+                    Text("Login")
                         .font(.boardlyTitle)
                         .foregroundStyle(Color.boardlyInk)
                         .padding(.bottom, 24)
 
                     // Server (read-only)
-                    BoardlyFieldLabel("Serveur").padding(.bottom, 6)
+                    BoardlyFieldLabel("Server").padding(.bottom, 6)
                     HStack(spacing: 10) {
                         Image(systemName: "globe")
                             .foregroundStyle(Color.accentColor)
@@ -137,11 +137,11 @@ struct LoginView: View {
 
                     // Credentials (grouped) — hidden when the instance enforces OIDC
                     if viewModel.showsPasswordForm {
-                        BoardlyFieldLabel("Identifiants").padding(.top, 18).padding(.bottom, 6)
+                        BoardlyFieldLabel("Credentials").padding(.top, 18).padding(.bottom, 6)
                         VStack(spacing: 0) {
                             HStack(spacing: 10) {
                                 Image(systemName: "envelope").foregroundStyle(Color.boardlyTextTertiary).frame(width: 20)
-                                TextField("email ou nom d’utilisateur", text: $viewModel.email)
+                                TextField("email or username", text: $viewModel.email)
                                     .textContentType(.emailAddress)
                                     .keyboardType(.emailAddress)
                                     .autocorrectionDisabled()
@@ -166,7 +166,7 @@ struct LoginView: View {
                         // Forgot password (Phase 5 — not yet wired)
                         HStack {
                             Spacer()
-                            Button("Mot de passe oublié ?") {}
+                            Button("Forgot password?") {}
                                 .font(.boardlyCallout)
                                 .foregroundStyle(Color.accentColor)
                         }
@@ -183,7 +183,7 @@ struct LoginView: View {
                     if viewModel.showsPasswordForm {
                         Button(action: handleSignIn) {
                             if viewModel.isLoggingIn { ProgressView().tint(.white) }
-                            else { Text("Se connecter") }
+                            else { Text("Log In") }
                         }
                         .buttonStyle(.boardlyPrimary)
                         .disabled(!viewModel.canLogin || viewModel.isLoggingIn)
@@ -195,7 +195,7 @@ struct LoginView: View {
                     if viewModel.showsPasswordForm && viewModel.showsSSO {
                         HStack(spacing: 12) {
                             Rectangle().fill(Color.boardlySeparator).frame(height: 1)
-                            Text("ou").font(.boardlyMonoLabel).foregroundStyle(Color.boardlyTextTertiary)
+                            Text("or").font(.boardlyMonoLabel).foregroundStyle(Color.boardlyTextTertiary)
                             Rectangle().fill(Color.boardlySeparator).frame(height: 1)
                         }
                         .padding(.vertical, 18)
@@ -207,7 +207,7 @@ struct LoginView: View {
                             if viewModel.isLoggingIn && !viewModel.showsPasswordForm {
                                 ProgressView().tint(Color.boardlyInk)
                             } else {
-                                Label("Continuer avec le SSO", systemImage: "rectangle.portrait.and.arrow.right")
+                                Label("Continue with SSO", systemImage: "rectangle.portrait.and.arrow.right")
                             }
                         }
                         .buttonStyle(.boardlySecondary)

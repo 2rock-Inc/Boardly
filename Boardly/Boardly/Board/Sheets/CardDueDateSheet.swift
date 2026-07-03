@@ -14,9 +14,9 @@ struct CardDueDateSheet: View {
     var body: some View {
         VStack(spacing: 0) {
             SheetHeader(
-                title: "Échéance",
-                cancelLabel: "Annuler",
-                doneLabel: "Enregistrer",
+                title: "Due Date",
+                cancelLabel: "Cancel",
+                doneLabel: "Save",
                 onCancel: { dismiss() },
                 onDone: { save() }
             )
@@ -24,7 +24,7 @@ struct CardDueDateSheet: View {
                 VStack(spacing: 16) {
                     HStack {
                         Image(systemName: "calendar").foregroundStyle(Color.accentColor)
-                        Text("Ajouter une échéance")
+                        Text("Add a due date")
                             .font(.boardlyBody)
                             .foregroundStyle(Color.boardlyInk)
                         Spacer()

@@ -2,10 +2,10 @@ import Foundation
 import BoardlyKit
 
 enum SearchScope: String, CaseIterable, Identifiable {
-    case all = "Tout"
-    case cards = "Cartes"
+    case all = "All"
+    case cards = "Cards"
     case boards = "Boards"
-    case projects = "Projets"
+    case projects = "Projects"
     var id: String { rawValue }
 }
 
@@ -72,7 +72,7 @@ final class SearchViewModel {
             // for the session; leaving `indexed == false` lets a later call rebuild.
             indexed = complete
         } catch {
-            self.error = "Impossible d’indexer la recherche."
+            self.error = "Couldn’t index the search."
         }
     }
 

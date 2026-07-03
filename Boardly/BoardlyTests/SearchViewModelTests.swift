@@ -2,7 +2,7 @@
 //  SearchViewModelTests.swift
 //  BoardlyTests
 //
-//  Integration tests for the Recherche view model: indexing projects/boards +
+//  Integration tests for the Search view model: indexing projects/boards +
 //  fanning out to cards, and the case/diacritic-insensitive filtering by scope.
 //
 
@@ -72,7 +72,7 @@ struct SearchViewModelTests {
         #expect(!vm.boardResults.isEmpty)
 
         vm.scope = .cards
-        #expect(vm.boardResults.isEmpty) // boards suppressed under the Cartes scope
+        #expect(vm.boardResults.isEmpty) // boards suppressed under the Cards scope
     }
 
     @Test("empty query yields no results")

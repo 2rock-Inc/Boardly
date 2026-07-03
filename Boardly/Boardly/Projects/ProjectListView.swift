@@ -24,7 +24,7 @@ final class ProjectListViewModel {
         }
     }
 
-    // Per-board card counts for the list rows (design shows "N cartes"); the
+    // Per-board card counts for the list rows (design shows "N cards"); the
     // /projects payload has no counts, so fetch each board concurrently.
     private func loadCardCounts(payload: ProjectsPayload, client: PlankaClient) async {
         await withTaskGroup(of: (String, Int)?.self) { group in
@@ -89,11 +89,11 @@ struct ProjectListView: View {
                     emptyState
                 } else {
                     if !favorites.isEmpty {
-                        sectionLabel("Favoris")
+                        sectionLabel("Favorites")
                         favoritesRow(favorites, payload: payload)
                     }
 
-                    sectionLabel("Tous les projets")
+                    sectionLabel("All Projects")
                     ForEach(projects) { project in
                         let boards = payload.boards(for: project)
                         if !boards.isEmpty {
@@ -117,7 +117,7 @@ struct ProjectListView: View {
 
     private var header: some View {
         HStack(spacing: 12) {
-            Text("Projets")
+            Text("Projects")
                 .font(.boardlyTitle)
                 .foregroundStyle(Color.boardlyInk)
             Spacer()
@@ -168,7 +168,7 @@ struct ProjectListView: View {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 16, weight: .medium))
                 .foregroundStyle(Color.boardlyTextTertiary)
-            TextField("Rechercher un projet, un board…", text: $query)
+            TextField("Search a project or board…", text: $query)
                 .font(.boardlyBody)
                 .foregroundStyle(Color.boardlyInk)
                 .autocorrectionDisabled()
@@ -184,10 +184,10 @@ struct ProjectListView: View {
             Image(systemName: "folder")
                 .font(.system(size: 32))
                 .foregroundStyle(Color.boardlyTextTertiary)
-            Text(query.isEmpty ? "Aucun projet" : "Aucun résultat")
+            Text(query.isEmpty ? "No projects" : "No results")
                 .font(.boardlyHeadline)
                 .foregroundStyle(Color.boardlyInk)
-            Text(query.isEmpty ? "Aucun projet sur ce serveur." : "Essaie un autre terme.")
+            Text(query.isEmpty ? "No projects on this server." : "Try another term.")
                 .font(.boardlyBody)
                 .foregroundStyle(Color.boardlyTextSecondary)
         }
@@ -303,9 +303,9 @@ private struct BoardRow: View {
 
     private var meta: String {
         var parts: [String] = []
-        if let cardCount { parts.append("\(cardCount) carte\(cardCount > 1 ? "s" : "")") }
+        if let cardCount { parts.append("\(cardCount) card\(cardCount > 1 ? "s" : "")") }
         if let updated = board.updatedAt {
-            parts.append("maj \(updated.formatted(.relative(presentation: .named)))")
+            parts.append("updated \(updated.formatted(.relative(presentation: .named)))")
         }
         return parts.joined(separator: " · ")
     }

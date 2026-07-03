@@ -24,7 +24,7 @@ struct CardMembersSheet: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            SheetHeader(title: "Membres", onCancel: { dismiss() }, onDone: { dismiss() })
+            SheetHeader(title: "Members", onCancel: { dismiss() }, onDone: { dismiss() })
 
             searchField
                 .padding(.horizontal, 20)
@@ -36,10 +36,10 @@ struct CardMembersSheet: View {
 
                 VStack(alignment: .leading, spacing: 20) {
                     if !assigned.isEmpty {
-                        section("Sur la carte · \(assigned.count)", users: assigned)
+                        section("On this card · \(assigned.count)", users: assigned)
                     }
                     if !others.isEmpty {
-                        section("Équipe du board", users: others)
+                        section("Board team", users: others)
                     }
                 }
                 .padding(20)
@@ -53,7 +53,7 @@ struct CardMembersSheet: View {
     private var searchField: some View {
         HStack(spacing: 10) {
             Image(systemName: "magnifyingglass").foregroundStyle(Color.boardlyTextTertiary)
-            TextField("Rechercher un membre", text: $query)
+            TextField("Search members", text: $query)
                 .font(.boardlyBody)
                 .autocorrectionDisabled()
         }

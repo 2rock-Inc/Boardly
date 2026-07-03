@@ -1,4 +1,4 @@
-# Boardly — Macro Roadmap (7 phases)
+# Boardly — Macro Roadmap (8 phases)
 
 Each phase is meant to be one (or a few) separate Claude Code session(s).
 Phases are ordered by dependency: each one builds on what the previous
@@ -209,6 +209,58 @@ model managing values on the card detail screen.
 > reconciliation. Complete the BoardlyKit models against the OpenAPI spec first.
 > Include unit tests per the "Testing expectations" in ROADMAP.md. Plan first,
 > then implement.
+
+---
+
+## Phase 8 — Localization (i18n)
+
+**Goal:** turn the shipped English UI into a properly localized app. Phases 1–7
+were built with hardcoded French strings; those have since been translated in
+bulk to hardcoded **English** (the new source language), but nothing is
+localizable yet. This phase adds the internationalization infrastructure and
+reintroduces French as the first translated locale.
+
+**Prerequisite context:** all user-facing copy now lives as hardcoded English
+string literals in the `Boardly/` app layer (BoardlyKit stays UI-string-free).
+The bulk FR→EN translation is done; this phase is about *extraction*, not
+re-translation.
+
+- **String Catalog:** add a `Localizable.xcstrings` String Catalog; set the base
+  (development) localization to English, which is already the project's
+  `developmentRegion`.
+- **Make strings localizable:** replace bare `String` literals in `Text(...)`,
+  labels, alerts, accessibility strings, etc. with localized lookups
+  (`String(localized:)` / `LocalizedStringKey` — SwiftUI `Text` already takes a
+  `LocalizedStringKey`, so audit which literals actually resolve through the
+  catalog vs. bypass it via `Text(verbatim:)` or `String` interpolation).
+- **Pluralization & interpolation:** use the catalog's plural variants for
+  count-driven copy (e.g. "N cards", "N cartes") rather than string
+  concatenation; keep interpolated values (names, counts, dates) as format
+  arguments so translators get correct word order.
+- **French locale:** add `fr` to the catalog and translate every key back to
+  French — the first non-base locale, and a regression check that no string was
+  missed during extraction.
+- **Locale-aware formatting:** route dates, relative times, and numbers through
+  `Date.FormatStyle` / `NumberFormatter` with the current locale rather than
+  hardcoded French/English formats (audit the Activity feed's relative-time
+  buckets and any manual date strings).
+- **Verification:** run the app under both the English and French scheme
+  language options; confirm no key falls back to its raw identifier and that
+  layouts survive the longer/shorter strings.
+
+**Testing expectations:** unit tests asserting that representative keys resolve
+in both `en` and `fr` (no missing-key fallthrough), that plural variants pick
+the right form for 0/1/N, and that any locale-dependent formatting helper
+produces the expected output for a fixed locale. Keep tests locale-pinned so
+they don't depend on the CI machine's region.
+
+**Suggested kickoff prompt:**
+> Read CLAUDE.md and ROADMAP.md. Implement Phase 8: add a `Localizable.xcstrings`
+> String Catalog with English as the base localization, make all app-layer UI
+> strings localizable (including plurals and interpolation), reintroduce French as
+> a fully translated locale, and route date/number formatting through the current
+> locale. Include unit tests per the "Testing expectations" in ROADMAP.md. Plan
+> first, then implement.
 
 ---
 

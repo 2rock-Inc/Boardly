@@ -30,7 +30,7 @@ final class ProjectDetailViewModel {
         do {
             let payload = try await client.getProjects()
             guard let project = payload.projects.first(where: { $0.id == projectId }) else {
-                error = "Projet introuvable."
+                error = "Project not found."
                 return
             }
             self.project = project
@@ -64,7 +64,7 @@ final class ProjectDetailViewModel {
             .sorted { ($0.position ?? 0) < ($1.position ?? 0) }
     }
 
-    // MARK: - Édition (Général)
+    // MARK: - Editing (General)
 
     @discardableResult
     func saveGeneral(name: String, description: String, using client: PlankaClient) async -> Bool {
@@ -74,7 +74,7 @@ final class ProjectDetailViewModel {
             project = try await client.updateProject(id: id, patch: ProjectPatch(name: name, description: description))
             return true
         } catch {
-            self.error = "Impossible d’enregistrer le projet."
+            self.error = "Couldn’t save the project."
             return false
         }
     }
@@ -85,7 +85,7 @@ final class ProjectDetailViewModel {
         do {
             project = try await client.updateProject(id: id, patch: ProjectPatch(isHidden: hidden))
         } catch {
-            self.error = "Impossible de changer la visibilité."
+            self.error = "Couldn’t change visibility."
         }
     }
 
@@ -97,12 +97,12 @@ final class ProjectDetailViewModel {
             try await client.deleteProject(id: id)
             return true
         } catch {
-            self.error = "Impossible de supprimer le projet."
+            self.error = "Couldn’t delete the project."
             return false
         }
     }
 
-    // MARK: - Responsables
+    // MARK: - Managers
 
     /// Board members not already managers — candidates to add.
     func addableUsers() -> [User] {
@@ -118,7 +118,7 @@ final class ProjectDetailViewModel {
             managers.append(manager)
             if let user = user(userId) { managerUsers.append(user) }
         } catch {
-            self.error = "Impossible d’ajouter le responsable."
+            self.error = "Couldn’t add the manager."
         }
     }
 
@@ -135,11 +135,11 @@ final class ProjectDetailViewModel {
         } catch {
             managers = previousManagers
             managerUsers = previousUsers
-            self.error = "Impossible de retirer le responsable."
+            self.error = "Couldn’t remove the manager."
         }
     }
 
-    // MARK: - Champs perso de base
+    // MARK: - Base custom fields
 
     func addGroup(name: String, using client: PlankaClient) async {
         guard let id = project?.id else { return }
@@ -148,7 +148,7 @@ final class ProjectDetailViewModel {
             let group = try await client.createBaseCustomFieldGroup(projectId: id, name: name)
             baseGroups.append(group)
         } catch {
-            self.error = "Impossible d’ajouter le groupe."
+            self.error = "Couldn’t add the group."
         }
     }
 
@@ -161,7 +161,7 @@ final class ProjectDetailViewModel {
             customFields.removeAll { $0.baseCustomFieldGroupId == group.id }
         } catch {
             baseGroups = previous
-            self.error = "Impossible de supprimer le groupe."
+            self.error = "Couldn’t delete the group."
         }
     }
 
@@ -172,7 +172,7 @@ final class ProjectDetailViewModel {
             let field = try await client.createBaseCustomField(groupId: group.id, name: name, position: position)
             customFields.append(field)
         } catch {
-            self.error = "Impossible d’ajouter le champ."
+            self.error = "Couldn’t add the field."
         }
     }
 
@@ -193,7 +193,7 @@ final class ProjectDetailViewModel {
                 id: id, patch: ProjectPatch(backgroundType: "gradient", backgroundGradient: name))
             return true
         } catch {
-            self.error = "Impossible de changer le fond."
+            self.error = "Couldn’t change the background."
             return false
         }
     }
@@ -210,7 +210,7 @@ final class ProjectDetailViewModel {
                 id: id, patch: ProjectPatch(backgroundType: "image", backgroundImageId: image.id))
             return true
         } catch {
-            self.error = "Échec de l’envoi de l’image de fond."
+            self.error = "Failed to upload the background image."
             return false
         }
     }
@@ -223,7 +223,7 @@ final class ProjectDetailViewModel {
             project = try await client.updateProject(id: id, patch: ProjectPatch(clearBackground: true))
             return true
         } catch {
-            self.error = "Impossible de retirer le fond."
+            self.error = "Couldn’t remove the background."
             return false
         }
     }
@@ -296,7 +296,7 @@ struct ProjectDetailView: View {
                     Spacer()
                 }
                 Spacer()
-                Text("PROJET")
+                Text("PROJECT")
                     .font(.boardlyMonoLabel)
                     .tracking(2)
                     .foregroundStyle(.white.opacity(0.7))
@@ -424,7 +424,7 @@ private struct BoardGridCard: View {
 
     private var metaText: String {
         guard let cards = stat.cardCount, let lists = stat.listCount else { return "…" }
-        return "\(cards) carte\(cards > 1 ? "s" : "") · \(lists) liste\(lists > 1 ? "s" : "")"
+        return "\(cards) card\(cards > 1 ? "s" : "") · \(lists) list\(lists > 1 ? "s" : "")"
     }
 }
 
@@ -434,7 +434,7 @@ private struct NewBoardCard: View {
             Image(systemName: "plus")
                 .font(.system(size: 22, weight: .medium))
                 .foregroundStyle(Color.boardlyTextTertiary)
-            Text("Nouveau board")
+            Text("New Board")
                 .font(.boardlyCallout)
                 .foregroundStyle(Color.boardlyTextSecondary)
         }

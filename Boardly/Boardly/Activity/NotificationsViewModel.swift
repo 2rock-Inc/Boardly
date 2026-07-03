@@ -29,7 +29,7 @@ final class NotificationsViewModel {
         do {
             payload = try await client.getNotifications()
         } catch {
-            self.error = "Impossible de charger les notifications."
+            self.error = "Couldn’t load notifications."
         }
     }
 
@@ -57,14 +57,14 @@ final class NotificationsViewModel {
             try await client.markAllNotificationsRead()
         } catch {
             payload = previous
-            self.error = "Impossible de tout marquer comme lu."
+            self.error = "Couldn’t mark all as read."
         }
     }
 
     // MARK: - Presentation helpers
 
     func creatorName(_ notification: PlankaNotification) -> String {
-        payload?.creator(of: notification)?.name ?? "Quelqu’un"
+        payload?.creator(of: notification)?.name ?? "Someone"
     }
 
     /// The card name carried in the notification's free-form `data` payload.
@@ -81,17 +81,17 @@ final class NotificationsViewModel {
     }
 
     /// A rendered line — actor + action + subject — with the actor and the card
-    /// name emphasized (bold), matching the Activité design.
+    /// name emphasized (bold), matching the Activity design.
     func line(for notification: PlankaNotification) -> AttributedString {
         let actor = creatorName(notification)
-        let card = cardName(notification) ?? "une carte"
+        let card = cardName(notification) ?? "a card"
         let phrasing: (prefix: String, suffix: String)
         switch notification.type {
-        case "mentionInComment": phrasing = (" vous a mentionné dans ", "")
-        case "commentCard": phrasing = (" a commenté ", "")
-        case "addMemberToCard": phrasing = (" vous a assigné à ", "")
-        case "moveCard": phrasing = (" a déplacé ", "")
-        default: phrasing = (" a mis à jour ", "")
+        case "mentionInComment": phrasing = (" mentioned you in ", "")
+        case "commentCard": phrasing = (" commented on ", "")
+        case "addMemberToCard": phrasing = (" assigned you to ", "")
+        case "moveCard": phrasing = (" moved ", "")
+        default: phrasing = (" updated ", "")
         }
 
         var result = AttributedString(actor)
@@ -125,7 +125,7 @@ final class NotificationsViewModel {
 
     private static let relativeFormatter: RelativeDateTimeFormatter = {
         let f = RelativeDateTimeFormatter()
-        f.locale = Locale(identifier: "fr_FR")
+        f.locale = Locale(identifier: "en_US")
         f.unitsStyle = .abbreviated
         return f
     }()
