@@ -198,6 +198,37 @@ final class BoardViewModel {
         }
     }
 
+    // MARK: - Custom field values (Phase 7)
+
+    func setCustomFieldValue(_ content: String, groupId: String, fieldId: String, card: Card) async {
+        do {
+            let value = try await client.setCustomFieldValue(
+                cardId: card.id, groupId: groupId, fieldId: fieldId, content: content)
+            guard var copy = payload else { return }
+            if let idx = copy.customFieldValues.firstIndex(where: { $0.id == value.id }) {
+                copy.customFieldValues[idx] = value
+            } else {
+                copy.customFieldValues.append(value)
+            }
+            payload = copy
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
+    func clearCustomFieldValue(groupId: String, fieldId: String, card: Card) async {
+        do {
+            try await client.clearCustomFieldValue(cardId: card.id, groupId: groupId, fieldId: fieldId)
+            guard var copy = payload else { return }
+            copy.customFieldValues.removeAll {
+                $0.cardId == card.id && $0.customFieldGroupId == groupId && $0.customFieldId == fieldId
+            }
+            payload = copy
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
     // MARK: - Members
 
     func addMember(_ user: User, to card: Card) async {
