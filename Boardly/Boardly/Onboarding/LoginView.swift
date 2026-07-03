@@ -40,12 +40,12 @@ final class LoginViewModel {
             return true
         } catch let apiError as PlankaAPIError {
             switch apiError {
-            case .unauthorized: error = "Invalid email/username or password."
-            case .forbidden: error = "Login is restricted. Check with your administrator."
-            default: error = "Network error. Please check your connection."
+            case .unauthorized: error = String(localized: "Invalid email/username or password.")
+            case .forbidden: error = String(localized: "Login is restricted. Check with your administrator.")
+            default: error = String(localized: "Network error. Please check your connection.")
             }
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
         return false
     }
@@ -62,7 +62,7 @@ final class LoginViewModel {
         guard let session = OIDCSession(oidc: oidc, baseURL: baseURL) else {
             #if DEBUG
                 // Surface the raw URL so we can diagnose a parsing failure.
-                error = "OIDC: authorization URL could not be parsed. authorizationUrl = \(oidc.authorizationUrl)"
+                error = String(localized: "OIDC: authorization URL could not be parsed. authorizationUrl = \(oidc.authorizationUrl)")
             #else
                 error = OIDCError.notConfigured.errorDescription
             #endif
@@ -85,12 +85,12 @@ final class LoginViewModel {
             return true
         } catch let apiError as PlankaAPIError {
             switch apiError {
-            case .unauthorized: error = "SSO authentication failed (invalid code or nonce)."
-            case .forbidden: error = "SSO login was refused by the server."
-            default: error = "Network error during SSO login."
+            case .unauthorized: error = String(localized: "SSO authentication failed (invalid code or nonce).")
+            case .forbidden: error = String(localized: "SSO login was refused by the server.")
+            default: error = String(localized: "Network error during SSO login.")
             }
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
         return false
     }

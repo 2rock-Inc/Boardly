@@ -73,3 +73,7 @@ jobs:
           chmod +x swiftformat
       - name: SwiftFormat (lint only)
         run: ./swiftformat --lint .
+      # Blocking localization guard (CLAUDE.md › Localization): catalog gaps +
+      # divergent string patterns.
+      - name: Localization guard
+        run: python3 Scripts/check-localization.py

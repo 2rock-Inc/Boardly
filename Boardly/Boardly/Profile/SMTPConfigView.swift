@@ -29,9 +29,9 @@ final class SMTPConfigViewModel {
         do {
             try await apply(client.getConfig())
         } catch PlankaAPIError.forbidden {
-            error = "Admins only."
+            error = String(localized: "Admins only.")
         } catch {
-            self.error = "Couldn't load the configuration."
+            self.error = String(localized: "Couldn't load the configuration.")
         }
     }
 
@@ -60,7 +60,7 @@ final class SMTPConfigViewModel {
             try await apply(client.updateConfig(patch: patch))
             notice = "Configuration saved."
         } catch {
-            self.error = "Couldn't save."
+            self.error = String(localized: "Couldn't save.")
         }
     }
 
@@ -71,7 +71,7 @@ final class SMTPConfigViewModel {
             try await client.testSMTP()
             notice = "Test email sent."
         } catch {
-            self.error = "Couldn't send the test (SMTP must be configured through the UI)."
+            self.error = String(localized: "Couldn't send the test (SMTP must be configured through the UI).")
         }
     }
 }
@@ -140,9 +140,9 @@ struct SMTPConfigView: View {
     }
 
     private func field(
-        _ label: String,
+        _ label: LocalizedStringKey,
         text: Binding<String>,
-        placeholder: String,
+        placeholder: LocalizedStringKey,
         url: Bool = false,
         number: Bool = false) -> some View
     {

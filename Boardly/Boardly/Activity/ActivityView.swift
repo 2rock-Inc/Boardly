@@ -6,12 +6,12 @@ import SwiftUI
 struct ActivityView: View {
     let viewModel: NotificationsViewModel
 
-    private var sections: [(title: String, items: [PlankaNotification])] {
+    private var sections: [(id: Int, title: LocalizedStringKey, items: [PlankaNotification])] {
         let all = viewModel.notifications
-        let titles = ["Today", "This week", "Earlier"]
+        let titles: [LocalizedStringKey] = ["Today", "This week", "Earlier"]
         return titles.enumerated().compactMap { index, title in
             let items = all.filter { viewModel.bucket($0) == index }
-            return items.isEmpty ? nil : (title, items)
+            return items.isEmpty ? nil : (index, title, items)
         }
     }
 
@@ -28,7 +28,7 @@ struct ActivityView: View {
                     } else if viewModel.notifications.isEmpty {
                         emptyState
                     } else {
-                        ForEach(sections, id: \.title) { section in
+                        ForEach(sections, id: \.id) { section in
                             VStack(alignment: .leading, spacing: 8) {
                                 BoardlyFieldLabel(section.title)
                                 VStack(spacing: 0) {

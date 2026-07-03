@@ -80,7 +80,7 @@ struct SearchView: View {
             ForEach(SearchScope.allCases) { item in
                 let active = scope.wrappedValue == item
                 Button { scope.wrappedValue = item } label: {
-                    Text(LocalizedStringKey(item.rawValue))
+                    Text(item.localizedName)
                         .font(.sans(14, .semibold))
                         .foregroundStyle(active ? .white : Color.boardlyTextSecondary)
                         .padding(.horizontal, 14)
@@ -291,7 +291,7 @@ struct SearchView: View {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 34, weight: .light))
                 .foregroundStyle(Color.labelRose)
-            Text(message)
+            Text(verbatim: message)
                 .font(.boardlyBody)
                 .foregroundStyle(Color.boardlyTextSecondary)
                 .multilineTextAlignment(.center)

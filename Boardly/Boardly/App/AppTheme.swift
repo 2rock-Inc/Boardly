@@ -9,7 +9,7 @@ enum AppTheme: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var label: String {
+    var localizedName: LocalizedStringResource {
         switch self {
         case .system: "System"
         case .light: "Light"

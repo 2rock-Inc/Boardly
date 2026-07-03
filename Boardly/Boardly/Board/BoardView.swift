@@ -2,9 +2,15 @@ import BoardlyKit
 import SwiftUI
 
 enum BoardViewMode: String, CaseIterable {
-    case kanban = "Kanban"
-    case liste = "List"
-    case grille = "Grid"
+    case kanban, list, grid
+
+    var localizedName: LocalizedStringResource {
+        switch self {
+        case .kanban: "Kanban"
+        case .list: "List"
+        case .grid: "Grid"
+        }
+    }
 }
 
 struct BoardView: View {
@@ -149,7 +155,7 @@ struct BoardView: View {
             HStack(spacing: 4) {
                 ForEach(BoardViewMode.allCases, id: \.self) { item in
                     let active = mode == item
-                    Text(LocalizedStringKey(item.rawValue))
+                    Text(item.localizedName)
                         .font(.sans(14, .semibold))
                         .foregroundStyle(active ? Color.boardlyInk : Color.boardlyTextSecondary)
                         .padding(.horizontal, 16)
@@ -183,8 +189,8 @@ struct BoardView: View {
             } else {
                 switch mode {
                 case .kanban: kanbanMode(payload)
-                case .liste: listeMode(payload)
-                case .grille: grilleMode(payload)
+                case .list: listeMode(payload)
+                case .grid: grilleMode(payload)
                 }
             }
         } else if let error = viewModel.error {

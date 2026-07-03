@@ -29,7 +29,7 @@ final class NotificationsViewModel {
         do {
             payload = try await client.getNotifications()
         } catch {
-            self.error = "Couldn’t load notifications."
+            self.error = String(localized: "Couldn’t load notifications.")
         }
     }
 
@@ -56,7 +56,7 @@ final class NotificationsViewModel {
             try await client.markAllNotificationsRead()
         } catch {
             payload = previous
-            self.error = "Couldn’t mark all as read."
+            self.error = String(localized: "Couldn’t mark all as read.")
         }
     }
 

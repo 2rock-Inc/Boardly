@@ -20,9 +20,9 @@ final class WebhooksViewModel {
         do {
             webhooks = try await client.getWebhooks()
         } catch PlankaAPIError.forbidden {
-            error = "Admins only."
+            error = String(localized: "Admins only.")
         } catch {
-            self.error = "Couldn't load the webhooks."
+            self.error = String(localized: "Couldn't load the webhooks.")
         }
     }
 
@@ -32,7 +32,7 @@ final class WebhooksViewModel {
                 name: name, url: url, accessToken: accessToken, events: events)
             webhooks.append(webhook)
         } catch {
-            self.error = "Couldn't create the webhook."
+            self.error = String(localized: "Couldn't create the webhook.")
         }
     }
 
@@ -43,7 +43,7 @@ final class WebhooksViewModel {
             try await client.deleteWebhook(id: webhook.id)
         } catch {
             webhooks = previous
-            self.error = "Couldn't delete the webhook."
+            self.error = String(localized: "Couldn't delete the webhook.")
         }
     }
 }
@@ -181,9 +181,9 @@ private struct WebhookSheet: View {
     }
 
     private func field(
-        _ label: String,
+        _ label: LocalizedStringKey,
         text: Binding<String>,
-        placeholder: String,
+        placeholder: LocalizedStringKey,
         url: Bool = false,
         secure: Bool = false) -> some View
     {

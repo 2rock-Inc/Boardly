@@ -65,7 +65,7 @@ final class BoardViewModel {
         do {
             payload = try await client.getBoard(id: boardId)
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 
@@ -80,7 +80,7 @@ final class BoardViewModel {
             updated.cards.append(card)
             self.payload = updated
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 
@@ -93,7 +93,7 @@ final class BoardViewModel {
                 patch: CardPatch(listId: list.id, position: position))
             replaceCard(updated)
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 
@@ -105,7 +105,7 @@ final class BoardViewModel {
             updated.cards.removeAll { $0.id == card.id }
             self.payload = updated
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 
@@ -118,7 +118,7 @@ final class BoardViewModel {
                 patch: TaskPatch(isCompleted: !task.isCompleted))
             replaceTask(updated)
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 
@@ -134,7 +134,7 @@ final class BoardViewModel {
             updated.tasks.append(task)
             self.payload = updated
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 
@@ -146,7 +146,7 @@ final class BoardViewModel {
             updated.tasks.removeAll { $0.id == task.id }
             self.payload = updated
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 
@@ -155,7 +155,7 @@ final class BoardViewModel {
             let updated = try await client.updateCard(id: card.id, patch: patch)
             replaceCard(updated)
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 
@@ -176,7 +176,7 @@ final class BoardViewModel {
             }
             payload = copy
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 
@@ -187,7 +187,7 @@ final class BoardViewModel {
             copy.cardLabels.removeAll { $0.cardId == card.id && $0.labelId == label.id }
             payload = copy
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 
@@ -199,7 +199,7 @@ final class BoardViewModel {
             copy.labels.append(label)
             payload = copy
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 
@@ -217,7 +217,7 @@ final class BoardViewModel {
             }
             payload = copy
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 
@@ -230,7 +230,7 @@ final class BoardViewModel {
             }
             payload = copy
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 
@@ -245,7 +245,7 @@ final class BoardViewModel {
             baseGroups = projects.baseGroups(for: project)
             baseFields = projects.customFields
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 
@@ -268,7 +268,7 @@ final class BoardViewModel {
                 boardId: boardId, position: position, baseCustomFieldGroupId: base.id)
             await refreshCustomFields()
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 
@@ -286,7 +286,7 @@ final class BoardViewModel {
             copy.customFieldGroups.append(group)
             self.payload = copy
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 
@@ -299,7 +299,7 @@ final class BoardViewModel {
             copy.customFieldValues.removeAll { $0.customFieldGroupId == group.id }
             payload = copy
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 
@@ -312,7 +312,7 @@ final class BoardViewModel {
             copy.customFields.append(field)
             self.payload = copy
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 
@@ -324,7 +324,7 @@ final class BoardViewModel {
             copy.customFieldValues.removeAll { $0.customFieldId == field.id }
             payload = copy
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 
@@ -339,7 +339,7 @@ final class BoardViewModel {
             copy.customFieldValues = fresh.customFieldValues
             payload = copy
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 
@@ -354,7 +354,7 @@ final class BoardViewModel {
             }
             payload = copy
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 
@@ -365,7 +365,7 @@ final class BoardViewModel {
             copy.cardMemberships.removeAll { $0.cardId == card.id && $0.userId == user.id }
             payload = copy
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 
@@ -383,7 +383,7 @@ final class BoardViewModel {
             return try await client.getComments(cardId: cardId)
                 .sorted { ($0.createdAt ?? .distantPast) < ($1.createdAt ?? .distantPast) }
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
             return nil
         }
     }
@@ -394,7 +394,7 @@ final class BoardViewModel {
             adjustCommentsTotal(cardId: cardId, by: 1)
             return comment
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
             return nil
         }
     }
@@ -407,7 +407,7 @@ final class BoardViewModel {
             adjustCommentsTotal(cardId: cardId, by: -1)
             return true
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
             return false
         }
     }
@@ -434,7 +434,7 @@ final class BoardViewModel {
             copy.attachments.append(attachment)
             payload = copy
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 
@@ -445,7 +445,7 @@ final class BoardViewModel {
             copy.attachments.append(attachment)
             payload = copy
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 
@@ -456,7 +456,7 @@ final class BoardViewModel {
             copy.attachments.removeAll { $0.id == attachment.id }
             payload = copy
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 
@@ -467,7 +467,7 @@ final class BoardViewModel {
             return try await client.getCardActions(cardId: cardId)
                 .sorted { ($0.createdAt ?? .distantPast) > ($1.createdAt ?? .distantPast) }
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
             return []
         }
     }
@@ -484,7 +484,7 @@ final class BoardViewModel {
             }
             replaceCard(updated)
         } catch {
-            self.error = error.localizedDescription
+            self.error = localizedErrorMessage(error)
         }
     }
 

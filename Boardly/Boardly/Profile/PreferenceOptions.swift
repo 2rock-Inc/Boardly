@@ -1,13 +1,13 @@
 import Foundation
 
-/// PLANKA `defaultHomeView` values with their display labels (mirrors the
-/// AppTheme pattern so the raw value + label live in one compiler-checked place).
+/// PLANKA `defaultHomeView` values with their display names (the raw value is the
+/// API identifier; `localizedName` is the shown copy).
 enum HomeViewOption: String, CaseIterable, Identifiable {
     case grouped = "groupedProjects"
     case grid = "gridProjects"
 
     var id: String { rawValue }
-    var label: String {
+    var localizedName: LocalizedStringResource {
         switch self {
         case .grouped: "Grouped"
         case .grid: "Grid"
@@ -17,13 +17,14 @@ enum HomeViewOption: String, CaseIterable, Identifiable {
     static func from(_ raw: String?) -> HomeViewOption { HomeViewOption(rawValue: raw ?? "") ?? .grouped }
 }
 
-/// PLANKA `defaultEditorMode` values with their display labels.
+/// PLANKA `defaultEditorMode` values with their display names.
 enum EditorModeOption: String, CaseIterable, Identifiable {
     case wysiwyg
     case markup
 
     var id: String { rawValue }
-    var label: String {
+    /// WYSIWYG / Markdown are proper nouns — rendered verbatim in every locale.
+    var localizedName: LocalizedStringResource {
         switch self {
         case .wysiwyg: "WYSIWYG"
         case .markup: "Markdown"
