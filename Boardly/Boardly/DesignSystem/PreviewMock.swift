@@ -38,7 +38,7 @@ private final class MockKeychain: KeychainStoring, @unchecked Sendable {
     func load(for key: String) throws -> String? { mockJWT }
     func delete(for key: String) throws {}
 
-    // A JWT-shaped token whose payload subject is "u1" (Marie Dupont), so the
+    // A JWT-shaped token whose payload subject is "u1" (Alice Johnson), so the
     // header avatar resolves in the mock harness.
     private var mockJWT: String {
         let payload = Data(#"{"subject":"u1"}"#.utf8).base64EncodedString()
@@ -68,7 +68,7 @@ enum PreviewMock {
 
     nonisolated static let currentUserJSON = """
     {
-      "item": { "id": "u1", "role": "admin", "name": "Marie Dupont", "username": "marie.dupont", "organization": "Acme Corp", "isDeactivated": false, "isDefaultAdmin": true },
+      "item": { "id": "u1", "role": "admin", "name": "Alice Johnson", "username": "alice.johnson", "organization": "Acme Corp", "isDeactivated": false, "isDefaultAdmin": true },
       "included": {
         "notificationServices": [
           { "id": "ns1", "userId": "u1", "boardId": null, "url": "https://hooks.slack.com/services/T000/B000/xyz", "format": "markdown", "createdAt": null, "updatedAt": null },
@@ -97,10 +97,10 @@ enum PreviewMock {
       ],
       "included": {
         "users": [
-          { "id": "u2", "role": "boardUser", "name": "Paul Lemaire", "isDeactivated": false },
+          { "id": "u2", "role": "boardUser", "name": "Bob Williams", "isDeactivated": false },
           { "id": "u3", "role": "boardUser", "name": "Jules Kern", "isDeactivated": false },
           { "id": "u4", "role": "boardUser", "name": "Emma Martin", "isDeactivated": false },
-          { "id": "u5", "role": "boardUser", "name": "Marie Dupont", "isDeactivated": false }
+          { "id": "u5", "role": "boardUser", "name": "Alice Johnson", "isDeactivated": false }
         ]
       }
     }
@@ -141,8 +141,8 @@ enum PreviewMock {
           { "id": "b4", "projectId": "p3", "name": "Todo", "position": 1, "updatedAt": "2026-06-30T12:00:00.000Z" }
         ],
         "users": [
-          { "id": "u1", "role": "admin", "name": "Marie Dupont", "isDeactivated": false },
-          { "id": "u2", "role": "member", "name": "Paul Lefevre", "isDeactivated": false },
+          { "id": "u1", "role": "admin", "name": "Alice Johnson", "isDeactivated": false },
+          { "id": "u2", "role": "member", "name": "Chris Miller", "isDeactivated": false },
           { "id": "u3", "role": "member", "name": "Julie Klein", "isDeactivated": false },
           { "id": "u4", "role": "member", "name": "Hugo Bernard", "isDeactivated": false }
         ],
@@ -225,8 +225,8 @@ enum PreviewMock {
           { "id": "cl2", "cardId": "c1", "labelId": "lb2" }
         ],
         "users": [
-          { "id": "u1", "role": "admin", "name": "Marie Dupont", "username": "marie.dupont", "isDeactivated": false },
-          { "id": "u2", "role": "member", "name": "Paul Lemaire", "username": "paul.l", "isDeactivated": false },
+          { "id": "u1", "role": "admin", "name": "Alice Johnson", "username": "alice.johnson", "isDeactivated": false },
+          { "id": "u2", "role": "member", "name": "Bob Williams", "username": "bob.williams", "isDeactivated": false },
           { "id": "u3", "role": "member", "name": "Emma Morel", "username": "emma.m", "isDeactivated": false }
         ],
         "boardMemberships": [
@@ -268,7 +268,7 @@ struct MockProjectDetailHarness: View {
 
 struct MockLoginHarness: View {
     @State private var path: [OnboardingRoute] = []
-    private let profile = ServerProfile(name: "Team", baseURL: URL(string: "https://planka.equipe.fr")!)
+    private let profile = ServerProfile(name: "Team", baseURL: URL(string: "https://planka.example.com")!)
     var body: some View {
         NavigationStack(path: $path) {
             LoginView(profile: profile, path: $path)

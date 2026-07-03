@@ -47,22 +47,22 @@ struct PlankaClientProjectEditTests {
 
     @Test("createBaseCustomFieldGroup POSTs name to the project")
     func createBaseGroup() async throws {
-        mockHTTP.stub(json: #"{"item":{"id":"g1","projectId":"p1","name":"Suivi","createdAt":null,"updatedAt":null}}"#)
-        _ = try await client.createBaseCustomFieldGroup(projectId: "p1", name: "Suivi")
+        mockHTTP.stub(json: #"{"item":{"id":"g1","projectId":"p1","name":"Tracking","createdAt":null,"updatedAt":null}}"#)
+        _ = try await client.createBaseCustomFieldGroup(projectId: "p1", name: "Tracking")
         let req = try #require(mockHTTP.lastRequest)
         #expect(req.httpMethod == "POST")
         #expect(req.url?.path.hasSuffix("/api/projects/p1/base-custom-field-groups") == true)
-        #expect(try body(of: req)["name"] as? String == "Suivi")
+        #expect(try body(of: req)["name"] as? String == "Tracking")
     }
 
     @Test("createBaseCustomField POSTs to the group with name + position")
     func createBaseField() async throws {
-        mockHTTP.stub(json: #"{"item":{"id":"cf1","baseCustomFieldGroupId":"g1","customFieldGroupId":null,"position":65536,"name":"Priorité","showOnFrontOfCard":null,"createdAt":null,"updatedAt":null}}"#)
-        _ = try await client.createBaseCustomField(groupId: "g1", name: "Priorité", position: 65536)
+        mockHTTP.stub(json: #"{"item":{"id":"cf1","baseCustomFieldGroupId":"g1","customFieldGroupId":null,"position":65536,"name":"Priority","showOnFrontOfCard":null,"createdAt":null,"updatedAt":null}}"#)
+        _ = try await client.createBaseCustomField(groupId: "g1", name: "Priority", position: 65536)
         let req = try #require(mockHTTP.lastRequest)
         #expect(req.httpMethod == "POST")
         #expect(req.url?.path.hasSuffix("/api/base-custom-field-groups/g1/custom-fields") == true)
-        #expect(try body(of: req)["name"] as? String == "Priorité")
+        #expect(try body(of: req)["name"] as? String == "Priority")
     }
 
     @Test("ProjectPatch encodes description and isHidden")
@@ -100,7 +100,7 @@ struct ProjectsPayloadEditTests {
         let p = try project()
         let payload = ProjectsPayload(
             projects: [p], boards: [],
-            baseCustomFieldGroups: [bg("g1", "p1", "Suivi"), bg("g2", "pOther", "X")],
+            baseCustomFieldGroups: [bg("g1", "p1", "Tracking"), bg("g2", "pOther", "X")],
             customFields: [cf("cf2", "g1", "B", 2), cf("cf1", "g1", "A", 1)])
         let groups = payload.baseGroups(for: p)
         #expect(groups.map(\.id) == ["g1"])

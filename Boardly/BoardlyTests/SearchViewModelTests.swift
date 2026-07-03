@@ -17,15 +17,15 @@ private final class SearchStubHTTP: HTTPClient, @unchecked Sendable {
         let json: String
         if path.hasSuffix("/api/projects") {
             json = """
-            {"items":[{"id":"p1","name":"Refonte 2026","isHidden":false}],
-             "included":{"boards":[{"id":"b1","projectId":"p1","name":"Sprint Produit","position":1}]}}
+            {"items":[{"id":"p1","name":"Website Redesign 2026","isHidden":false}],
+             "included":{"boards":[{"id":"b1","projectId":"p1","name":"Product Sprint","position":1}]}}
             """
         } else if path.contains("/api/boards/") {
             json = """
-            {"item":{"id":"b1","projectId":"p1","name":"Sprint Produit"},
-             "included":{"lists":[{"id":"l1","boardId":"b1","type":"active","name":"À faire","position":1}],
-             "cards":[{"id":"c1","boardId":"b1","listId":"l1","type":"active","position":1,"name":"Nouvelle page d’accueil"},
-                      {"id":"c2","boardId":"b1","listId":"l1","type":"active","position":2,"name":"Refonte tablette"}],
+            {"item":{"id":"b1","projectId":"p1","name":"Product Sprint"},
+             "included":{"lists":[{"id":"l1","boardId":"b1","type":"active","name":"To Do","position":1}],
+             "cards":[{"id":"c1","boardId":"b1","listId":"l1","type":"active","position":1,"name":"New home page"},
+                      {"id":"c2","boardId":"b1","listId":"l1","type":"active","position":2,"name":"Tablet redesign"}],
              "taskLists":[],"tasks":[]}}
             """
         } else {
@@ -51,24 +51,26 @@ struct SearchViewModelTests {
 
     @Test("normalize is case- and diacritic-insensitive")
     func normalize() {
-        #expect(SearchViewModel.normalize("À Faire") == "a faire")
+        // Diacritic-folding vector: accented input must normalize to plain ASCII
+        // (accented English words kept deliberately — this is what the test exercises).
+        #expect(SearchViewModel.normalize("Résumé Café") == "resume cafe")
     }
 
     @Test("indexes cards via fan-out and matches diacritic-insensitively")
     func cardSearch() async {
         let vm = makeViewModel()
         await vm.loadIfNeeded()
-        vm.query = "accueil" // matches "Nouvelle page d’accueil"
+        vm.query = "home" // matches "New home page"
         #expect(vm.cardResults.map(\.card.id) == ["c1"])
-        #expect(vm.cardResults.first?.listName == "À faire")
-        #expect(vm.cardResults.first?.projectName == "Refonte 2026")
+        #expect(vm.cardResults.first?.listName == "To Do")
+        #expect(vm.cardResults.first?.projectName == "Website Redesign 2026")
     }
 
     @Test("scope filters which result kinds are returned")
     func scopeFiltering() async {
         let vm = makeViewModel()
         await vm.loadIfNeeded()
-        vm.query = "produit" // matches the board "Sprint Produit"
+        vm.query = "product" // matches the board "Product Sprint"
         #expect(!vm.boardResults.isEmpty)
 
         vm.scope = .cards
@@ -95,7 +97,7 @@ struct SearchViewModelTests {
         let vm = SearchViewModel(client: client)
 
         await vm.loadIfNeeded() // getProjects fails once
-        vm.query = "accueil"
+        vm.query = "home"
         #expect(vm.error != nil)
         #expect(vm.hasAnyResult == false)
 
@@ -119,14 +121,14 @@ private final class FlakyStubHTTP: HTTPClient, @unchecked Sendable {
         let json: String
         if path.hasSuffix("/api/projects") {
             json = """
-            {"items":[{"id":"p1","name":"Refonte 2026","isHidden":false}],
-             "included":{"boards":[{"id":"b1","projectId":"p1","name":"Sprint Produit","position":1}]}}
+            {"items":[{"id":"p1","name":"Website Redesign 2026","isHidden":false}],
+             "included":{"boards":[{"id":"b1","projectId":"p1","name":"Product Sprint","position":1}]}}
             """
         } else if path.contains("/api/boards/") {
             json = """
-            {"item":{"id":"b1","projectId":"p1","name":"Sprint Produit"},
-             "included":{"lists":[{"id":"l1","boardId":"b1","type":"active","name":"À faire","position":1}],
-             "cards":[{"id":"c1","boardId":"b1","listId":"l1","type":"active","position":1,"name":"Nouvelle page d’accueil"}],
+            {"item":{"id":"b1","projectId":"p1","name":"Product Sprint"},
+             "included":{"lists":[{"id":"l1","boardId":"b1","type":"active","name":"To Do","position":1}],
+             "cards":[{"id":"c1","boardId":"b1","listId":"l1","type":"active","position":1,"name":"New home page"}],
              "taskLists":[],"tasks":[]}}
             """
         } else {
