@@ -1,0 +1,39 @@
+version: 2
+updates:
+  # Swift Package Manager dependencies (BoardlyKit — Package.swift at repo root)
+  - package-ecosystem: "swift"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Paris"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "swift"
+    commit-message:
+      prefix: "⬆️"
+      include: "scope"
+    groups:
+      swift-minor-and-patch:
+        update-types: ["minor", "patch"]
+
+  # GitHub Actions used in .github/workflows/
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Paris"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "⬆️"
+      include: "scope"
+    groups:
+      actions-minor-and-patch:
+        update-types: ["minor", "patch"]
