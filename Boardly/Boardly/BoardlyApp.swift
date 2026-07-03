@@ -35,6 +35,8 @@ struct BoardlyApp: App {
                 MockProfileHarness()
             } else if CommandLine.arguments.contains("-mockSearch") {
                 MockSearchHarness()
+            } else if CommandLine.arguments.contains("-mockEditProject") {
+                MockEditProjectHarness()
             } else {
                 RootView().environment(profileStore).preferredColorScheme(colorScheme)
             }

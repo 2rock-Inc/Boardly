@@ -153,6 +153,22 @@ enum PreviewMock {
           { "id": "m4", "projectId": "p1", "boardId": "b2", "userId": "u4", "role": "editor" },
           { "id": "m5", "projectId": "p2", "boardId": "b3", "userId": "u3", "role": "editor" },
           { "id": "m6", "projectId": "p2", "boardId": "b3", "userId": "u1", "role": "editor" }
+        ],
+        "projectManagers": [
+          { "id": "pm1", "projectId": "p1", "userId": "u1" },
+          { "id": "pm2", "projectId": "p1", "userId": "u2" },
+          { "id": "pm3", "projectId": "p1", "userId": "u3" }
+        ],
+        "baseCustomFieldGroups": [
+          { "id": "g1", "projectId": "p1", "name": "Suivi produit" },
+          { "id": "g2", "projectId": "p1", "name": "Client" }
+        ],
+        "customFields": [
+          { "id": "cf1", "baseCustomFieldGroupId": "g1", "name": "Priorité", "position": 1 },
+          { "id": "cf2", "baseCustomFieldGroupId": "g1", "name": "Estimation", "position": 2 },
+          { "id": "cf3", "baseCustomFieldGroupId": "g1", "name": "Échéance", "position": 3 },
+          { "id": "cf4", "baseCustomFieldGroupId": "g2", "name": "Compte", "position": 1 },
+          { "id": "cf5", "baseCustomFieldGroupId": "g2", "name": "Segment", "position": 2 }
         ]
       }
     }
@@ -265,6 +281,23 @@ struct MockActivityHarness: View {
     @State private var vm = NotificationsViewModel(client: PreviewMock.notificationsClient())
     var body: some View {
         ActivityView(viewModel: vm)
+    }
+}
+
+struct MockEditProjectHarness: View {
+    @State private var vm = ProjectDetailViewModel()
+    private let client = PreviewMock.projectsClient()
+    private var initialTab: EditProjectSheet.EditTab {
+        let args = CommandLine.arguments
+        if args.contains("-tab2") { return .managers }
+        if args.contains("-tab3") { return .background }
+        if args.contains("-tab4") { return .customFields }
+        return .general
+    }
+
+    var body: some View {
+        EditProjectSheet(viewModel: vm, client: client, initialTab: initialTab, onDeleted: {})
+            .task { await vm.load(projectId: "p1", using: client) }
     }
 }
 

@@ -15,6 +15,12 @@ final class ProjectDetailViewModel {
     var project: Project?
     var stats: [BoardStat] = []
     var backgroundImages: [BackgroundImage] = []
+    var managers: [ProjectManager] = []
+    var managerUsers: [User] = []
+    var allUsers: [User] = []
+    var baseGroups: [BaseCustomFieldGroup] = []
+    var customFields: [CustomField] = []
+    private var currentUserId: String?
     var isLoading = true
     var error: String?
 
@@ -29,11 +35,144 @@ final class ProjectDetailViewModel {
             }
             self.project = project
             self.backgroundImages = payload.backgroundImages
+            self.managers = payload.managers(for: project)
+            self.managerUsers = payload.managerUsers(for: project)
+            self.allUsers = payload.users
+            self.baseGroups = payload.baseGroups(for: project)
+            self.customFields = payload.customFields
+            self.currentUserId = client.currentUserId()
             let boards = payload.boards(for: project)
             stats = boards.map { BoardStat(board: $0) }
             await loadCounts(client: client)
         } catch {
             self.error = error.localizedDescription
+        }
+    }
+
+    /// The current user may edit the project only if they're one of its managers.
+    var isManager: Bool {
+        guard let currentUserId else { return false }
+        return managers.contains { $0.userId == currentUserId }
+    }
+
+    var hasBoards: Bool { !stats.isEmpty }
+
+    func user(_ id: String) -> User? { allUsers.first { $0.id == id } }
+    func isMe(_ id: String) -> Bool { id == currentUserId }
+    func fields(in group: BaseCustomFieldGroup) -> [CustomField] {
+        customFields.filter { $0.baseCustomFieldGroupId == group.id }
+            .sorted { ($0.position ?? 0) < ($1.position ?? 0) }
+    }
+
+    // MARK: - Édition (Général)
+
+    @discardableResult
+    func saveGeneral(name: String, description: String, using client: PlankaClient) async -> Bool {
+        guard let id = project?.id else { return false }
+        error = nil
+        do {
+            project = try await client.updateProject(id: id, patch: ProjectPatch(name: name, description: description))
+            return true
+        } catch {
+            self.error = "Impossible d’enregistrer le projet."
+            return false
+        }
+    }
+
+    func setHidden(_ hidden: Bool, using client: PlankaClient) async {
+        guard let id = project?.id else { return }
+        error = nil
+        do {
+            project = try await client.updateProject(id: id, patch: ProjectPatch(isHidden: hidden))
+        } catch {
+            self.error = "Impossible de changer la visibilité."
+        }
+    }
+
+    @discardableResult
+    func deleteProject(using client: PlankaClient) async -> Bool {
+        guard let id = project?.id, !hasBoards else { return false }
+        error = nil
+        do {
+            try await client.deleteProject(id: id)
+            return true
+        } catch {
+            self.error = "Impossible de supprimer le projet."
+            return false
+        }
+    }
+
+    // MARK: - Responsables
+
+    /// Board members not already managers — candidates to add.
+    func addableUsers() -> [User] {
+        let managerIds = Set(managers.map(\.userId))
+        return allUsers.filter { !managerIds.contains($0.id) }
+    }
+
+    func addManager(userId: String, using client: PlankaClient) async {
+        guard let id = project?.id else { return }
+        error = nil
+        do {
+            let manager = try await client.addProjectManager(projectId: id, userId: userId)
+            managers.append(manager)
+            if let user = user(userId) { managerUsers.append(user) }
+        } catch {
+            self.error = "Impossible d’ajouter le responsable."
+        }
+    }
+
+    func removeManager(_ manager: ProjectManager, using client: PlankaClient) async {
+        // Keep at least one manager (a project needs one to stay private).
+        guard managers.count > 1 else { return }
+        error = nil
+        let previousManagers = managers
+        let previousUsers = managerUsers
+        managers.removeAll { $0.id == manager.id }
+        managerUsers.removeAll { $0.id == manager.userId }
+        do {
+            try await client.removeProjectManager(id: manager.id)
+        } catch {
+            managers = previousManagers
+            managerUsers = previousUsers
+            self.error = "Impossible de retirer le responsable."
+        }
+    }
+
+    // MARK: - Champs perso de base
+
+    func addGroup(name: String, using client: PlankaClient) async {
+        guard let id = project?.id else { return }
+        error = nil
+        do {
+            let group = try await client.createBaseCustomFieldGroup(projectId: id, name: name)
+            baseGroups.append(group)
+        } catch {
+            self.error = "Impossible d’ajouter le groupe."
+        }
+    }
+
+    func deleteGroup(_ group: BaseCustomFieldGroup, using client: PlankaClient) async {
+        error = nil
+        let previous = baseGroups
+        baseGroups.removeAll { $0.id == group.id }
+        do {
+            try await client.deleteBaseCustomFieldGroup(id: group.id)
+            customFields.removeAll { $0.baseCustomFieldGroupId == group.id }
+        } catch {
+            baseGroups = previous
+            self.error = "Impossible de supprimer le groupe."
+        }
+    }
+
+    func addField(to group: BaseCustomFieldGroup, name: String, using client: PlankaClient) async {
+        error = nil
+        let position = (fields(in: group).map { $0.position ?? 0 }.max() ?? 0) + 65536
+        do {
+            let field = try await client.createBaseCustomField(groupId: group.id, name: name, position: position)
+            customFields.append(field)
+        } catch {
+            self.error = "Impossible d’ajouter le champ."
         }
     }
 
@@ -116,7 +255,7 @@ struct ProjectDetailView: View {
     @Binding var path: [AppRoute]
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel = ProjectDetailViewModel()
-    @State private var showBackgroundPicker = false
+    @State private var showEdit = false
 
     private let columns = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
 
@@ -134,9 +273,8 @@ struct ProjectDetailView: View {
         }
         .toolbar(.hidden, for: .navigationBar)
         .task { await viewModel.load(projectId: projectId, using: client) }
-        .sheet(isPresented: $showBackgroundPicker) {
-            BackgroundPickerSheet(viewModel: viewModel, client: client)
-                .presentationDetents([.medium, .large])
+        .sheet(isPresented: $showEdit) {
+            EditProjectSheet(viewModel: viewModel, client: client, onDeleted: { dismiss() })
         }
     }
 
@@ -156,23 +294,28 @@ struct ProjectDetailView: View {
                             .foregroundStyle(.white)
                     }
                     Spacer()
-                    Button { showBackgroundPicker = true } label: {
-                        Image(systemName: "paintbrush.fill")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(.white)
-                            .padding(9)
-                            .background(.black.opacity(0.22), in: Circle())
-                    }
                 }
                 Spacer()
                 Text("PROJET")
                     .font(.boardlyMonoLabel)
                     .tracking(2)
                     .foregroundStyle(.white.opacity(0.7))
-                Text(viewModel.project?.name ?? projectName)
-                    .font(.sans(28, .heavy))
-                    .foregroundStyle(.white)
-                    .lineLimit(2)
+                HStack(spacing: 10) {
+                    Text(viewModel.project?.name ?? projectName)
+                        .font(.sans(28, .heavy))
+                        .foregroundStyle(.white)
+                        .lineLimit(2)
+                    // Edit pencil — only for project managers (design 04).
+                    if viewModel.isManager {
+                        Button { showEdit = true } label: {
+                            Image(systemName: "pencil")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundStyle(.white)
+                                .padding(7)
+                                .background(.black.opacity(0.22), in: Circle())
+                        }
+                    }
+                }
             }
             .padding(.horizontal, 20)
             .padding(.top, 56)
@@ -306,7 +449,7 @@ private struct NewBoardCard: View {
 
 // MARK: - Background image (authenticated)
 
-private struct BackgroundImageView: View {
+struct BackgroundImageView: View {
     let url: URL
     let load: (URL) async -> Data?
     @State private var image: UIImage?
@@ -320,104 +463,5 @@ private struct BackgroundImageView: View {
             }
         }
         .task(id: url) { image = await load(url).flatMap(UIImage.init(data:)) }
-    }
-}
-
-// MARK: - Background picker sheet
-
-private struct BackgroundPickerSheet: View {
-    let viewModel: ProjectDetailViewModel
-    let client: PlankaClient
-    @Environment(\.dismiss) private var dismiss
-    @State private var photoItem: PhotosPickerItem?
-    @State private var isUploading = false
-
-    private let columns = [GridItem(.adaptive(minimum: 92), spacing: 10)]
-
-    private var currentGradient: String? {
-        viewModel.project?.backgroundType == "gradient" ? viewModel.project?.backgroundGradient : nil
-    }
-
-    var body: some View {
-        VStack(spacing: 0) {
-            SheetHeader(title: "Fond du projet", onCancel: { dismiss() }, onDone: { dismiss() })
-
-            ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
-                    if let error = viewModel.error {
-                        Text(error)
-                            .font(.boardlyCallout)
-                            .foregroundStyle(Color.labelRose)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-
-                    HStack(spacing: 10) {
-                        PhotosPicker(selection: $photoItem, matching: .images) {
-                            Label("Importer une image", systemImage: "photo")
-                                .font(.sans(15, .semibold))
-                                .foregroundStyle(Color.boardlyInk)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 13)
-                                .background(Color.boardlySurfaceSecondary, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                        }
-                        if viewModel.project?.backgroundType != nil {
-                            Button {
-                                Task { if await viewModel.clearBackground(using: client) { dismiss() } }
-                            } label: {
-                                Image(systemName: "trash")
-                                    .font(.system(size: 16, weight: .semibold))
-                                    .foregroundStyle(Color.labelRose)
-                                    .padding(13)
-                                    .background(Color.boardlySurfaceSecondary, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                            }
-                        }
-                    }
-
-                    BoardlyFieldLabel("Dégradés")
-                    LazyVGrid(columns: columns, spacing: 10) {
-                        ForEach(PlankaGradient.names, id: \.self) { name in
-                            Button {
-                                Task { if await viewModel.setGradient(name, using: client) { dismiss() } }
-                            } label: {
-                                PlankaGradient.linear(name)
-                                    .frame(height: 54)
-                                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                            .stroke(Color.boardlyInk, lineWidth: currentGradient == name ? 3 : 0)
-                                    )
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                }
-                .padding(20)
-            }
-        }
-        .background(Color.boardlyBackground)
-        .overlay {
-            if isUploading {
-                ZStack {
-                    Color.black.opacity(0.15).ignoresSafeArea()
-                    ProgressView().tint(Color.boardlyInk)
-                }
-            }
-        }
-        .task(id: photoItem) {
-            guard let photoItem else { return }
-            isUploading = true
-            defer { isUploading = false }
-            self.photoItem = nil
-            if let data = try? await photoItem.loadTransferable(type: Data.self),
-               let uiImage = UIImage(data: data),
-               let jpeg = uiImage.jpegData(compressionQuality: 0.9) {
-                if await viewModel.uploadImage(
-                    data: jpeg, fileName: "background.jpg", mimeType: "image/jpeg", using: client) {
-                    dismiss()
-                }
-            } else {
-                viewModel.error = "Image illisible."
-            }
-        }
     }
 }
