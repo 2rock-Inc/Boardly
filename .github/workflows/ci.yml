@@ -14,6 +14,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  PROJECT: Boardly/Boardly.xcodeproj
+  SCHEME: Boardly
+
 jobs:
   # Job ids (build / test / lint) are the status-check contexts required by the
   # `protect-main` ruleset — keep them in sync if you rename a job.
@@ -28,8 +32,10 @@ jobs:
       - uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd # v1.6.0
         with:
           xcode-version: latest-stable
-      - name: Build BoardlyKit
-        run: swift build
+      # Generic destination: builds against the iOS Simulator SDK without needing
+      # a specific booted runtime (min deployment target is iOS 18.4).
+      - name: Build app (iOS Simulator)
+        run: xcodebuild -project "$PROJECT" -scheme "$SCHEME" -destination 'generic/platform=iOS Simulator' build
 
   test:
     runs-on: macos-15
@@ -42,8 +48,12 @@ jobs:
       - uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd # v1.6.0
         with:
           xcode-version: latest-stable
-      - name: Test BoardlyKit
+      # BoardlyKit's SwiftPM tests run on the host (not part of the app scheme).
+      - name: BoardlyKit unit tests
         run: swift test
+      # App-target tests on a simulator (UI tests are excluded).
+      - name: App unit tests (iOS Simulator)
+        run: xcodebuild -project "$PROJECT" -scheme "$SCHEME" -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:BoardlyTests test
 
   lint:
     runs-on: macos-15
