@@ -218,6 +218,18 @@
             "attachments": [
               { "id": "at1", "cardId": "c1", "type": "file", "data": { "url": "https://picsum.photos/id/1062/900/500" }, "name": "home-mockup.png" }
             ],
+            "customFieldGroups": [
+              { "id": "g1", "boardId": "b1", "cardId": null, "baseCustomFieldGroupId": "bg1", "position": 1, "name": "Product tracking" }
+            ],
+            "customFields": [
+              { "id": "f1", "customFieldGroupId": "g1", "position": 1, "name": "Priority", "showOnFrontOfCard": false },
+              { "id": "f2", "customFieldGroupId": "g1", "position": 2, "name": "Estimate", "showOnFrontOfCard": false },
+              { "id": "f3", "customFieldGroupId": "g1", "position": 3, "name": "Due window", "showOnFrontOfCard": false }
+            ],
+            "customFieldValues": [
+              { "id": "v1", "cardId": "c1", "customFieldGroupId": "g1", "customFieldId": "f1", "content": "High" },
+              { "id": "v2", "cardId": "c1", "customFieldGroupId": "g1", "customFieldId": "f2", "content": "5" }
+            ],
             "cardLabels": [
               { "id": "cl1", "cardId": "c1", "labelId": "lb1" },
               { "id": "cl2", "cardId": "c1", "labelId": "lb2" }

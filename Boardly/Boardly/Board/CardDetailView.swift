@@ -18,6 +18,7 @@ struct CardDetailView: View {
     @State private var showMembersSheet = false
     @State private var showDueDateSheet = false
     @State private var showAttachmentsSheet = false
+    @State private var showCustomFieldsSheet = false
     @State private var comments: [Comment] = []
     @State private var commentsLoaded = false
     @State private var newComment = ""
@@ -66,6 +67,9 @@ struct CardDetailView: View {
         }
         .sheet(isPresented: $showAttachmentsSheet) {
             CardAttachmentsSheet(cardId: cardId, boardVM: boardVM)
+        }
+        .sheet(isPresented: $showCustomFieldsSheet) {
+            CardCustomFieldsSheet(cardId: cardId, boardVM: boardVM)
         }
         .alert("Couldn’t save card", isPresented: Binding(
             get: { boardVM.error != nil },
@@ -135,6 +139,8 @@ struct CardDetailView: View {
                     if !cardAttachments.isEmpty {
                         attachmentsSection(cardAttachments)
                     }
+
+                    customFieldsSection(card: card, payload: payload)
 
                     ForEach(payload.taskLists(for: card)) { taskList in
                         taskListSection(taskList: taskList, payload: payload)
@@ -329,6 +335,66 @@ struct CardDetailView: View {
             }
         }
         .boardlyCard()
+    }
+
+    // MARK: - Custom fields (Phase 7)
+
+    @ViewBuilder
+    private func customFieldsSection(card: Card, payload: BoardPayload) -> some View {
+        let groups = payload.customFieldGroups(for: card).filter { !payload.fields(in: $0).isEmpty }
+        if !groups.isEmpty {
+            Button { showCustomFieldsSheet = true } label: {
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "square.grid.2x2").font(.boardlyMonoLabel)
+                        BoardlyFieldLabel("Custom Fields")
+                        Spacer(minLength: 0)
+                    }
+                    ForEach(groups) { group in
+                        let fields = payload.fields(in: group)
+                        VStack(alignment: .leading, spacing: 0) {
+                            if let name = group.name, !name.isEmpty {
+                                Text(name)
+                                    .font(.boardlyCaption)
+                                    .foregroundStyle(Color.boardlyTextSecondary)
+                                    .padding(.bottom, 8)
+                            }
+                            ForEach(Array(fields.enumerated()), id: \.element.id) { index, field in
+                                HStack(spacing: 12) {
+                                    Text(field.name)
+                                        .font(.sans(14, .semibold))
+                                        .foregroundStyle(Color.boardlyInk)
+                                    Spacer(minLength: 8)
+                                    fieldValue(card: card, group: group, field: field, payload: payload)
+                                }
+                                .padding(.vertical, 9)
+                                if index < fields.count - 1 { Divider() }
+                            }
+                        }
+                    }
+                }
+            }
+            .buttonStyle(.plain)
+            .boardlyCard()
+        }
+    }
+
+    @ViewBuilder
+    private func fieldValue(card: Card, group: CustomFieldGroup, field: CustomField, payload: BoardPayload) -> some View {
+        if let content = payload.value(on: card, group: group, field: field)?.content,
+           !content.isEmpty
+        {
+            Text(content)
+                .font(.sans(14, .semibold))
+                .foregroundStyle(Color.boardlyInk)
+                .lineLimit(1)
+                .multilineTextAlignment(.trailing)
+        } else {
+            Text("Empty")
+                .font(.boardlyCallout)
+                .italic()
+                .foregroundStyle(Color.boardlyTextTertiary)
+        }
     }
 
     private func taskListSection(taskList: TaskList, payload: BoardPayload) -> some View {
