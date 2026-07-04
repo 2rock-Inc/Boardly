@@ -63,18 +63,19 @@ struct MainView: View {
             boardSessions.reset()
         }
         .onDisappear { boardSessions.reset() }
-        .task {
+        // Keyed on scenePhase: the task restarts on every phase change, so returning
+        // to active reloads immediately, and leaving active stops the poll below —
+        // no needless background network/battery use.
+        .task(id: scenePhase) {
             if notificationsVM == nil { notificationsVM = NotificationsViewModel(client: client) }
+            guard scenePhase == .active else { return }
             await notificationsVM?.load()
-            // Poll so the unread badge stays fresh while the app is open (Phase 5
-            // is pull-based; a Socket.IO live feed can replace this later).
+            // Poll so the unread badge stays fresh while the app is foreground (Phase
+            // 5 is pull-based; a Socket.IO live feed can replace this later).
             while !Task.isCancelled {
                 try? await Task.sleep(for: notificationPollInterval)
                 await notificationsVM?.load()
             }
-        }
-        .onChange(of: scenePhase) { _, phase in
-            if phase == .active { Task { await notificationsVM?.load() } }
         }
     }
 }

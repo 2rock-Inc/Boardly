@@ -4010,6 +4010,22 @@
           }
         }
       }
+    },
+    "This connection isn’t encrypted — your login token will be sent in cleartext.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This connection isn’t encrypted — your login token will be sent in cleartext."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cette connexion n’est pas chiffrée — votre jeton de connexion sera envoyé en clair."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

@@ -222,6 +222,35 @@ struct RealtimeReconcileTests {
         #expect(t1?.name == "Step")
     }
 
+    @Test("taskListCreate inserts, keyed to a held card")
+    func taskListCreateInserts() {
+        let payload = makePayload(cards: [makeCard("c1")])
+        let result = payload.applying(event(
+            "taskListCreate",
+            #"{"item":{"id":"tl1","cardId":"c1","name":"Checklist","position":1}}"#))
+        #expect(result.taskLists.map(\.id) == ["tl1"])
+    }
+
+    @Test("taskList reposition merges, keeping the name")
+    func taskListReposition() {
+        var p = makePayload(cards: [makeCard("c1")])
+        p = p.applying(event("taskListCreate", #"{"item":{"id":"tl1","cardId":"c1","name":"Checklist","position":1}}"#))
+        p = p.applying(event("taskListUpdate", #"{"item":{"id":"tl1","position":9}}"#))
+        let tl = p.taskLists.first { $0.id == "tl1" }
+        #expect(tl?.position == 9)
+        #expect(tl?.name == "Checklist")
+    }
+
+    @Test("taskListDelete removes it and cascades its tasks")
+    func taskListDeleteCascades() {
+        var p = makePayload(cards: [makeCard("c1")], tasks: [makeTask("t1", taskList: "tl1")])
+        p = p.applying(event("taskListCreate", #"{"item":{"id":"tl1","cardId":"c1","name":"Checklist","position":1}}"#))
+        #expect(p.taskLists.count == 1)
+        p = p.applying(event("taskListDelete", #"{"item":{"id":"tl1"}}"#))
+        #expect(p.taskLists.isEmpty)
+        #expect(p.tasks.isEmpty, "tasks in the deleted list are cascaded out")
+    }
+
     @Test("cardLabelCreate assigns a label to the card")
     func cardLabelAssign() throws {
         let payload = makePayload(cards: [makeCard("c1")], labels: [makeLabel("lb1", name: "Design")])
@@ -391,6 +420,21 @@ struct RealtimeOwnershipTests {
         let after = payload.applying(foreign)
         #expect(after.cards.count == 1, "foreign card not added")
         #expect(after.card(id: "c1")?.position == 1, "held card untouched")
+    }
+
+    @Test("a task-list for a card we don't hold is dropped")
+    func foreignTaskListDropped() {
+        let payload = makePayload(cards: [makeCard("c1")])
+        let foreign = event("taskListCreate", #"{"item":{"id":"tl9","cardId":"cX","name":"Other","position":1}}"#)
+        #expect(payload.applying(foreign).taskLists.isEmpty)
+    }
+
+    @Test("a card moved to another board is dropped from the source board")
+    func cardMovedAwayIsDropped() {
+        let payload = makePayload(cards: [makeCard("c1", list: "l1")])
+        // Full update whose boardId now names a different board → a move away.
+        let moved = event("cardUpdate", #"{"item":{"id":"c1","boardId":"bX","listId":"lX","name":"Card"}}"#)
+        #expect(payload.applying(moved).cards.isEmpty)
     }
 
     @Test("resynced always applies (it is only ever delivered to its own board)")

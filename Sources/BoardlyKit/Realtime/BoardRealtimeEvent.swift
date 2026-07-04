@@ -50,6 +50,17 @@ public struct PartialTask: Decodable, Sendable {
     public let updatedAt: Date?
 }
 
+public struct PartialTaskList: Decodable, Sendable {
+    public let id: String
+    public let cardId: String?
+    public let position: Double?
+    public let name: String?
+    public let showOnFrontOfCard: Bool?
+    public let hideCompletedTasks: Bool?
+    public let createdAt: Date?
+    public let updatedAt: Date?
+}
+
 // MARK: - Realtime events
 
 /// A typed PLANKA board event, parsed from the socket. `resynced` carries a full
@@ -62,6 +73,9 @@ public enum BoardRealtimeEvent: Sendable {
     case listCreated(PlankaList)
     case listUpdated(PartialList)
     case listDeleted(id: String)
+    case taskListCreated(TaskList)
+    case taskListUpdated(PartialTaskList)
+    case taskListDeleted(id: String)
     case taskCreated(PlankaTask)
     case taskUpdated(PartialTask)
     case taskDeleted(id: String)
@@ -92,6 +106,7 @@ public extension BoardRealtimeEvent {
     static let handledNames: Set<String> = [
         "cardCreate", "cardUpdate", "cardDelete",
         "listCreate", "listUpdate", "listDelete",
+        "taskListCreate", "taskListUpdate", "taskListDelete",
         "taskCreate", "taskUpdate", "taskDelete",
         "labelCreate", "labelUpdate", "labelDelete",
         "cardLabelCreate", "cardLabelDelete",
@@ -126,6 +141,9 @@ public extension BoardRealtimeEvent {
         case "listCreate": return item(PlankaList.self).map(BoardRealtimeEvent.listCreated)
         case "listUpdate": return item(PartialList.self).map(BoardRealtimeEvent.listUpdated)
         case "listDelete": return id().map { .listDeleted(id: $0) }
+        case "taskListCreate": return item(TaskList.self).map(BoardRealtimeEvent.taskListCreated)
+        case "taskListUpdate": return item(PartialTaskList.self).map(BoardRealtimeEvent.taskListUpdated)
+        case "taskListDelete": return id().map { .taskListDeleted(id: $0) }
         case "taskCreate": return item(PlankaTask.self).map(BoardRealtimeEvent.taskCreated)
         case "taskUpdate": return item(PartialTask.self).map(BoardRealtimeEvent.taskUpdated)
         case "taskDelete": return id().map { .taskDeleted(id: $0) }

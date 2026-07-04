@@ -27,6 +27,15 @@ extension BoardPayload {
             return with(lists: applyListUpdate(partial))
         case let .listDeleted(id):
             return with(lists: lists.filter { $0.id != id })
+        case let .taskListCreated(taskList):
+            var copy = self; copy.taskLists = upsert(taskLists, taskList); return copy
+        case let .taskListUpdated(partial):
+            var copy = self; copy.taskLists = applyTaskListUpdate(partial); return copy
+        case let .taskListDeleted(id):
+            var copy = self
+            copy.taskLists.removeAll { $0.id == id }
+            copy.tasks.removeAll { $0.taskListId == id } // cascade orphaned tasks
+            return copy
         case let .taskCreated(task):
             return with(tasks: upsert(tasks, task))
         case let .taskUpdated(partial):
@@ -100,6 +109,13 @@ extension BoardPayload {
             return partial.boardId == boardID || lists.contains { $0.id == partial.id }
         case let .listDeleted(id):
             return lists.contains { $0.id == id }
+        case let .taskListCreated(taskList):
+            return hasCard(taskList.cardId)
+        case let .taskListUpdated(partial):
+            return taskLists.contains { $0.id == partial.id }
+                || (partial.cardId.map(hasCard) ?? false)
+        case let .taskListDeleted(id):
+            return taskLists.contains { $0.id == id }
         case let .taskCreated(task):
             return taskLists.contains { $0.id == task.taskListId }
         case let .taskUpdated(partial):
@@ -152,12 +168,26 @@ extension BoardPayload {
     // MARK: - Update appliers
 
     private func applyCardUpdate(_ p: PartialCard) -> [Card] {
+        // Moved to a different board → drop it from this one (otherwise the stale
+        // card lingers here pointing at a list this board doesn't have).
+        if let movedTo = p.boardId, movedTo != board.id {
+            return cards.filter { $0.id != p.id }
+        }
         if cards.contains(where: { $0.id == p.id }) {
             return cards.map { $0.id == p.id ? (p.asFullCard() ?? $0.merging(p)) : $0 }
         } else if let full = p.asFullCard() {
             return cards + [full]
         }
         return cards
+    }
+
+    private func applyTaskListUpdate(_ p: PartialTaskList) -> [TaskList] {
+        if taskLists.contains(where: { $0.id == p.id }) {
+            return taskLists.map { $0.id == p.id ? (p.asFullTaskList() ?? $0.merging(p)) : $0 }
+        } else if let full = p.asFullTaskList() {
+            return taskLists + [full]
+        }
+        return taskLists
     }
 
     private func applyListUpdate(_ p: PartialList) -> [PlankaList] {
@@ -280,5 +310,29 @@ extension PartialTask {
             id: id, taskListId: taskListId, linkedCardId: linkedCardId,
             assigneeUserId: assigneeUserId, position: position, name: name,
             isCompleted: isCompleted, createdAt: createdAt, updatedAt: updatedAt)
+    }
+}
+
+extension TaskList {
+    func merging(_ p: PartialTaskList) -> TaskList {
+        TaskList(
+            id: id,
+            cardId: p.cardId ?? cardId,
+            position: p.position ?? position,
+            name: p.name ?? name,
+            showOnFrontOfCard: p.showOnFrontOfCard ?? showOnFrontOfCard,
+            hideCompletedTasks: p.hideCompletedTasks ?? hideCompletedTasks,
+            createdAt: p.createdAt ?? createdAt,
+            updatedAt: p.updatedAt ?? updatedAt)
+    }
+}
+
+extension PartialTaskList {
+    func asFullTaskList() -> TaskList? {
+        guard let cardId, let name else { return nil }
+        return TaskList(
+            id: id, cardId: cardId, position: position, name: name,
+            showOnFrontOfCard: showOnFrontOfCard, hideCompletedTasks: hideCompletedTasks,
+            createdAt: createdAt, updatedAt: updatedAt)
     }
 }
