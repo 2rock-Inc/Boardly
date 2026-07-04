@@ -20,7 +20,7 @@ struct SearchView: View {
                 Color.boardlyBackground.ignoresSafeArea()
                 VStack(alignment: .leading, spacing: 16) {
                     Text("Search")
-                        .font(.boardlyTitle)
+                        .font(.boardlyScreenTitle)
                         .foregroundStyle(Color.boardlyInk)
 
                     searchField($viewModel.query)

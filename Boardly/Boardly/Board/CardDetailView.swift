@@ -218,13 +218,15 @@ struct CardDetailView: View {
     private func titleField(card: Card) -> some View {
         if isEditingName {
             TextField("Card title", text: $editedName, axis: .vertical)
-                .font(.boardlyTitle)
+                .font(.boardlyDetailTitle)
+                .tracking(-0.46)
                 .foregroundStyle(Color.boardlyInk)
                 .onSubmit { saveCardName(card: card) }
                 .submitLabel(.done)
         } else {
             Text(card.name)
-                .font(.boardlyTitle)
+                .font(.boardlyDetailTitle)
+                .tracking(-0.46)
                 .foregroundStyle(Color.boardlyInk)
                 .onTapGesture {
                     editedName = card.name
@@ -405,7 +407,7 @@ struct CardDetailView: View {
         return VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text(taskList.name)
-                    .font(.boardlyHeadline)
+                    .font(.boardlySectionTitle)
                     .foregroundStyle(Color.boardlyInk)
                 Spacer()
                 Text("\(completed)/\(tasks.count)")
@@ -480,7 +482,7 @@ struct CardDetailView: View {
                 .font(.system(size: 16, weight: .medium))
                 .foregroundStyle(Color.accentColor)
             Text("Timer")
-                .font(.boardlyHeadline)
+                .font(.boardlySectionTitle)
                 .foregroundStyle(Color.boardlyInk)
             Spacer(minLength: 0)
             TimelineView(.periodic(from: .now, by: 1)) { context in
@@ -508,7 +510,7 @@ struct CardDetailView: View {
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Color.boardlyTextSecondary)
                 Text("Activity")
-                    .font(.boardlyHeadline)
+                    .font(.boardlySectionTitle)
                     .foregroundStyle(Color.boardlyInk)
                 Spacer(minLength: 0)
             }
@@ -553,7 +555,7 @@ struct CardDetailView: View {
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Color.boardlyTextSecondary)
                 Text("Comments · \(count)")
-                    .font(.boardlyHeadline)
+                    .font(.boardlySectionTitle)
                     .foregroundStyle(Color.boardlyInk)
                 Spacer(minLength: 0)
             }
