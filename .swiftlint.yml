@@ -8,13 +8,15 @@ excluded:
   - DerivedData
   - Reference
 
+# NOTE: SwiftLint is a *local* aid only (run via the .claude post-edit hook when
+# installed); CI enforces style through `swiftformat --lint`. Import ordering is
+# owned by SwiftFormat (--importgrouping testable-bottom) — do not re-add
+# sorted_imports here or the two tools will fight and CI will reject the result.
 opt_in_rules:
   - empty_count
   - explicit_init
   - closure_spacing
   - redundant_type_annotation
-  - sorted_imports
-  - unused_import
 
 disabled_rules:
   - todo
