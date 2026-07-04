@@ -254,6 +254,7 @@
             NavigationStack {
                 BoardView(client: PreviewMock.boardClient(), boardId: "b1", boardName: "Product Sprint", projectName: "Redesign 2026")
             }
+            .environment(BoardSessionStore())
         }
     }
 
@@ -314,6 +315,7 @@
     struct MockSearchHarness: View {
         var body: some View {
             SearchView(client: PreviewMock.projectsClient(), initialQuery: "home")
+                .environment(BoardSessionStore())
         }
     }
 
@@ -355,6 +357,7 @@
                     .tabItem { Label("Profile", systemImage: "person") }
             }
             .tint(.accentColor)
+            .environment(BoardSessionStore())
         }
     }
 

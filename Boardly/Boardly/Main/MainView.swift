@@ -7,6 +7,10 @@ struct MainView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var path: [AppRoute] = []
     @State private var notificationsVM: NotificationsViewModel?
+    /// Shared, ref-counted board sessions for this profile — so the same board open
+    /// in Projects and Search shares one socket subscription. Reset on profile
+    /// switch / logout so no socket outlives its profile.
+    @State private var boardSessions = BoardSessionStore()
 
     /// How often the unread badge is refreshed while the app is foreground.
     private let notificationPollInterval: Duration = .seconds(60)
@@ -52,6 +56,13 @@ struct MainView: View {
                 .tabItem { Label("Profile", systemImage: "person") }
         }
         .tint(.accentColor)
+        .environment(boardSessions)
+        .onChange(of: profile.id) { _, _ in
+            // Switched server without going through the picker — drop the previous
+            // profile's live boards so no socket crosses profiles.
+            boardSessions.reset()
+        }
+        .onDisappear { boardSessions.reset() }
         .task {
             if notificationsVM == nil { notificationsVM = NotificationsViewModel(client: client) }
             await notificationsVM?.load()

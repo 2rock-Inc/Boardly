@@ -13,6 +13,10 @@ enum BoardViewMode: String, CaseIterable {
     }
 }
 
+/// Thin wrapper that binds a board to its *shared*, ref-counted session. Opening
+/// the same board from Projects and Search must not spin up two socket subscriptions
+/// — both acquire the one `BoardViewModel` held by `BoardSessionStore` (realtime
+/// starts on the first consumer, tears down on the last).
 struct BoardView: View {
     let client: PlankaClient
     let boardId: String
@@ -21,14 +25,8 @@ struct BoardView: View {
     /// When set (e.g. arriving from search), the board opens this card once loaded.
     let focusCardId: String?
 
-    @State private var viewModel: BoardViewModel
-    @State private var selectedCardId: SelectedCard?
-    @State private var didFocusCard = false
-    @State private var mode: BoardViewMode = .kanban
-    @State private var showAddCard = false
-    @State private var newCardTitle = ""
-    @State private var showCustomFieldsSheet = false
-    @Environment(\.dismiss) private var dismiss
+    @Environment(BoardSessionStore.self) private var sessions
+    @State private var viewModel: BoardViewModel?
 
     init(
         client: PlankaClient,
@@ -42,8 +40,50 @@ struct BoardView: View {
         self.boardName = boardName
         self.projectName = projectName
         self.focusCardId = focusCardId
-        _viewModel = State(initialValue: BoardViewModel(client: client, boardId: boardId))
     }
+
+    var body: some View {
+        Group {
+            if let viewModel {
+                BoardScreen(
+                    viewModel: viewModel,
+                    boardName: boardName,
+                    projectName: projectName,
+                    focusCardId: focusCardId,
+                    onLeave: { sessions.release(boardId: boardId) })
+            } else {
+                ZStack {
+                    Color.boardlyBackground.ignoresSafeArea()
+                    ProgressView().tint(.accentColor)
+                }
+                .toolbar(.hidden, for: .navigationBar)
+            }
+        }
+        .onAppear {
+            if viewModel == nil { viewModel = sessions.acquire(boardId: boardId, client: client) }
+        }
+    }
+}
+
+// MARK: - Board screen
+
+private struct BoardScreen: View {
+    let viewModel: BoardViewModel
+    let boardName: String
+    let projectName: String?
+    /// When set (e.g. arriving from search), the board opens this card once loaded.
+    let focusCardId: String?
+    /// Called when the screen is actually left (not when pushing the card detail),
+    /// so the session drops this consumer.
+    let onLeave: () -> Void
+
+    @State private var selectedCardId: SelectedCard?
+    @State private var didFocusCard = false
+    @State private var mode: BoardViewMode = .kanban
+    @State private var showAddCard = false
+    @State private var newCardTitle = ""
+    @State private var showCustomFieldsSheet = false
+    @Environment(\.dismiss) private var dismiss
 
     private let grid = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
 
@@ -78,12 +118,14 @@ struct BoardView: View {
                 didFocusCard = true
                 selectedCardId = SelectedCard(id: focusCardId)
             }
-            viewModel.startRealtime()
+            // Realtime is owned by the shared session (started on first acquire);
+            // this screen only consumes it.
         }
         .onDisappear {
-            // Only tear down when actually leaving the board — not when pushing
-            // the card detail (which keeps this view in the stack).
-            if selectedCardId == nil { Task { await viewModel.stopRealtime() } }
+            // Only release when actually leaving the board — not when pushing the
+            // card detail (which keeps this view in the stack). The session tears
+            // realtime down when the last consumer releases.
+            if selectedCardId == nil { onLeave() }
         }
         .refreshable { await viewModel.load() }
         .navigationDestination(item: $selectedCardId) { selected in
