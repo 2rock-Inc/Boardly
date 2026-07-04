@@ -33,6 +33,10 @@ public final class ProfileStore {
 
     public func removeProfile(id: UUID) {
         BoardlyLog.tag(.profile).icon("🗑️").info("Profile removed", metadata: ["id": id.uuidString])
+        // Clear the profile's Keychain token here so every removal path is covered
+        // (swipe-to-delete bypasses logout) — a deleted server must leave no
+        // stranded, still-valid credential behind.
+        try? TokenStore(profileID: id).clearToken()
         profiles.removeAll { $0.id == id }
         if activeProfileID == id {
             activeProfileID = profiles.first?.id

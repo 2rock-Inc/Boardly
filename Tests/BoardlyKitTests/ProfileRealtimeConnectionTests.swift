@@ -55,7 +55,7 @@ struct ProfileRealtimeConnectionTests {
     @Test("opening a board subscribes on connect and emits resynced with the auth header")
     func subscribesOnConnect() async {
         let (connection, transport) = makeConnection()
-        let stream = await connection.openBoard("b1")
+        let stream = await connection.openBoard("b1", owner: UUID())
         var it = stream.makeAsyncIterator()
 
         let first = await it.next()
@@ -69,7 +69,7 @@ struct ProfileRealtimeConnectionTests {
     @Test("re-subscribes every open board on reconnect")
     func reSubscribesOnReconnect() async {
         let (connection, transport) = makeConnection()
-        let stream = await connection.openBoard("b1")
+        let stream = await connection.openBoard("b1", owner: UUID())
         var it = stream.makeAsyncIterator()
 
         _ = await it.next() // initial resync
@@ -83,11 +83,11 @@ struct ProfileRealtimeConnectionTests {
     func multiplexesBoards() async {
         let (connection, transport) = makeConnection()
 
-        let s1 = await connection.openBoard("b1")
+        let s1 = await connection.openBoard("b1", owner: UUID())
         var it1 = s1.makeAsyncIterator()
         let first1 = await it1.next()
 
-        let s2 = await connection.openBoard("b2")
+        let s2 = await connection.openBoard("b2", owner: UUID())
         var it2 = s2.makeAsyncIterator()
         let first2 = await it2.next()
 
@@ -115,24 +115,26 @@ struct ProfileRealtimeConnectionTests {
     @Test("the transport stays up until the last board closes")
     func lastCloseDisconnects() async {
         let (connection, transport) = makeConnection()
-        _ = await connection.openBoard("b1")
-        _ = await connection.openBoard("b2")
+        let ownerB1 = UUID(), ownerB2 = UUID()
+        _ = await connection.openBoard("b1", owner: ownerB1)
+        _ = await connection.openBoard("b2", owner: ownerB2)
 
-        await connection.closeBoard("b1")
+        await connection.closeBoard("b1", owner: ownerB1)
         #expect(transport.disconnectCount == 0, "b2 still open")
 
-        await connection.closeBoard("b2")
+        await connection.closeBoard("b2", owner: ownerB2)
         #expect(transport.disconnectCount == 1, "last board closed")
     }
 
     @Test("closing a board finishes its stream")
     func closeFinishesStream() async {
         let (connection, _) = makeConnection()
-        let stream = await connection.openBoard("b1")
+        let owner = UUID()
+        let stream = await connection.openBoard("b1", owner: owner)
         var it = stream.makeAsyncIterator()
         _ = await it.next() // resync
 
-        await connection.closeBoard("b1")
+        await connection.closeBoard("b1", owner: owner)
         let next = await it.next()
         #expect(next == nil)
     }
@@ -140,8 +142,8 @@ struct ProfileRealtimeConnectionTests {
     @Test("shutdown disconnects and finishes every stream")
     func shutdownTearsEverythingDown() async {
         let (connection, transport) = makeConnection()
-        let s1 = await connection.openBoard("b1")
-        let s2 = await connection.openBoard("b2")
+        let s1 = await connection.openBoard("b1", owner: UUID())
+        let s2 = await connection.openBoard("b2", owner: UUID())
         var it1 = s1.makeAsyncIterator()
         var it2 = s2.makeAsyncIterator()
         _ = await it1.next()
@@ -151,5 +153,31 @@ struct ProfileRealtimeConnectionTests {
         #expect(transport.disconnectCount == 1)
         #expect(await it1.next() == nil)
         #expect(await it2.next() == nil)
+    }
+
+    @Test("a stale close from a replaced session doesn't kill the reopened stream")
+    func staleCloseIsIgnored() async {
+        let (connection, transport) = makeConnection()
+
+        let ownerA = UUID()
+        let sA = await connection.openBoard("b1", owner: ownerA)
+        var itA = sA.makeAsyncIterator()
+        _ = await itA.next() // resync A
+
+        // Reopen the same board with a new owner before A's teardown runs.
+        let ownerB = UUID()
+        let sB = await connection.openBoard("b1", owner: ownerB)
+        var itB = sB.makeAsyncIterator()
+        _ = await itB.next() // resync B
+
+        // Reopen finished A's orphaned stream.
+        #expect(await itA.next() == nil)
+
+        // A's late close must be a no-op — B stays live and keeps receiving events.
+        await connection.closeBoard("b1", owner: ownerA)
+        transport.push(event: "cardUpdate", json: #"{"item":{"id":"c1","position":5}}"#)
+        guard case .cardUpdated = await itB.next() else {
+            Issue.record("B should still be live after A's stale close"); return
+        }
     }
 }

@@ -26,7 +26,7 @@ struct BoardView: View {
     let focusCardId: String?
 
     @Environment(BoardSessionStore.self) private var sessions
-    @State private var viewModel: BoardViewModel?
+    @State private var lease: BoardSessionLease?
 
     init(
         client: PlankaClient,
@@ -44,13 +44,12 @@ struct BoardView: View {
 
     var body: some View {
         Group {
-            if let viewModel {
+            if let lease {
                 BoardScreen(
-                    viewModel: viewModel,
+                    viewModel: lease.viewModel,
                     boardName: boardName,
                     projectName: projectName,
-                    focusCardId: focusCardId,
-                    onLeave: { sessions.release(boardId: boardId) })
+                    focusCardId: focusCardId)
             } else {
                 ZStack {
                     Color.boardlyBackground.ignoresSafeArea()
@@ -59,9 +58,39 @@ struct BoardView: View {
                 .toolbar(.hidden, for: .navigationBar)
             }
         }
+        // Acquire once, on first appearance. The lease is held in @State and only
+        // released when this view is destroyed (popped) — NOT on the transient
+        // onDisappear a tab switch or a pushed card detail triggers. That keeps the
+        // shared session (and its socket) alive across tab round-trips.
         .onAppear {
-            if viewModel == nil { viewModel = sessions.acquire(boardId: boardId, client: client) }
+            if lease == nil {
+                lease = BoardSessionLease(boardId: boardId, client: client, store: sessions)
+            }
         }
+    }
+}
+
+/// Holds a board session for as long as a `BoardView` is alive: `init` acquires,
+/// `deinit` releases. Because it lives in the view's `@State`, `deinit` runs only
+/// when the view is truly torn down (popped off the stack), so a tab switch — which
+/// merely fires `onDisappear` — never releases the session.
+@MainActor
+private final class BoardSessionLease {
+    let viewModel: BoardViewModel
+    private let boardId: String
+    private let store: BoardSessionStore
+
+    init(boardId: String, client: PlankaClient, store: BoardSessionStore) {
+        self.boardId = boardId
+        self.store = store
+        viewModel = store.acquire(boardId: boardId, client: client)
+    }
+
+    deinit {
+        // deinit is nonisolated — hop back to the main actor to release.
+        let store = store
+        let boardId = boardId
+        Task { @MainActor in store.release(boardId: boardId) }
     }
 }
 
@@ -73,9 +102,6 @@ private struct BoardScreen: View {
     let projectName: String?
     /// When set (e.g. arriving from search), the board opens this card once loaded.
     let focusCardId: String?
-    /// Called when the screen is actually left (not when pushing the card detail),
-    /// so the session drops this consumer.
-    let onLeave: () -> Void
 
     @State private var selectedCardId: SelectedCard?
     @State private var didFocusCard = false
@@ -119,13 +145,8 @@ private struct BoardScreen: View {
                 selectedCardId = SelectedCard(id: focusCardId)
             }
             // Realtime is owned by the shared session (started on first acquire);
-            // this screen only consumes it.
-        }
-        .onDisappear {
-            // Only release when actually leaving the board — not when pushing the
-            // card detail (which keeps this view in the stack). The session tears
-            // realtime down when the last consumer releases.
-            if selectedCardId == nil { onLeave() }
+            // this screen only consumes it. Release happens via the view's lease
+            // (see BoardView), not here — a tab switch must not tear it down.
         }
         .refreshable { await viewModel.load() }
         .navigationDestination(item: $selectedCardId) { selected in

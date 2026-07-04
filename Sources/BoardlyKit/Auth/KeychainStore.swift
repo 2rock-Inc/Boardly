@@ -24,6 +24,10 @@ public struct KeychainStore: KeychainStoring {
         if status == errSecItemNotFound {
             var addQuery = query
             addQuery[kSecValueData] = data
+            // ThisDeviceOnly keeps the token out of encrypted backups (not
+            // restorable onto another device); AfterFirstUnlock still lets the
+            // background Socket.IO sync read it while the device is locked.
+            addQuery[kSecAttrAccessible] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
             let addStatus = SecItemAdd(addQuery as CFDictionary, nil)
             guard addStatus == errSecSuccess else {
                 throw PlankaAPIError.keychainFailure(addStatus)

@@ -13,8 +13,9 @@ public actor ProfileRealtimeConnection {
     private let transport: any SocketTransport
     private let token: String
 
-    /// Live event sinks, one per open board.
-    private var streams: [String: AsyncStream<BoardRealtimeEvent>.Continuation] = [:]
+    /// Live event sinks, one per open board, tagged with the owner that opened it
+    /// so a stale `closeBoard` from a torn-down session can't finish a newer one.
+    private var streams: [String: (owner: UUID, continuation: AsyncStream<BoardRealtimeEvent>.Continuation)] = [:]
     /// Boards subscribed in the *current* connection — reset on (re)connect and on
     /// full disconnect, so each board is subscribed exactly once per connection.
     private var subscribedBoards: Set<String> = []
@@ -37,9 +38,13 @@ public actor ProfileRealtimeConnection {
     /// call with `closeBoard(_:)`. The first board connects the transport; a board
     /// opened once the socket is up subscribes immediately, and one opened mid-
     /// handshake is picked up when `onConnect` resubscribes everyone.
-    public func openBoard(_ boardId: String) -> AsyncStream<BoardRealtimeEvent> {
+    public func openBoard(_ boardId: String, owner: UUID) -> AsyncStream<BoardRealtimeEvent> {
         let (stream, continuation) = AsyncStream.makeStream(of: BoardRealtimeEvent.self)
-        streams[boardId] = continuation
+        // Finish any prior sink for this board (a previous session whose teardown
+        // hasn't run yet) so it doesn't leak, then take ownership.
+        streams[boardId]?.continuation.finish()
+        streams[boardId] = (owner, continuation)
+        subscribedBoards.remove(boardId) // the new owner must (re)subscribe
         registerHandlersIfNeeded()
 
         if !transportUp {
@@ -52,10 +57,12 @@ public actor ProfileRealtimeConnection {
         return stream
     }
 
-    /// Close a board's stream. When the last board closes, the transport is
-    /// disconnected (but kept for reuse — a later `openBoard` reconnects it).
-    public func closeBoard(_ boardId: String) {
-        streams[boardId]?.finish()
+    /// Close a board's stream — but only if `owner` still owns it (a stale close
+    /// from a replaced session is a no-op). When the last board closes, the
+    /// transport is disconnected (kept for reuse — a later `openBoard` reconnects).
+    public func closeBoard(_ boardId: String, owner: UUID) {
+        guard streams[boardId]?.owner == owner else { return }
+        streams[boardId]?.continuation.finish()
         streams[boardId] = nil
         subscribedBoards.remove(boardId)
         guard streams.isEmpty, transportUp else { return }
@@ -65,7 +72,7 @@ public actor ProfileRealtimeConnection {
 
     /// Tear the whole connection down — profile switch / logout.
     public func shutdown() {
-        for continuation in streams.values { continuation.finish() }
+        for entry in streams.values { entry.continuation.finish() }
         streams.removeAll()
         if transportUp { disconnectTransport() }
         BoardlyLog.tag(.sync).icon("🔌").info("Profile realtime shut down")
@@ -102,7 +109,7 @@ public actor ProfileRealtimeConnection {
     /// Every incremental event goes to every open board; each board's reconciler
     /// keeps only what it owns.
     private func broadcast(_ event: BoardRealtimeEvent) {
-        for continuation in streams.values { continuation.yield(event) }
+        for entry in streams.values { entry.continuation.yield(event) }
     }
 
     private func handleConnect() {
@@ -135,7 +142,7 @@ public actor ProfileRealtimeConnection {
                 return
             }
             let payload = try BoardPayload.decode(from: response.body)
-            streams[boardId]?.yield(.resynced(payload))
+            streams[boardId]?.continuation.yield(.resynced(payload))
             BoardlyLog.tag(.sync).icon("🔄").info("Board (re)subscribed", metadata: ["board": boardId])
         } catch {
             subscribedBoards.remove(boardId)

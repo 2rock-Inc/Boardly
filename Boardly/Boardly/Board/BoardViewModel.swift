@@ -17,6 +17,9 @@ final class BoardViewModel {
     let boardId: String
     private var connection: ProfileRealtimeConnection?
     private var realtimeTask: Task<Void, Never>?
+    /// Stable identity for this session's stream on the shared connection, so a
+    /// stale teardown can't close a newer session's board stream.
+    private let realtimeOwner = UUID()
 
     init(client: PlankaClient, boardId: String) {
         self.client = client
@@ -33,9 +36,17 @@ final class BoardViewModel {
     func startRealtime(using connection: ProfileRealtimeConnection) {
         guard realtimeTask == nil else { return }
         self.connection = connection
+        let boardId = boardId
+        let owner = realtimeOwner
         realtimeTask = Task { [weak self] in
-            guard let boardId = self?.boardId else { return }
-            for await event in await connection.openBoard(boardId) {
+            let stream = await connection.openBoard(boardId, owner: owner)
+            // Torn down before the open landed → close the stream we just opened so
+            // it doesn't leak (its owner match still holds).
+            if Task.isCancelled {
+                await connection.closeBoard(boardId, owner: owner)
+                return
+            }
+            for await event in stream {
                 guard let self else { break }
                 if let current = payload {
                     payload = current.applying(event)
@@ -52,7 +63,7 @@ final class BoardViewModel {
     func stopRealtime() async {
         realtimeTask?.cancel()
         realtimeTask = nil
-        await connection?.closeBoard(boardId)
+        await connection?.closeBoard(boardId, owner: realtimeOwner)
         connection = nil
     }
 

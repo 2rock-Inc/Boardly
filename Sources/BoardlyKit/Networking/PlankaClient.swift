@@ -852,6 +852,10 @@ public struct PlankaClient: Sendable {
             var meta: [String: Any] = ["path": path]
             if let code = plankaCode { meta["code"] = code }
             if http.statusCode == 401 {
+                // Clear the dead token here, regardless of the parsed PLANKA code:
+                // the code mapping below throws before the status switch is reached,
+                // so a real E_UNAUTHORIZED 401 would otherwise never clear it.
+                try? tokenStore.clearToken()
                 BoardlyLog.tag(.auth).icon("⚠️").warning(
                     "401 Unauthorized — token cleared",
                     metadata: meta)
@@ -869,7 +873,6 @@ public struct PlankaClient: Sendable {
             }
             switch http.statusCode {
             case 401:
-                try? tokenStore.clearToken()
                 throw PlankaAPIError.unauthorized
             case 403: throw PlankaAPIError.forbidden
             case 404: throw PlankaAPIError.notFound
