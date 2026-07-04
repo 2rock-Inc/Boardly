@@ -8,6 +8,10 @@ import Foundation
 
 extension BoardPayload {
     public func applying(_ event: BoardRealtimeEvent) -> BoardPayload {
+        // A single per-profile socket carries events for *every* subscribed board,
+        // and PLANKA's event names don't name the board — so drop anything that
+        // isn't ours before reconciling, or a foreign create would be appended here.
+        guard owns(event) else { return self }
         switch event {
         case let .resynced(payload):
             return payload
@@ -66,6 +70,82 @@ extension BoardPayload {
             var copy = self; copy.customFieldValues = upsert(customFieldValues, value); return copy
         case let .customFieldValueDeleted(id):
             var copy = self; copy.customFieldValues.removeAll { $0.id == id }; return copy
+        }
+    }
+
+    // MARK: - Board ownership routing
+
+    /// Whether this event belongs to *this* board, so a shared per-profile socket
+    /// can broadcast every event to every open board and let each payload keep only
+    /// its own. Events carrying a `boardId` route directly; card/list-child events
+    /// route via the parent already held here; id-only deletes match a record we
+    /// hold (a no-op otherwise). A `resynced` is only ever delivered to its own
+    /// board by the connection, so it always belongs.
+    func owns(_ event: BoardRealtimeEvent) -> Bool {
+        let boardID = board.id
+        func hasCard(_ id: String) -> Bool { cards.contains { $0.id == id } }
+
+        switch event {
+        case .resynced:
+            return true
+        case let .cardCreated(card):
+            return card.boardId == boardID
+        case let .cardUpdated(partial):
+            return partial.boardId == boardID || hasCard(partial.id)
+        case let .cardDeleted(id):
+            return hasCard(id)
+        case let .listCreated(list):
+            return list.boardId == boardID
+        case let .listUpdated(partial):
+            return partial.boardId == boardID || lists.contains { $0.id == partial.id }
+        case let .listDeleted(id):
+            return lists.contains { $0.id == id }
+        case let .taskCreated(task):
+            return taskLists.contains { $0.id == task.taskListId }
+        case let .taskUpdated(partial):
+            return tasks.contains { $0.id == partial.id }
+                || (partial.taskListId.map { tl in taskLists.contains { $0.id == tl } } ?? false)
+        case let .taskDeleted(id):
+            return tasks.contains { $0.id == id }
+        case let .labelCreated(label):
+            return label.boardId == boardID
+        case let .labelUpdated(label):
+            return label.boardId == boardID || labels.contains { $0.id == label.id }
+        case let .labelDeleted(id):
+            return labels.contains { $0.id == id }
+        case let .cardLabelCreated(cardLabel):
+            return hasCard(cardLabel.cardId)
+        case let .cardLabelDeleted(id):
+            return cardLabels.contains { $0.id == id }
+        case let .cardMembershipCreated(membership):
+            return hasCard(membership.cardId)
+        case let .cardMembershipDeleted(id):
+            return cardMemberships.contains { $0.id == id }
+        case let .attachmentCreated(attachment):
+            return hasCard(attachment.cardId)
+        case let .attachmentUpdated(attachment):
+            return hasCard(attachment.cardId) || attachments.contains { $0.id == attachment.id }
+        case let .attachmentDeleted(id):
+            return attachments.contains { $0.id == id }
+        case let .customFieldGroupCreated(group):
+            return group.boardId == boardID || (group.cardId.map(hasCard) ?? false)
+        case let .customFieldGroupUpdated(group):
+            return group.boardId == boardID
+                || (group.cardId.map(hasCard) ?? false)
+                || customFieldGroups.contains { $0.id == group.id }
+        case let .customFieldGroupDeleted(id):
+            return customFieldGroups.contains { $0.id == id }
+        case let .customFieldCreated(field):
+            return field.customFieldGroupId.map { gid in customFieldGroups.contains { $0.id == gid } } ?? false
+        case let .customFieldUpdated(field):
+            return customFields.contains { $0.id == field.id }
+                || (field.customFieldGroupId.map { gid in customFieldGroups.contains { $0.id == gid } } ?? false)
+        case let .customFieldDeleted(id):
+            return customFields.contains { $0.id == id }
+        case let .customFieldValueUpdated(value):
+            return hasCard(value.cardId)
+        case let .customFieldValueDeleted(id):
+            return customFieldValues.contains { $0.id == id }
         }
     }
 
