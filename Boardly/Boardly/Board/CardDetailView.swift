@@ -122,7 +122,7 @@ struct CardDetailView: View {
                                     .font(.boardlyCallout)
                                 Spacer(minLength: 0)
                             }
-                            .foregroundStyle(due < Date() ? Color.labelRose : Color.accentColor)
+                            .foregroundStyle(due < Date() ? Color.boardlyDestructive : Color.accentColor)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 10)
                             .background(Color.boardlySurface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
@@ -649,7 +649,7 @@ struct CardDetailView: View {
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
-                .background(Color.labelRose, in: Capsule())
+                .background(Color.boardlyDestructive, in: Capsule())
         }
     }
 

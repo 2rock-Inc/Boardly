@@ -17,7 +17,7 @@ struct CardRowView: View {
     private var dueDateColor: Color {
         guard let due = card.dueDate else { return .boardlyTextSecondary }
         if card.isDueCompleted == true { return .labelGreen }
-        return due < Date() ? .labelRose : .accentColor
+        return due < Date() ? .boardlyDestructive : .accentColor
     }
 
     var body: some View {

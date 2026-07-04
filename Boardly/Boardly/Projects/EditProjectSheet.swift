@@ -120,7 +120,7 @@ private struct GeneralTab: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             if let error = viewModel.error {
-                Text(error).font(.boardlyCallout).foregroundStyle(Color.labelRose)
+                Text(error).font(.boardlyCallout).foregroundStyle(Color.boardlyDestructive)
             }
 
             BoardlyFieldLabel("Title")
@@ -175,10 +175,10 @@ private struct GeneralTab: View {
         if viewModel.hasBoards {
             Text("Delete all boards before you can delete this project.")
                 .font(.boardlyCallout)
-                .foregroundStyle(Color.labelRose)
+                .foregroundStyle(Color.boardlyDestructive)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(14)
-                .background(Color.labelRose.opacity(0.08), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .background(Color.boardlyDestructive.opacity(0.08), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         } else {
             Button(role: .destructive) {
                 Task {
@@ -190,10 +190,10 @@ private struct GeneralTab: View {
             } label: {
                 Text("Delete Project")
                     .font(.sans(15, .semibold))
-                    .foregroundStyle(Color.labelRose)
+                    .foregroundStyle(Color.boardlyDestructive)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 13)
-                    .background(Color.labelRose.opacity(0.08), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .background(Color.boardlyDestructive.opacity(0.08), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
         }
     }
@@ -208,7 +208,7 @@ private struct ManagersTab: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             if let error = viewModel.error {
-                Text(error).font(.boardlyCallout).foregroundStyle(Color.labelRose)
+                Text(error).font(.boardlyCallout).foregroundStyle(Color.boardlyDestructive)
             }
 
             BoardlyFieldLabel("Managers · \(viewModel.managerUsers.count)")
@@ -264,10 +264,10 @@ private struct ManagersTab: View {
             sectionSeparator("Danger zone")
             Text("At least one manager must remain to keep this project private.")
                 .font(.boardlyCallout)
-                .foregroundStyle(Color.labelRose)
+                .foregroundStyle(Color.boardlyDestructive)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(14)
-                .background(Color.labelRose.opacity(0.08), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .background(Color.boardlyDestructive.opacity(0.08), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
     }
 }
@@ -289,7 +289,7 @@ private struct BackgroundTab: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             if let error = viewModel.error {
-                Text(error).font(.boardlyCallout).foregroundStyle(Color.labelRose)
+                Text(error).font(.boardlyCallout).foregroundStyle(Color.boardlyDestructive)
             }
 
             BoardlyFieldLabel("Preview")
@@ -406,7 +406,7 @@ private struct CustomFieldsTab: View {
                 .foregroundStyle(Color.boardlyTextSecondary)
 
             if let error = viewModel.error {
-                Text(error).font(.boardlyCallout).foregroundStyle(Color.labelRose)
+                Text(error).font(.boardlyCallout).foregroundStyle(Color.boardlyDestructive)
             }
 
             ForEach(viewModel.baseGroups, id: \.id) { group in

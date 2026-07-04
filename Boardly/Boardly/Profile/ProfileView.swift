@@ -114,14 +114,14 @@ struct ProfileView: View {
         HStack(spacing: 10) {
             Text(message)
                 .font(.boardlyCallout)
-                .foregroundStyle(Color.labelRose)
+                .foregroundStyle(Color.boardlyDestructive)
             Spacer(minLength: 8)
             Button("Retry", action: retry)
                 .font(.boardlyCallout)
                 .foregroundStyle(Color.accentColor)
         }
         .padding(12)
-        .background(Color.labelRose.opacity(0.08), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .background(Color.boardlyDestructive.opacity(0.08), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
     // MARK: - Header
@@ -234,7 +234,7 @@ struct ProfileView: View {
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 15)
-                    .background(Color.labelRose, in: Capsule())
+                    .background(Color.boardlyDestructive, in: Capsule())
             }
         }
     }
