@@ -39,6 +39,8 @@ public actor ProfileRealtimeConnection {
     /// opened once the socket is up subscribes immediately, and one opened mid-
     /// handshake is picked up when `onConnect` resubscribes everyone.
     public func openBoard(_ boardId: String, owner: UUID) -> AsyncStream<BoardRealtimeEvent> {
+        // Unbounded on purpose: the @MainActor consumer drains promptly, and dropping
+        // a realtime event would silently diverge board state until the next resync.
         let (stream, continuation) = AsyncStream.makeStream(of: BoardRealtimeEvent.self)
         // Finish any prior sink for this board (a previous session whose teardown
         // hasn't run yet) so it doesn't leak, then take ownership.

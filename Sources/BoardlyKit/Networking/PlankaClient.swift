@@ -752,6 +752,7 @@ public struct PlankaClient: Sendable {
 
         var request = URLRequest(url: url)
         request.httpMethod = method
+        request.timeoutInterval = 30 // fail fast on an unreachable/black-holed host
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.httpBody = body
@@ -778,15 +779,23 @@ public struct PlankaClient: Sendable {
         let boundary = "Boundary-\(UUID().uuidString)"
         var body = Data()
         func append(_ string: String) { body.append(Data(string.utf8)) }
+        /// Strip CR/LF and escape quotes so a crafted field name / filename can't
+        /// inject extra multipart headers into a Content-Disposition line.
+        func headerSafe(_ value: String) -> String {
+            value
+                .replacingOccurrences(of: "\r", with: "")
+                .replacingOccurrences(of: "\n", with: "")
+                .replacingOccurrences(of: "\"", with: "'")
+        }
 
         for (key, value) in fields {
             append("--\(boundary)\r\n")
-            append("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n")
+            append("Content-Disposition: form-data; name=\"\(headerSafe(key))\"\r\n\r\n")
             append("\(value)\r\n")
         }
         if let file {
             append("--\(boundary)\r\n")
-            append("Content-Disposition: form-data; name=\"\(file.fieldName)\"; filename=\"\(file.fileName)\"\r\n")
+            append("Content-Disposition: form-data; name=\"\(headerSafe(file.fieldName))\"; filename=\"\(headerSafe(file.fileName))\"\r\n")
             append("Content-Type: \(file.mimeType)\r\n\r\n")
             body.append(file.data)
             append("\r\n")

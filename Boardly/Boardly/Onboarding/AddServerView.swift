@@ -13,6 +13,15 @@ final class AddServerViewModel {
         !urlText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
+    /// The user explicitly typed an `http://` URL — the login token would travel in
+    /// cleartext. We still allow it (a trusted LAN is a legitimate self-hosted case),
+    /// but surface a warning.
+    var isInsecureURL: Bool {
+        let raw = urlText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let scheme = URLComponents(string: raw)?.scheme else { return false }
+        return scheme.lowercased() == "http"
+    }
+
     func validateAndAdd(profileStore: ProfileStore) async -> ServerProfile? {
         let raw = urlText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard var components = URLComponents(string: raw) else {
@@ -46,7 +55,7 @@ final class AddServerViewModel {
         } catch PlankaAPIError.networkError {
             error = String(localized: "Network error. Check the URL and your connection.")
         } catch {
-            self.error = String(localized: "Unexpected error: \(error.localizedDescription)")
+            self.error = localizedErrorMessage(error)
         }
         return nil
     }
@@ -86,6 +95,11 @@ struct AddServerView: View {
                             .autocorrectionDisabled()
                             .textInputAutocapitalization(.never)
                             .boardlyField()
+                        if viewModel.isInsecureURL {
+                            Text("This connection isn’t encrypted — your login token will be sent in cleartext.")
+                                .font(.boardlyCallout)
+                                .foregroundStyle(.orange)
+                        }
                     }
                     .padding(.top, 28)
 
