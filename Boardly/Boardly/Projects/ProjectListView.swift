@@ -113,7 +113,7 @@ struct ProjectListView: View {
     private var header: some View {
         HStack(spacing: 12) {
             Text("Projects")
-                .font(.boardlyTitle)
+                .font(.boardlyScreenTitle)
                 .foregroundStyle(Color.boardlyInk)
             Spacer()
             Button {

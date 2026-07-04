@@ -52,7 +52,7 @@ struct ActivityView: View {
     private var header: some View {
         HStack(alignment: .firstTextBaseline) {
             Text("Activity")
-                .font(.boardlyTitle)
+                .font(.boardlyScreenTitle)
                 .foregroundStyle(Color.boardlyInk)
             Spacer()
             if !viewModel.notifications.isEmpty {

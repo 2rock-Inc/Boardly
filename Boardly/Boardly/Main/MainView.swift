@@ -94,7 +94,7 @@ struct ComingSoonView: View {
                     .font(.system(size: 40, weight: .light))
                     .foregroundStyle(Color.boardlyTextTertiary)
                 Text(title)
-                    .font(.boardlyTitle)
+                    .font(.boardlyScreenTitle)
                     .foregroundStyle(Color.boardlyInk)
                 Text("Coming soon")
                     .font(.boardlyBody)

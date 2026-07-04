@@ -55,13 +55,37 @@ extension Font {
 /// Semantic text styles. Views use these names rather than ad-hoc sizes.
 extension Font {
     static let boardlyLargeTitle = sans(34, .heavy, relativeTo: .largeTitle)
+    /// Screen title — Manrope ExtraBold 32 (Projects / Search / Activity).
+    static let boardlyScreenTitle = sans(32, .heavy, relativeTo: .largeTitle)
     static let boardlyTitle = sans(26, .bold, relativeTo: .title)
+    /// Card-detail title — ExtraBold 23 (apply `.tracking(-0.46)` ≈ -0.02em at call site).
+    static let boardlyDetailTitle = sans(23, .heavy, relativeTo: .title)
     static let boardlyHeadline = sans(18, .semibold, relativeTo: .headline)
+    /// Bottom-sheet title — ExtraBold 17.
+    static let boardlySheetTitle = sans(17, .heavy, relativeTo: .headline)
     static let boardlyBody = sans(16, .regular, relativeTo: .body)
     static let boardlyCallout = sans(15, .medium, relativeTo: .callout)
     static let boardlySubheadline = sans(14, .medium, relativeTo: .subheadline)
+    /// Section title — Bold 13 (card-detail sections, form groups).
+    static let boardlySectionTitle = sans(13, .bold, relativeTo: .subheadline)
     static let boardlyCaption = sans(12, .semibold, relativeTo: .caption)
     /// Uppercase mono labels / counts / meta.
     static let boardlyMonoLabel = mono(11, .medium, relativeTo: .caption2)
     static let boardlyMonoCaption = mono(12, .regular, relativeTo: .caption)
+}
+
+/// Uppercase mono section label with the correct tracking — `Font` alone can't
+/// carry letter-spacing/case, so the mono-label look is applied as a modifier.
+struct BoardlyMonoLabelStyle: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.boardlyMonoLabel)
+            .textCase(.uppercase)
+            .tracking(1.1) // ≈ .1em at 11pt (spec .1–.14em; was an ad-hoc 1.5)
+    }
+}
+
+extension View {
+    /// Uppercase mono section label (e.g. "FAVORIS", card-detail section headers).
+    func boardlyMonoLabel() -> some View { modifier(BoardlyMonoLabelStyle()) }
 }
