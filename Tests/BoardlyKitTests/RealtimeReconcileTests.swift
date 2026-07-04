@@ -311,7 +311,11 @@ struct RealtimeCustomFieldsTests {
 
     @Test("field create → delete lifecycle")
     func fieldLifecycle() {
+        // A field routes via the group it belongs to — which the board already holds.
         var p = makePayload()
+        p = p.applying(event(
+            "customFieldGroupCreate",
+            #"{"item":{"id":"g1","boardId":"b1","cardId":null,"baseCustomFieldGroupId":null,"position":1,"name":"Tracking"}}"#))
         p = p.applying(event(
             "customFieldCreate",
             #"{"item":{"id":"f1","customFieldGroupId":"g1","position":1,"name":"Priority"}}"#))
@@ -322,7 +326,8 @@ struct RealtimeCustomFieldsTests {
 
     @Test("value first-set (update = upsert) → change → delete lifecycle")
     func valueLifecycle() {
-        var p = makePayload()
+        // A value routes via its card — which the board already holds.
+        var p = makePayload(cards: [makeCard("c1")])
         // PLANKA has no customFieldValueCreate: the first set arrives as an update
         // for a value that doesn't exist locally yet → it must be inserted.
         p = p.applying(event(
@@ -336,5 +341,64 @@ struct RealtimeCustomFieldsTests {
         #expect(p.customFieldValues.first?.content == "High")
         p = p.applying(event("customFieldValueDelete", #"{"item":{"id":"v1"}}"#))
         #expect(p.customFieldValues.isEmpty)
+    }
+}
+
+// MARK: - Board-ownership routing (shared per-profile socket)
+
+/// A single per-profile connection broadcasts every event to every open board, so
+/// each `BoardPayload` must drop anything that isn't its own before reconciling.
+@Suite("Realtime board-ownership routing")
+struct RealtimeOwnershipTests {
+    @Test("a foreign board's card create is dropped, not appended")
+    func foreignCardCreateDropped() {
+        let payload = makePayload(cards: [makeCard("c1")])
+        let foreign = event("cardCreate", #"{"item":{"id":"c9","boardId":"bX","listId":"lX","name":"Other"}}"#)
+        let after = payload.applying(foreign)
+        #expect(after.cards.count == 1)
+        #expect(!after.cards.contains { $0.id == "c9" })
+    }
+
+    @Test("this board's card create is applied")
+    func ownCardCreateApplied() {
+        let payload = makePayload(cards: [makeCard("c1")])
+        let mine = event("cardCreate", #"{"item":{"id":"c9","boardId":"b1","listId":"l1","name":"Mine"}}"#)
+        #expect(payload.applying(mine).cards.contains { $0.id == "c9" })
+    }
+
+    @Test("a foreign board's list create is dropped")
+    func foreignListCreateDropped() {
+        let payload = makePayload(lists: [makeList("l1")])
+        let foreign = event("listCreate", #"{"item":{"id":"l9","boardId":"bX","type":"active","name":"Other","position":1}}"#)
+        #expect(payload.applying(foreign).lists.count == 1)
+    }
+
+    @Test("a card-child event for a card we don't hold is dropped")
+    func foreignCardChildDropped() {
+        let payload = makePayload(cards: [makeCard("c1")])
+        let foreign = event("cardLabelCreate", #"{"item":{"id":"cl9","cardId":"cX","labelId":"lab1"}}"#)
+        #expect(payload.applying(foreign).cardLabels.isEmpty)
+    }
+
+    @Test("a reposition (no boardId) applies only to a card we hold")
+    func repositionRoutesByHeldCard() {
+        let payload = makePayload(cards: [makeCard("c1", pos: 1)])
+
+        let mine = event("cardUpdate", #"{"item":{"id":"c1","position":99}}"#)
+        #expect(payload.applying(mine).card(id: "c1")?.position == 99)
+
+        let foreign = event("cardUpdate", #"{"item":{"id":"cZ","position":99}}"#)
+        let after = payload.applying(foreign)
+        #expect(after.cards.count == 1, "foreign card not added")
+        #expect(after.card(id: "c1")?.position == 1, "held card untouched")
+    }
+
+    @Test("resynced always applies (it is only ever delivered to its own board)")
+    func resyncAlwaysApplies() {
+        let payload = makePayload(cards: [makeCard("c1")])
+        let fresh = makePayload(cards: [makeCard("c2"), makeCard("c3")])
+        let after = payload.applying(.resynced(fresh))
+        #expect(after.cards.count == 2)
+        #expect(after.cards.contains { $0.id == "c2" })
     }
 }

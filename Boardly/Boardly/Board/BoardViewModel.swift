@@ -15,7 +15,7 @@ final class BoardViewModel {
 
     private let client: PlankaClient
     let boardId: String
-    private var realtime: BoardRealtimeClient?
+    private var connection: ProfileRealtimeConnection?
     private var realtimeTask: Task<Void, Never>?
 
     init(client: PlankaClient, boardId: String) {
@@ -25,21 +25,17 @@ final class BoardViewModel {
 
     // MARK: - Real-time sync
 
-    /// Open the live socket for this board and apply incoming events to `payload`.
-    /// Non-blocking: the event loop runs in a stored Task tied to the view model's
-    /// lifetime (not the view's), so pushing the card detail doesn't tear it down.
-    func startRealtime() {
-        guard realtime == nil else { return }
-        let tokenStore = TokenStore(profileID: client.profile.id)
-        guard let token = try? tokenStore.loadToken() else { return }
-
-        let rt = BoardRealtimeClient(
-            transport: SocketIOTransport(baseURL: client.profile.baseURL),
-            boardId: boardId,
-            token: token)
-        realtime = rt
+    /// Subscribe this board to live events over the profile's *shared* connection
+    /// and apply them to `payload`. Non-blocking: the event loop runs in a stored
+    /// Task tied to the view model's lifetime (not the view's), so pushing the card
+    /// detail doesn't tear it down. Realtime is owned per profile, not per board —
+    /// see `BoardSessionStore`.
+    func startRealtime(using connection: ProfileRealtimeConnection) {
+        guard realtimeTask == nil else { return }
+        self.connection = connection
         realtimeTask = Task { [weak self] in
-            for await event in await rt.start() {
+            guard let boardId = self?.boardId else { return }
+            for await event in await connection.openBoard(boardId) {
                 guard let self else { break }
                 if let current = payload {
                     payload = current.applying(event)
@@ -50,12 +46,14 @@ final class BoardViewModel {
         }
     }
 
-    /// Tear down the socket. Must be called only when actually leaving the board.
+    /// Leave the board's room on the shared connection. Must be called only when
+    /// actually leaving the board (the connection disconnects when its last board
+    /// leaves).
     func stopRealtime() async {
         realtimeTask?.cancel()
         realtimeTask = nil
-        await realtime?.stop()
-        realtime = nil
+        await connection?.closeBoard(boardId)
+        connection = nil
     }
 
     func load() async {
