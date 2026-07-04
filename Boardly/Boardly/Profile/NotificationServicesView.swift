@@ -89,7 +89,7 @@ struct NotificationServicesView: View {
             Button(role: .destructive) {
                 Task { await viewModel.deleteService(service) }
             } label: {
-                Image(systemName: "trash").foregroundStyle(Color.labelRose)
+                Image(systemName: "trash").foregroundStyle(Color.boardlyDestructive)
             }
         }
         .padding(14)

@@ -98,7 +98,7 @@ struct AddServerView: View {
                         if viewModel.isInsecureURL {
                             Text("This connection isn’t encrypted — your login token will be sent in cleartext.")
                                 .font(.boardlyCallout)
-                                .foregroundStyle(.orange)
+                                .foregroundStyle(Color.boardlyWarning)
                         }
                     }
                     .padding(.top, 28)
@@ -114,7 +114,7 @@ struct AddServerView: View {
                     if let error = viewModel.error {
                         Text(error)
                             .font(.boardlyCallout)
-                            .foregroundStyle(.red)
+                            .foregroundStyle(Color.boardlyDestructive)
                             .padding(.top, 16)
                     }
 

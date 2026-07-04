@@ -175,7 +175,7 @@ struct LoginView: View {
                     if let errorMessage = viewModel.error {
                         Text(errorMessage)
                             .font(.boardlyCallout)
-                            .foregroundStyle(.red)
+                            .foregroundStyle(Color.boardlyDestructive)
                             .padding(.top, 12)
                     }
 

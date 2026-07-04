@@ -394,7 +394,7 @@ private struct ListModeCardRow: View {
                     if let due = card.dueDate {
                         Text(due.formatted(.dateTime.month(.abbreviated).day()))
                             .font(.mono(11, .medium))
-                            .foregroundStyle(due < Date() ? Color.labelRose : Color.boardlyTextSecondary)
+                            .foregroundStyle(due < Date() ? Color.boardlyDestructive : Color.boardlyTextSecondary)
                     }
                     if !tasks.isEmpty {
                         Text("\(completed)/\(tasks.count)")

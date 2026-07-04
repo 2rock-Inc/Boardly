@@ -154,7 +154,7 @@ struct BoardCustomFieldsSheet: View {
                         Spacer(minLength: 0)
                         Button { Task { await boardVM.deleteCustomField(field) } } label: {
                             Image(systemName: "minus.circle.fill")
-                                .foregroundStyle(Color.labelRose)
+                                .foregroundStyle(Color.boardlyDestructive)
                         }
                         .buttonStyle(.plain)
                     }

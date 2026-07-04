@@ -61,7 +61,7 @@ struct WebhooksView: View {
                 if let viewModel {
                     VStack(alignment: .leading, spacing: 16) {
                         if let error = viewModel.error {
-                            Text(error).font(.boardlyCallout).foregroundStyle(Color.labelRose)
+                            Text(error).font(.boardlyCallout).foregroundStyle(Color.boardlyDestructive)
                         }
                         if viewModel.webhooks.isEmpty, viewModel.error == nil {
                             Text("No webhooks configured.")
@@ -122,7 +122,7 @@ struct WebhooksView: View {
             Button(role: .destructive) {
                 Task { await viewModel.delete(hook) }
             } label: {
-                Image(systemName: "trash").foregroundStyle(Color.labelRose)
+                Image(systemName: "trash").foregroundStyle(Color.boardlyDestructive)
             }
         }
         .padding(14)

@@ -93,7 +93,7 @@ struct ActivityView: View {
                 Spacer(minLength: 8)
 
                 Circle()
-                    .fill(Color.labelGreen)
+                    .fill(Color.accentColor)
                     .frame(width: 8, height: 8)
                     .padding(.top, 6)
             }
@@ -123,7 +123,7 @@ struct ActivityView: View {
         VStack(spacing: 12) {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 34, weight: .light))
-                .foregroundStyle(Color.labelRose)
+                .foregroundStyle(Color.boardlyDestructive)
             Text(message)
                 .font(.boardlyBody)
                 .foregroundStyle(Color.boardlyTextSecondary)

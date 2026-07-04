@@ -119,7 +119,7 @@ struct CardAttachmentsSheet: View {
             Button(role: .destructive) {
                 Task { await boardVM.removeAttachment(attachment) }
             } label: {
-                Image(systemName: "trash").foregroundStyle(Color.labelRose)
+                Image(systemName: "trash").foregroundStyle(Color.boardlyDestructive)
             }
         }
         .padding(.horizontal, 14)

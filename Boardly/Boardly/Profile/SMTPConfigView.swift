@@ -106,7 +106,7 @@ struct SMTPConfigView: View {
                 Text(notice).font(.boardlyCallout).foregroundStyle(Color.labelGreen)
             }
             if let error = viewModel.error {
-                Text(error).font(.boardlyCallout).foregroundStyle(Color.labelRose)
+                Text(error).font(.boardlyCallout).foregroundStyle(Color.boardlyDestructive)
             }
 
             field("SMTP Server", text: $viewModel.host, placeholder: "smtp.example.com", url: true)

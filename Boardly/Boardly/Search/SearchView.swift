@@ -246,7 +246,7 @@ struct SearchView: View {
               let range = text.range(of: query, options: [.caseInsensitive, .diacriticInsensitive]),
               let attrRange = Range(range, in: attributed)
         else { return attributed }
-        attributed[attrRange].backgroundColor = Color.yellow.opacity(0.4)
+        attributed[attrRange].backgroundColor = Color.accentColor.opacity(0.18)
         attributed[attrRange].font = .boardlyBody.bold()
         return attributed
     }
@@ -290,7 +290,7 @@ struct SearchView: View {
         VStack(spacing: 12) {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 34, weight: .light))
-                .foregroundStyle(Color.labelRose)
+                .foregroundStyle(Color.boardlyDestructive)
             Text(verbatim: message)
                 .font(.boardlyBody)
                 .foregroundStyle(Color.boardlyTextSecondary)
