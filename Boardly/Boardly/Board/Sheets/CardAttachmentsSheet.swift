@@ -35,6 +35,7 @@ struct CardAttachmentsSheet: View {
         .background(Color.boardlyBackground)
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.hidden)
+        .presentationCornerRadius(26)
         .fileImporter(isPresented: $showFileImporter, allowedContentTypes: [.item]) { result in
             handleFile(result)
         }

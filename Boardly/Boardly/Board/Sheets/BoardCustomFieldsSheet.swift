@@ -31,6 +31,7 @@ struct BoardCustomFieldsSheet: View {
         .background(Color.boardlyBackground)
         .presentationDetents([.large])
         .presentationDragIndicator(.hidden)
+        .presentationCornerRadius(26)
         .task { await boardVM.loadBaseGroups() }
         .alert("New Group", isPresented: $showAddGroup) {
             TextField("Group name", text: $newGroupName)
