@@ -1,28 +1,28 @@
 import SwiftUI
 
-/// Filled Pine Teal pill — the design's primary call to action.
+/// Filled Pine Teal button — the design's primary call to action.
 struct BoardlyPrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.sans(16, .bold))
+            .font(.sans(17, .bold))
             .foregroundStyle(.white)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 15)
-            .background(Color.accentColor, in: Capsule())
+            .frame(maxWidth: .infinity, minHeight: 54)
+            .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 15, style: .continuous))
             .opacity(configuration.isPressed ? 0.85 : 1)
     }
 }
 
-/// Outlined neutral pill — secondary actions.
+/// Outlined neutral button — secondary actions (transparent on the paper background).
 struct BoardlySecondaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.sans(16, .semibold))
+            .font(.sans(17, .semibold))
             .foregroundStyle(Color.boardlyInk)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 15)
-            .background(Color.boardlySurface, in: Capsule())
-            .overlay(Capsule().stroke(Color.boardlySeparator, lineWidth: 1))
+            .frame(maxWidth: .infinity, minHeight: 54)
+            .background(.clear, in: RoundedRectangle(cornerRadius: 15, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 15, style: .continuous)
+                    .stroke(Color.boardlySeparator, lineWidth: 1))
             .opacity(configuration.isPressed ? 0.85 : 1)
     }
 }
@@ -42,9 +42,7 @@ struct BoardlyCard: ViewModifier {
         content
             .padding(padding)
             .background(Color.boardlySurface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(Color.boardlySeparator, lineWidth: 0.5))
+            .shadow(color: .black.opacity(0.06), radius: 3, x: 0, y: 1)
     }
 }
 
@@ -120,10 +118,11 @@ struct SheetHeader: View {
                 .foregroundStyle(Color.boardlyTextSecondary)
             Spacer()
             Text(title)
-                .font(.sans(16, .bold))
+                .font(.boardlySheetTitle)
                 .foregroundStyle(Color.boardlyInk)
             Spacer()
             Button(doneLabel, action: onDone)
+                .font(.sans(16, .bold))
                 .foregroundStyle(Color.accentColor)
         }
         .font(.sans(16, .semibold))
@@ -131,18 +130,27 @@ struct SheetHeader: View {
         .padding(.top, 20)
         .padding(.bottom, 14)
         .overlay(alignment: .top) {
-            Capsule().fill(Color.boardlySeparator).frame(width: 36, height: 5).padding(.top, 8)
+            Capsule().fill(Color.boardlyGrabber).frame(width: 36, height: 4).padding(.top, 8)
         }
     }
 }
 
-/// Check (filled accent) / ring toggle used in selection sheets.
+/// Selection check used in selection sheets — accent 24 filled + white check,
+/// or an empty-ring when off (spec: unchecked ring #D4D0C8).
 struct SelectionToggle: View {
     let isOn: Bool
     var body: some View {
-        Image(systemName: isOn ? "checkmark.circle.fill" : "circle")
-            .font(.system(size: 22))
-            .foregroundStyle(isOn ? Color.accentColor : Color.boardlyTextTertiary)
+        ZStack {
+            if isOn {
+                Circle().fill(Color.accentColor)
+                Image(systemName: "checkmark")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(.white)
+            } else {
+                Circle().strokeBorder(Color.boardlyEmptyRing, lineWidth: 2)
+            }
+        }
+        .frame(width: 24, height: 24)
     }
 }
 
@@ -157,8 +165,33 @@ struct BoardlyFieldLabel: View {
     var body: some View {
         content
             .font(.boardlyMonoLabel)
-            .tracking(1.5)
+            .tracking(1.1) // ≈ .1em at 11pt (spec .1–.14em; was an ad-hoc 1.5)
             .textCase(.uppercase)
             .foregroundStyle(Color.boardlyTextTertiary)
+    }
+}
+
+/// Neutral chip (count badge, tags) — radius 11.
+struct BoardlyChip<Content: View>: View {
+    @ViewBuilder let content: Content
+    var body: some View {
+        content
+            .padding(.horizontal, 8)
+            .padding(.vertical, 2)
+            .background(Color.boardlyNeutralFill, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+    }
+}
+
+/// Tinted icon tile for settings rows — 30pt, radius 9, teal-fill background.
+struct BoardlyIconTile: View {
+    let systemName: String
+    var tint: Color = .accentColor
+    var fill: Color = .boardlyTealFill
+    var body: some View {
+        Image(systemName: systemName)
+            .font(.system(size: 16, weight: .medium))
+            .foregroundStyle(tint)
+            .frame(width: 30, height: 30)
+            .background(fill, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
     }
 }

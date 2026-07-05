@@ -49,6 +49,7 @@ struct CardMembersSheet: View {
         .background(Color.boardlyBackground)
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.hidden)
+        .presentationCornerRadius(26)
     }
 
     private var searchField: some View {

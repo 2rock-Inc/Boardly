@@ -44,6 +44,7 @@ struct CardDueDateSheet: View {
         .background(Color.boardlyBackground)
         .presentationDetents([.large])
         .presentationDragIndicator(.hidden)
+        .presentationCornerRadius(26)
         .onAppear {
             guard !seeded else { return }
             seeded = true

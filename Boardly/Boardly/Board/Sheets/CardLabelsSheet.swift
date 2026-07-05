@@ -40,6 +40,7 @@ struct CardLabelsSheet: View {
         .background(Color.boardlyBackground)
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.hidden)
+        .presentationCornerRadius(26)
         .alert("New Label", isPresented: $showCreate) {
             TextField("Name", text: $newLabelName)
             Button("Create") {

@@ -48,6 +48,7 @@ struct CardCustomFieldsSheet: View {
         .background(Color.boardlyBackground)
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.hidden)
+        .presentationCornerRadius(26)
         .onAppear(perform: seedIfNeeded)
     }
 
