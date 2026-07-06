@@ -109,7 +109,14 @@ private struct BoardScreen: View {
     @State private var showAddCard = false
     @State private var newCardTitle = ""
     @State private var showCustomFieldsSheet = false
+    @State private var showFilters = false
+    @State private var filter = BoardFilter()
     @Environment(\.dismiss) private var dismiss
+
+    /// Cards of a list after applying the active filter (members / labels / due).
+    private func visibleCards(in list: PlankaList, payload: BoardPayload) -> [Card] {
+        payload.cards(for: list).filter { filter.matches($0, in: payload) }
+    }
 
     private let grid = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
 
@@ -151,6 +158,11 @@ private struct BoardScreen: View {
         .refreshable { await viewModel.load() }
         .navigationDestination(item: $selectedCardId) { selected in
             CardDetailView(cardId: selected.id, boardVM: viewModel)
+        }
+        .sheet(isPresented: $showFilters) {
+            if let payload = viewModel.payload {
+                BoardFiltersSheet(payload: payload, filter: $filter)
+            }
         }
         .sheet(isPresented: $showCustomFieldsSheet) {
             BoardCustomFieldsSheet(boardVM: viewModel)
@@ -197,8 +209,11 @@ private struct BoardScreen: View {
                 }
             }
             Spacer(minLength: 0)
-            Image(systemName: "line.3.horizontal.decrease")
-                .foregroundStyle(Color.boardlyTextSecondary)
+            Button { showFilters = true } label: {
+                Image(systemName: filter.isActive ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease")
+                    .foregroundStyle(filter.isActive ? Color.accentColor : Color.boardlyTextSecondary)
+            }
+            .boardlyTapTarget("Filter and sort")
             Menu {
                 Button { showCustomFieldsSheet = true } label: {
                     Label("Custom Fields", systemImage: "square.grid.2x2")
@@ -275,7 +290,7 @@ private struct BoardScreen: View {
                     ForEach(payload.sortedLists()) { list in
                         ListColumnView(
                             list: list,
-                            cards: payload.cards(for: list),
+                            cards: visibleCards(in: list, payload: payload),
                             payload: payload,
                             onCardTap: { selectedCardId = SelectedCard(id: $0.id) },
                             onCreateCard: { name in
@@ -298,7 +313,7 @@ private struct BoardScreen: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
                 ForEach(payload.sortedLists()) { list in
-                    let cards = payload.cards(for: list)
+                    let cards = visibleCards(in: list, payload: payload)
                     VStack(alignment: .leading, spacing: 10) {
                         HStack(spacing: 8) {
                             Text(list.name ?? "Untitled")
@@ -331,7 +346,7 @@ private struct BoardScreen: View {
         ScrollView {
             LazyVGrid(columns: grid, spacing: 12) {
                 ForEach(payload.sortedLists()) { list in
-                    ForEach(payload.cards(for: list)) { card in
+                    ForEach(visibleCards(in: list, payload: payload)) { card in
                         Button { selectedCardId = SelectedCard(id: card.id) } label: {
                             CardRowView(
                                 card: card,
