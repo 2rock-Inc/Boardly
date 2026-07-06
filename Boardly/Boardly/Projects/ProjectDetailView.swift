@@ -295,6 +295,7 @@ struct ProjectDetailView: View {
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundStyle(.white)
                     }
+                    .boardlyTapTarget("Back")
                     Spacer()
                 }
                 Spacer()
@@ -316,6 +317,7 @@ struct ProjectDetailView: View {
                                 .padding(7)
                                 .background(.black.opacity(0.22), in: Circle())
                         }
+                        .boardlyTapTarget("Edit project")
                     }
                 }
             }

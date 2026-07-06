@@ -158,6 +158,7 @@ struct BoardCustomFieldsSheet: View {
                                 .foregroundStyle(Color.boardlyDestructive)
                         }
                         .buttonStyle(.plain)
+                        .boardlyTapTarget("Delete field")
                     }
                 }
             }

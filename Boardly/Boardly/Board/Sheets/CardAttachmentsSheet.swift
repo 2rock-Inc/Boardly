@@ -122,6 +122,7 @@ struct CardAttachmentsSheet: View {
             } label: {
                 Image(systemName: "trash").foregroundStyle(Color.boardlyDestructive)
             }
+            .boardlyTapTarget("Remove attachment")
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)

@@ -183,6 +183,7 @@ private struct BoardScreen: View {
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(Color.boardlyInk)
             }
+            .boardlyTapTarget("Back")
             VStack(alignment: .leading, spacing: 1) {
                 Text(boardName)
                     .font(.sans(20, .bold))
@@ -206,6 +207,7 @@ private struct BoardScreen: View {
                 Image(systemName: "ellipsis")
                     .foregroundStyle(Color.boardlyTextSecondary)
             }
+            .boardlyTapTarget("Board menu")
         }
         .font(.system(size: 17, weight: .semibold))
         .padding(.horizontal, 20)
@@ -360,6 +362,7 @@ private struct BoardScreen: View {
                 .background(Color.accentColor, in: Circle())
                 .shadow(color: Color.accentColor.opacity(0.4), radius: 10, y: 4)
         }
+        .accessibilityLabel("Add card")
         .padding(.trailing, 20)
         .padding(.bottom, 20)
     }
