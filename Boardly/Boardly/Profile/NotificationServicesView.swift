@@ -86,11 +86,13 @@ struct NotificationServicesView: View {
             } label: {
                 Image(systemName: "pencil").foregroundStyle(Color.boardlyTextSecondary)
             }
+            .boardlyTapTarget("Edit service")
             Button(role: .destructive) {
                 Task { await viewModel.deleteService(service) }
             } label: {
                 Image(systemName: "trash").foregroundStyle(Color.boardlyDestructive)
             }
+            .boardlyTapTarget("Delete service")
         }
         .padding(14)
     }

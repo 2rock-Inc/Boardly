@@ -124,6 +124,7 @@ struct WebhooksView: View {
             } label: {
                 Image(systemName: "trash").foregroundStyle(Color.boardlyDestructive)
             }
+            .boardlyTapTarget("Delete webhook")
         }
         .padding(14)
     }

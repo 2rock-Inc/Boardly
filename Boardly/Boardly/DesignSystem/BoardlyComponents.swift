@@ -69,6 +69,16 @@ extension View {
     func boardlyField() -> some View { modifier(BoardlyFieldStyle()) }
 }
 
+extension View {
+    /// Guarantees a ≥44pt hit target and a VoiceOver label on an icon-only control
+    /// (back chevrons, +, ellipsis, trash, send…). Apply to the `Button`.
+    func boardlyTapTarget(_ label: LocalizedStringKey, minSize: CGFloat = 44) -> some View {
+        frame(minWidth: minSize, minHeight: minSize)
+            .contentShape(Rectangle())
+            .accessibilityLabel(Text(label))
+    }
+}
+
 /// Stable (launch-independent) hash for deterministic color assignment.
 /// `String.hashValue` is seeded randomly per process, so it can't be used here.
 func boardlyStableHash(_ string: String) -> Int {

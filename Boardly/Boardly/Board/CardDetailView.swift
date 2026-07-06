@@ -90,6 +90,7 @@ struct CardDetailView: View {
                 .background(.white.opacity(0.9), in: Circle())
                 .shadow(color: .black.opacity(0.12), radius: 4, y: 2)
         }
+        .boardlyTapTarget("Close")
         .padding(.leading, 16)
         .padding(.top, 12)
     }
@@ -598,6 +599,7 @@ struct CardDetailView: View {
                     .frame(width: 40, height: 40)
                     .background(Color.accentColor, in: Circle())
             }
+            .accessibilityLabel("Send comment")
             .disabled(newComment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
         }
         .padding(.horizontal, 16)

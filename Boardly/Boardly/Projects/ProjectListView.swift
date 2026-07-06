@@ -123,6 +123,7 @@ struct ProjectListView: View {
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundStyle(Color.accentColor)
             }
+            .boardlyTapTarget("Add project")
             if let user = viewModel.currentUser {
                 AvatarView(name: user.name, size: 34, bordered: false)
             }
