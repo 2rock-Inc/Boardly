@@ -62,7 +62,7 @@ struct ProfileView: View {
                         showsChevron: true)
                 }
 
-                Divider().padding(.leading, 52)
+                Divider().padding(.leading, 56)
 
                 // Home view — PLANKA pref.
                 Menu {
@@ -79,7 +79,7 @@ struct ProfileView: View {
                         showsChevron: true)
                 }
 
-                Divider().padding(.leading, 52)
+                Divider().padding(.leading, 56)
 
                 // Markdown editor — PLANKA pref.
                 Menu {
@@ -128,10 +128,10 @@ struct ProfileView: View {
 
     private func header(_ user: User?) -> some View {
         HStack(spacing: 14) {
-            AvatarView(name: user?.name ?? profile.name, size: 60, bordered: false)
+            AvatarView(name: user?.name ?? profile.name, size: 64, bordered: false)
             VStack(alignment: .leading, spacing: 3) {
                 Text(verbatim: user?.name ?? profile.name)
-                    .font(.sans(20, .bold))
+                    .font(.sans(21, .heavy))
                     .foregroundStyle(Color.boardlyInk)
                 if let username = user?.username {
                     Text(verbatim: "@\(username)")
@@ -176,20 +176,22 @@ struct ProfileView: View {
                         icon: "bell",
                         title: "Notifications",
                         value: "\(viewModel.services.count)",
-                        showsChevron: true)
+                        showsChevron: true,
+                        tint: .labelPurple, fill: .labelPurple.opacity(0.14))
                 }
                 .buttonStyle(.plain)
 
-                Divider().padding(.leading, 52)
+                Divider().padding(.leading, 56)
 
                 SettingsRow(
                     icon: "globe",
                     title: "Server",
                     value: profile.baseURL.host ?? profile.baseURL.absoluteString,
-                    showsChevron: false)
+                    showsChevron: false,
+                    tint: .labelPurple, fill: .labelPurple.opacity(0.14))
 
                 if viewModel.isAdmin {
-                    Divider().padding(.leading, 52)
+                    Divider().padding(.leading, 56)
                     NavigationLink {
                         WebhooksView(client: client)
                     } label: {
@@ -197,11 +199,12 @@ struct ProfileView: View {
                             icon: "point.3.connected.trianglepath.dotted",
                             title: "Webhooks",
                             value: nil,
-                            showsChevron: true)
+                            showsChevron: true,
+                            tint: .labelPurple, fill: .labelPurple.opacity(0.14))
                     }
                     .buttonStyle(.plain)
 
-                    Divider().padding(.leading, 52)
+                    Divider().padding(.leading, 56)
                     NavigationLink {
                         SMTPConfigView(client: client)
                     } label: {
@@ -209,7 +212,8 @@ struct ProfileView: View {
                             icon: "envelope",
                             title: "SMTP Configuration",
                             value: nil,
-                            showsChevron: true)
+                            showsChevron: true,
+                            tint: .labelPurple, fill: .labelPurple.opacity(0.14))
                     }
                     .buttonStyle(.plain)
                 }
@@ -230,12 +234,14 @@ struct ProfileView: View {
                 }
             } label: {
                 Text("Log Out")
-                    .font(.sans(16, .semibold))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 15)
-                    .background(Color.boardlyDestructive, in: Capsule())
+                    .font(.sans(15, .bold))
+                    .foregroundStyle(Color.boardlyDestructive)
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                    .padding(.vertical, 6)
+                    .background(Color.boardlySurface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .shadow(color: .black.opacity(0.06), radius: 3, y: 1)
             }
+            .buttonStyle(.plain)
         }
     }
 
@@ -267,13 +273,13 @@ struct SettingsRow: View {
     /// Pre-resolved data (a server name, a localized enum name) — rendered verbatim.
     var value: String?
     var showsChevron: Bool
+    /// Tinted icon-tile colors (per section: teal for Preferences, purple for Account).
+    var tint: Color = .accentColor
+    var fill: Color = .boardlyTealFill
 
     var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(Color.accentColor)
-                .frame(width: 24)
+            BoardlyIconTile(systemName: icon, tint: tint, fill: fill)
             Text(title)
                 .font(.boardlyBody)
                 .foregroundStyle(Color.boardlyInk)
