@@ -352,6 +352,55 @@ final class BoardViewModel {
         }
     }
 
+    // MARK: - Board actions
+
+    /// Flips to true once the board is deleted server-side; the view pops on it.
+    var boardDeleted = false
+
+    func renameBoard(to name: String) async {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        do {
+            let board = try await client.renameBoard(id: boardId, name: trimmed)
+            guard var copy = payload else { return }
+            copy.board = board
+            payload = copy
+        } catch {
+            self.error = localizedErrorMessage(error)
+        }
+    }
+
+    func deleteBoard() async {
+        do {
+            try await client.deleteBoard(id: boardId)
+            boardDeleted = true
+        } catch {
+            self.error = localizedErrorMessage(error)
+        }
+    }
+
+    /// CSV of the board's cards (list · card · labels · members · due · completed).
+    func exportCSV() -> String {
+        guard let payload else { return "" }
+        func field(_ s: String) -> String {
+            (s.contains(",") || s.contains("\"") || s.contains("\n"))
+                ? "\"\(s.replacingOccurrences(of: "\"", with: "\"\""))\""
+                : s
+        }
+        let iso = ISO8601DateFormatter()
+        var rows = ["List,Card,Labels,Members,Due,Completed"]
+        for list in payload.sortedLists() {
+            for card in payload.cards(for: list) {
+                let labels = payload.labels(for: card).compactMap(\.name).joined(separator: " ")
+                let members = payload.members(for: card).map(\.name).joined(separator: " ")
+                let due = card.dueDate.map { iso.string(from: $0) } ?? ""
+                let done = card.isDueCompleted == true ? "yes" : ""
+                rows.append([list.name ?? "", card.name, labels, members, due, done].map(field).joined(separator: ","))
+            }
+        }
+        return rows.joined(separator: "\n")
+    }
+
     // MARK: - Members
 
     func addMember(_ user: User, to card: Card) async {

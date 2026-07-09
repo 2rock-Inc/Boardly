@@ -112,6 +112,20 @@ struct BoardViewModelTests {
         #expect(vm.payload?.sortedLists().count == 2)
     }
 
+    @Test("exportCSV emits a header and a row per card")
+    func exportCSV() async {
+        let stub = StubHTTPClient()
+        stub.routes["GET /api/boards/b1"] = (200, boardJSON)
+        let vm = makeViewModel(stub)
+        await vm.load()
+
+        let csv = vm.exportCSV()
+        let lines = csv.split(separator: "\n")
+        #expect(lines.first == "List,Card,Labels,Members,Due,Completed")
+        #expect(csv.contains("To Do,Card A"))
+        #expect(lines.count == 2) // header + the single card c1
+    }
+
     @Test("createCard appends the returned card to the payload")
     func createCardAppends() async throws {
         let stub = StubHTTPClient()

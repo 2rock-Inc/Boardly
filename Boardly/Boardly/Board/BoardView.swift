@@ -1,5 +1,6 @@
 import BoardlyKit
 import SwiftUI
+import UIKit
 
 enum BoardViewMode: String, CaseIterable {
     case kanban, list, grid
@@ -111,7 +112,14 @@ private struct BoardScreen: View {
     @State private var showCustomFieldsSheet = false
     @State private var showFilters = false
     @State private var filter = BoardFilter()
+    @State private var showRename = false
+    @State private var renameText = ""
+    @State private var showDeleteConfirm = false
+    @State private var exportFile: ExportFile?
     @Environment(\.dismiss) private var dismiss
+
+    /// Live board name — reflects a rename, falling back to the nav-time name.
+    private var currentBoardName: String { viewModel.payload?.board.name ?? boardName }
 
     /// Cards of a list after applying the active filter (members / labels / due).
     private func visibleCards(in list: PlankaList, payload: BoardPayload) -> [Card] {
@@ -176,6 +184,17 @@ private struct BoardScreen: View {
                 Text("Added to “\(list.name ?? "—")”")
             }
         }
+        .alert("Rename board", isPresented: $showRename) {
+            TextField("Board name", text: $renameText)
+            Button("Save") { Task { await viewModel.renameBoard(to: renameText) } }
+            Button("Cancel", role: .cancel) {}
+        }
+        .alert("Delete board?", isPresented: $showDeleteConfirm) {
+            Button("Delete", role: .destructive) { Task { await viewModel.deleteBoard() } }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This permanently deletes the board and all its cards.")
+        }
         .alert("Error", isPresented: Binding(
             get: { viewModel.error != nil },
             set: { if !$0 { viewModel.error = nil } }))
@@ -183,6 +202,12 @@ private struct BoardScreen: View {
             Button("OK") { viewModel.error = nil }
         } message: {
             Text(viewModel.error ?? "")
+        }
+        .sheet(item: $exportFile) { file in
+            ShareSheet(items: [file.url])
+        }
+        .onChange(of: viewModel.boardDeleted) { _, deleted in
+            if deleted { dismiss() }
         }
     }
 
@@ -197,7 +222,7 @@ private struct BoardScreen: View {
             }
             .boardlyTapTarget("Back")
             VStack(alignment: .leading, spacing: 1) {
-                Text(boardName)
+                Text(currentBoardName)
                     .font(.sans(20, .bold))
                     .foregroundStyle(Color.boardlyInk)
                     .lineLimit(1)
@@ -215,8 +240,23 @@ private struct BoardScreen: View {
             }
             .boardlyTapTarget("Filter and sort")
             Menu {
+                Button {
+                    renameText = currentBoardName
+                    showRename = true
+                } label: {
+                    Label("Rename board", systemImage: "pencil")
+                }
                 Button { showCustomFieldsSheet = true } label: {
                     Label("Custom Fields", systemImage: "square.grid.2x2")
+                }
+                Button {
+                    exportFile = ExportFile(csv: viewModel.exportCSV(), name: currentBoardName)
+                } label: {
+                    Label("Export CSV", systemImage: "square.and.arrow.up")
+                }
+                Divider()
+                Button(role: .destructive) { showDeleteConfirm = true } label: {
+                    Label("Delete board", systemImage: "trash")
                 }
             } label: {
                 Image(systemName: "ellipsis")
@@ -450,4 +490,27 @@ private struct ListModeCardRow: View {
 
 private struct SelectedCard: Identifiable, Hashable {
     let id: String
+}
+
+/// A CSV export written to a temp file, ready to share.
+private struct ExportFile: Identifiable {
+    let id = UUID()
+    let url: URL
+
+    init(csv: String, name: String) {
+        let safe = name.isEmpty ? "board" : name.replacingOccurrences(of: "/", with: "-")
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(safe).csv")
+        try? Data(csv.utf8).write(to: url)
+        self.url = url
+    }
+}
+
+/// Thin wrapper around `UIActivityViewController` for the system share sheet.
+private struct ShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+    func makeUIViewController(context _: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_: UIActivityViewController, context _: Context) {}
 }
