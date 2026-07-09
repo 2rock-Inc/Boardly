@@ -2914,6 +2914,38 @@
         }
       }
     },
+    "Mark task complete": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mark task complete"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marquer la tâche comme terminée"
+          }
+        }
+      }
+    },
+    "Mark task incomplete": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mark task incomplete"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marquer la tâche comme non terminée"
+          }
+        }
+      }
+    },
     "Member": {
       "localizations": {
         "fr": {

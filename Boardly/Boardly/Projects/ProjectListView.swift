@@ -218,7 +218,7 @@ private struct FavoriteCard: View {
                         .font(.system(size: 11))
                         .foregroundStyle(Color.labelTeal)
                     Text(project.name)
-                        .font(.boardlyMonoCaption)
+                        .font(.sans(12))
                         .foregroundStyle(Color.boardlyTextSecondary)
                         .lineLimit(1)
                 }
@@ -318,7 +318,7 @@ private struct BoardRow: View {
                     .lineLimit(1)
                 if !meta.isEmpty {
                     Text(verbatim: meta)
-                        .font(.boardlyMonoCaption)
+                        .font(.sans(12))
                         .foregroundStyle(Color.boardlyTextSecondary)
                         .lineLimit(1)
                 }

@@ -108,7 +108,6 @@ private struct BoardScreen: View {
     @State private var didFocusCard = false
     @State private var mode: BoardViewMode = .kanban
     @State private var showAddCard = false
-    @State private var newCardTitle = ""
     @State private var showCustomFieldsSheet = false
     @State private var showFilters = false
     @State private var filter = BoardFilter()
@@ -179,13 +178,11 @@ private struct BoardScreen: View {
         .sheet(isPresented: $showMembers) {
             BoardMembersSheet(boardVM: viewModel)
         }
-        .alert("New Card", isPresented: $showAddCard) {
-            TextField("Card title", text: $newCardTitle)
-            Button("Add") { addCardToFirstList() }
-            Button("Cancel", role: .cancel) { newCardTitle = "" }
-        } message: {
-            if let list = viewModel.payload?.sortedLists().first {
-                Text("Added to “\(list.name ?? "—")”")
+        .sheet(isPresented: $showAddCard) {
+            if let payload = viewModel.payload {
+                NewCardSheet(lists: payload.sortedLists()) { list, title in
+                    Task { await viewModel.createCard(in: list, name: title) }
+                }
             }
         }
         .alert("Rename board", isPresented: $showRename) {
@@ -232,7 +229,7 @@ private struct BoardScreen: View {
                     .lineLimit(1)
                 if let projectName {
                     Text(projectName)
-                        .font(.boardlyMonoCaption)
+                        .font(.sans(12))
                         .foregroundStyle(Color.boardlyTextSecondary)
                         .lineLimit(1)
                 }
@@ -342,7 +339,8 @@ private struct BoardScreen: View {
                             onCardTap: { selectedCardId = SelectedCard(id: $0.id) },
                             onCreateCard: { name in
                                 Task { await viewModel.createCard(in: list, name: name) }
-                            })
+                            },
+                            loadImage: { await viewModel.loadImage(url: $0) })
                             .frame(width: 280)
                     }
                 }
@@ -414,7 +412,6 @@ private struct BoardScreen: View {
 
     private var fab: some View {
         Button {
-            newCardTitle = ""
             showAddCard = true
         } label: {
             Image(systemName: "plus")
@@ -427,13 +424,6 @@ private struct BoardScreen: View {
         .accessibilityLabel("Add card")
         .padding(.trailing, 20)
         .padding(.bottom, 20)
-    }
-
-    private func addCardToFirstList() {
-        let title = newCardTitle.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !title.isEmpty, let list = viewModel.payload?.sortedLists().first else { return }
-        Task { await viewModel.createCard(in: list, name: title) }
-        newCardTitle = ""
     }
 }
 

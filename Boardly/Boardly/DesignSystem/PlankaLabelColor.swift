@@ -6,11 +6,17 @@ import SwiftUI
 extension Color {
     init(plankaLabel name: String) {
         let n = name.lowercased()
-        let palette: [Color] = [.labelRose, .labelBlue, .labelGreen, .labelPurple, .labelTeal]
+        let palette: [Color] = [
+            .labelRose, .labelBlue, .labelGreen, .labelPurple, .labelTeal, .labelPriority, .boardlyDestructive,
+        ]
 
         func has(_ keys: [String]) -> Bool { keys.contains { n.contains($0) } }
 
-        if has(["red", "berry", "cherry", "rose", "pink", "salmon", "coral"]) {
+        if has(["orange", "pumpkin", "apricot", "amber", "mustard", "gold", "tangerine", "carrot"]) {
+            self = .labelPriority
+        } else if has(["red", "berry", "cherry", "crimson", "scarlet"]) {
+            self = .boardlyDestructive
+        } else if has(["rose", "pink", "salmon", "coral", "tulip", "flamingo"]) {
             self = .labelRose
         } else if has(["blue", "sky", "navy", "ocean", "lagoon", "lagune", "azure"]) {
             self = .labelBlue
@@ -21,9 +27,8 @@ extension Color {
         } else if has(["teal", "turquoise", "aqua", "cyan"]) {
             self = .labelTeal
         } else {
-            // Stable fallback: hash the name into the palette.
-            let idx = abs(name.hashValue) % palette.count
-            self = palette[idx]
+            // Stable fallback (launch-independent hash, unlike String.hashValue).
+            self = palette[boardlyStableHash(name) % palette.count]
         }
     }
 }

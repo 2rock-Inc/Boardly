@@ -102,7 +102,7 @@ struct CardDetailView: View {
         return ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 if hasCover {
-                    coverHero(url: coverImageURL(card: card, payload: payload))
+                    coverHero(url: payload.coverURL(for: card))
                 }
 
                 VStack(alignment: .leading, spacing: 20) {
@@ -153,6 +153,13 @@ struct CardDetailView: View {
                     deleteButton(card: card)
                 }
                 .padding(20)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.boardlyBackground)
+                .clipShape(.rect(
+                    topLeadingRadius: hasCover ? 22 : 0,
+                    topTrailingRadius: hasCover ? 22 : 0,
+                    style: .continuous))
+                .padding(.top, hasCover ? -18 : 0)
             }
         }
         .ignoresSafeArea(edges: hasCover ? .top : [])
@@ -168,19 +175,6 @@ struct CardDetailView: View {
 
     private func coverHero(url: URL?) -> some View {
         CoverImageView(url: url, height: 180 + topInset) { await boardVM.loadImage(url: $0) }
-    }
-
-    /// The card's cover image URL, resolved from its cover attachment (if set).
-    private func coverImageURL(card: Card, payload: BoardPayload) -> URL? {
-        guard let coverId = card.coverAttachmentId,
-              let attachment = payload.attachments.first(where: { $0.id == coverId }),
-              let data = try? JSONEncoder().encode(attachment.data),
-              let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
-        else { return nil }
-        let urlString = (obj["url"] as? String)
-            ?? ((obj["image"] as? [String: Any])?["url"] as? String)
-            ?? ((obj["thumbnailUrls"] as? [String: Any])?["outside360"] as? String)
-        return urlString.flatMap(URL.init(string:))
     }
 
     // MARK: - Labels
@@ -430,11 +424,19 @@ struct CardDetailView: View {
             ForEach(tasks) { task in
                 HStack(spacing: 12) {
                     Button { Task { await boardVM.toggleTask(task) } } label: {
-                        Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
-                            .foregroundStyle(task.isCompleted ? Color.labelGreen : Color.boardlyTextTertiary)
-                            .font(.system(size: 20))
+                        ZStack {
+                            if task.isCompleted {
+                                RoundedRectangle(cornerRadius: 7, style: .continuous).fill(Color.accentColor)
+                                Image(systemName: "checkmark").font(.system(size: 12, weight: .bold)).foregroundStyle(.white)
+                            } else {
+                                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                    .strokeBorder(Color.boardlyEmptyRing, lineWidth: 2)
+                            }
+                        }
+                        .frame(width: 22, height: 22)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel(task.isCompleted ? "Mark task incomplete" : "Mark task complete")
 
                     Text(task.name)
                         .font(.boardlyBody)
