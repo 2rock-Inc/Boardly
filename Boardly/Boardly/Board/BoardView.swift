@@ -115,6 +115,7 @@ private struct BoardScreen: View {
     @State private var showRename = false
     @State private var renameText = ""
     @State private var showDeleteConfirm = false
+    @State private var showMembers = false
     @State private var exportFile: ExportFile?
     @Environment(\.dismiss) private var dismiss
 
@@ -174,6 +175,9 @@ private struct BoardScreen: View {
         }
         .sheet(isPresented: $showCustomFieldsSheet) {
             BoardCustomFieldsSheet(boardVM: viewModel)
+        }
+        .sheet(isPresented: $showMembers) {
+            BoardMembersSheet(boardVM: viewModel)
         }
         .alert("New Card", isPresented: $showAddCard) {
             TextField("Card title", text: $newCardTitle)
@@ -245,6 +249,9 @@ private struct BoardScreen: View {
                     showRename = true
                 } label: {
                     Label("Rename board", systemImage: "pencil")
+                }
+                Button { showMembers = true } label: {
+                    Label("Board members", systemImage: "person.2")
                 }
                 Button { showCustomFieldsSheet = true } label: {
                     Label("Custom Fields", systemImage: "square.grid.2x2")

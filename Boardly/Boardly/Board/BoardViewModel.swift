@@ -379,6 +379,50 @@ final class BoardViewModel {
         }
     }
 
+    /// Candidate users for board membership — the board's project team (managers +
+    /// members of any board in the project). Loaded on demand for the members sheet.
+    var projectUsers: [User] = []
+
+    func loadBoardMemberCandidates() async {
+        guard let projectId = payload?.board.projectId else { return }
+        do {
+            let projects = try await client.getProjects()
+            let ids = Set(projects.projectManagers.filter { $0.projectId == projectId }.map(\.userId))
+                .union(projects.boardMemberships.filter { $0.projectId == projectId }.map(\.userId))
+            projectUsers = projects.users.filter { ids.contains($0.id) }.sorted { $0.name < $1.name }
+        } catch {
+            self.error = localizedErrorMessage(error)
+        }
+    }
+
+    func addBoardMember(_ user: User) async {
+        do {
+            let membership = try await client.addBoardMember(boardId: boardId, userId: user.id)
+            guard var copy = payload else { return }
+            if !copy.boardMemberships.contains(where: { $0.id == membership.id }) {
+                copy.boardMemberships.append(membership)
+            }
+            if !copy.users.contains(where: { $0.id == user.id }) {
+                copy.users.append(user)
+            }
+            payload = copy
+        } catch {
+            self.error = localizedErrorMessage(error)
+        }
+    }
+
+    func removeBoardMember(userId: String) async {
+        guard let membership = payload?.boardMemberships.first(where: { $0.userId == userId }) else { return }
+        do {
+            try await client.removeBoardMember(membershipId: membership.id)
+            guard var copy = payload else { return }
+            copy.boardMemberships.removeAll { $0.id == membership.id }
+            payload = copy
+        } catch {
+            self.error = localizedErrorMessage(error)
+        }
+    }
+
     /// CSV of the board's cards (list · card · labels · members · due · completed).
     func exportCSV() -> String {
         guard let payload else { return "" }
