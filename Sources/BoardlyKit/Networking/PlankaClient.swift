@@ -149,6 +149,42 @@ public struct PlankaClient: Sendable {
         }
     }
 
+    // MARK: - Board mutations
+
+    public func renameBoard(id: String, name: String) async throws -> Board {
+        struct Body: Encodable { let name: String }
+        struct Response: Decodable { let item: Board }
+        let body = try JSONEncoder().encode(Body(name: name))
+        let request = try buildRequest(method: "PATCH", path: "/boards/\(id)", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    @discardableResult
+    public func deleteBoard(id: String) async throws -> Board {
+        struct Response: Decodable { let item: Board }
+        let request = try buildRequest(method: "DELETE", path: "/boards/\(id)")
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    public func addBoardMember(boardId: String, userId: String, role: String = "editor") async throws -> BoardMembership {
+        struct Body: Encodable { let userId: String; let role: String }
+        struct Response: Decodable { let item: BoardMembership }
+        let body = try JSONEncoder().encode(Body(userId: userId, role: role))
+        let request = try buildRequest(method: "POST", path: "/boards/\(boardId)/board-memberships", body: body)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    @discardableResult
+    public func removeBoardMember(membershipId: String) async throws -> BoardMembership {
+        struct Response: Decodable { let item: BoardMembership }
+        let request = try buildRequest(method: "DELETE", path: "/board-memberships/\(membershipId)")
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
     // MARK: - Cards
 
     public func createCard(listId: String, name: String, position: Double) async throws -> Card {
