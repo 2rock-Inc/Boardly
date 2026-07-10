@@ -36,7 +36,8 @@ struct ListColumnView: View {
             }
             .padding(.horizontal, 4)
 
-            // Cards
+            // Cards + add-card — fills the column so its content scrolls all the way
+            // to the bottom edge (under the tab bar), matching the list / grid modes.
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 8) {
                     ForEach(cards) { card in
@@ -64,24 +65,26 @@ struct ListColumnView: View {
                             .focused($addFieldFocused)
                             .onSubmit { submitNewCard() }
                     }
-                }
-            }
-            .frame(maxHeight: 460)
 
-            // Add card
-            Button {
-                isAddingCard = true
-                addFieldFocused = true
-            } label: {
-                Label("Add a card", systemImage: "plus")
-                    .font(.sans(14, .semibold))
-                    .foregroundStyle(Color.boardlyTextSecondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 4)
-                    .padding(.vertical, 4)
+                    addCardButton
+                }
+                .padding(.bottom, 8)
             }
         }
-        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var addCardButton: some View {
+        Button {
+            isAddingCard = true
+            addFieldFocused = true
+        } label: {
+            Label("Add a card", systemImage: "plus")
+                .font(.sans(14, .semibold))
+                .foregroundStyle(Color.boardlyTextSecondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 4)
+                .padding(.vertical, 4)
+        }
     }
 
     private func submitNewCard() {

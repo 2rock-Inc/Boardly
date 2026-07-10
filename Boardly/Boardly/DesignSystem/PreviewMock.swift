@@ -185,6 +185,12 @@
               { "id": "c1", "boardId": "b1", "listId": "l1", "name": "New home page — visual exploration", "position": 1, "dueDate": "2026-10-12T09:00:00.000Z", "commentsTotal": 2, "creatorUserId": "u1", "createdAt": "2026-06-29T09:00:00.000Z", "coverAttachmentId": "at1", "stopwatch": { "total": 5040, "startedAt": null } },
               { "id": "c2", "boardId": "b1", "listId": "l1", "name": "Reusable card component in SwiftUI", "position": 2 },
               { "id": "c3", "boardId": "b1", "listId": "l1", "name": "List the screens to redesign", "position": 3 },
+              { "id": "c7", "boardId": "b1", "listId": "l1", "name": "Audit spacing & typography scale", "position": 4, "commentsTotal": 1 },
+              { "id": "c8", "boardId": "b1", "listId": "l1", "name": "Dark mode color ramp", "position": 5, "dueDate": "2026-07-20T09:00:00.000Z" },
+              { "id": "c9", "boardId": "b1", "listId": "l1", "name": "Empty states illustrations", "position": 6 },
+              { "id": "c10", "boardId": "b1", "listId": "l1", "name": "Accessibility pass — VoiceOver labels", "position": 7 },
+              { "id": "c11", "boardId": "b1", "listId": "l1", "name": "Onboarding hero + copy", "position": 8, "commentsTotal": 3 },
+              { "id": "c12", "boardId": "b1", "listId": "l1", "name": "Icon set — SF Symbols mapping", "position": 9 },
               { "id": "c4", "boardId": "b1", "listId": "l2", "name": "Color system & Pine Teal tokens", "position": 1, "dueDate": "2026-06-29T09:00:00.000Z" },
               { "id": "c5", "boardId": "b1", "listId": "l2", "name": "Tab navigation + deep links", "position": 2, "dueDate": "2026-06-29T09:00:00.000Z" },
               { "id": "c6", "boardId": "b1", "listId": "l3", "name": "Login screen", "position": 1, "dueDate": "2026-06-20T09:00:00.000Z", "isDueCompleted": true }

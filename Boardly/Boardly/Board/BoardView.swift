@@ -328,28 +328,28 @@ private struct BoardScreen: View {
     // MARK: Kanban
 
     private func kanbanMode(_ payload: BoardPayload) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(alignment: .top, spacing: 16) {
-                    ForEach(payload.sortedLists()) { list in
-                        ListColumnView(
-                            list: list,
-                            cards: visibleCards(in: list, payload: payload),
-                            payload: payload,
-                            onCardTap: { selectedCardId = SelectedCard(id: $0.id) },
-                            onCreateCard: { name in
-                                Task { await viewModel.createCard(in: list, name: name) }
-                            },
-                            loadImage: { await viewModel.loadImage(url: $0) })
-                            .frame(width: 280)
-                    }
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(alignment: .top, spacing: 16) {
+                ForEach(payload.sortedLists()) { list in
+                    ListColumnView(
+                        list: list,
+                        cards: visibleCards(in: list, payload: payload),
+                        payload: payload,
+                        onCardTap: { selectedCardId = SelectedCard(id: $0.id) },
+                        onCreateCard: { name in
+                            Task { await viewModel.createCard(in: list, name: name) }
+                        },
+                        loadImage: { await viewModel.loadImage(url: $0) })
+                        .frame(width: 280)
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 8)
             }
-            Spacer(minLength: 0)
+            .padding(.horizontal, 20)
+            .padding(.top, 8)
+            // Stretch the columns to the full viewport height so each column's card
+            // list scrolls to the bottom edge (under the tab bar), like list / grid.
+            .frame(maxHeight: .infinity, alignment: .top)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     // MARK: Liste
