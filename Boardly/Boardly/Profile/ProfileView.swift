@@ -10,16 +10,14 @@ struct ProfileView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                Color.boardlyBackground.ignoresSafeArea()
+            BoardlyScreen(title: "Profile") {
                 ScrollView {
                     if let viewModel {
                         content(viewModel)
                     }
                 }
             }
-            .navigationTitle("Profile")
-            .navigationBarTitleDisplayMode(.large)
+            .toolbar(.hidden, for: .navigationBar)
             .task {
                 if viewModel == nil { viewModel = ProfileViewModel(client: client) }
                 await viewModel?.load()
@@ -40,7 +38,8 @@ struct ProfileView: View {
             actions
             footer(viewModel)
         }
-        .padding(20)
+        .padding(.horizontal, 20)
+        .padding(.bottom, 20)
     }
 
     // MARK: - Preferences (design 13)

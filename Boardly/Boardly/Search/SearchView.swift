@@ -16,19 +16,13 @@ struct SearchView: View {
     var body: some View {
         @Bindable var viewModel = viewModel
         NavigationStack(path: $path) {
-            ZStack {
-                Color.boardlyBackground.ignoresSafeArea()
+            BoardlyScreen(title: "Search") {
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("Search")
-                        .font(.boardlyScreenTitle)
-                        .foregroundStyle(Color.boardlyInk)
-
                     searchField($viewModel.query)
                     scopeChips($viewModel.scope)
                     results
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 8)
             }
             .navigationDestination(for: AppRoute.self) { route in
                 switch route {

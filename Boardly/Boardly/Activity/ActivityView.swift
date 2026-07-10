@@ -16,13 +16,15 @@ struct ActivityView: View {
     }
 
     var body: some View {
-        ZStack {
-            Color.boardlyBackground.ignoresSafeArea()
-
+        BoardlyScreen(title: "Activity") {
+            if !viewModel.notifications.isEmpty {
+                Button("Mark all as read") { Task { await viewModel.markAllRead() } }
+                    .font(.boardlyCallout)
+                    .foregroundStyle(Color.accentColor)
+            }
+        } content: {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    header
-
                     if let error = viewModel.error, viewModel.notifications.isEmpty {
                         errorState(error)
                     } else if viewModel.notifications.isEmpty {
@@ -42,26 +44,12 @@ struct ActivityView: View {
                         }
                     }
                 }
-                .padding(20)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
             }
         }
         .task { await viewModel.load() }
         .refreshable { await viewModel.load() }
-    }
-
-    private var header: some View {
-        HStack(alignment: .firstTextBaseline) {
-            Text("Activity")
-                .font(.boardlyScreenTitle)
-                .foregroundStyle(Color.boardlyInk)
-            Spacer()
-            if !viewModel.notifications.isEmpty {
-                Button("Mark all as read") { Task { await viewModel.markAllRead() } }
-                    .font(.boardlyCallout)
-                    .foregroundStyle(Color.accentColor)
-            }
-        }
-        .padding(.top, 8)
     }
 
     private func row(_ notification: PlankaNotification) -> some View {

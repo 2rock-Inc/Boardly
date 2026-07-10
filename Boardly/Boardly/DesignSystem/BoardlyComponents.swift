@@ -192,6 +192,45 @@ struct BoardlyChip<Content: View>: View {
     }
 }
 
+/// Standard top-level tab screen: a pinned Manrope screen title (with an optional
+/// trailing accessory) sitting on the paper background, over scrolling content.
+///
+/// This is the single plan every primary tab (Projects / Search / Activity /
+/// Profile) is built on, so their titles land at the exact same height — the title
+/// row owns the 20pt side inset and the 8pt top inset; `content` fills the rest and
+/// manages its own horizontal padding (so a `ScrollView` can still bleed full-width).
+struct BoardlyScreen<Trailing: View, Content: View>: View {
+    let title: LocalizedStringKey
+    @ViewBuilder let trailing: Trailing
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        ZStack {
+            Color.boardlyBackground.ignoresSafeArea()
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(alignment: .center, spacing: 12) {
+                    Text(title)
+                        .font(.boardlyScreenTitle)
+                        .foregroundStyle(Color.boardlyInk)
+                    Spacer(minLength: 8)
+                    trailing
+                }
+                .padding(.horizontal, 20)
+
+                content
+            }
+            .padding(.top, 8)
+        }
+    }
+}
+
+extension BoardlyScreen where Trailing == EmptyView {
+    /// Title-only screen (no trailing accessory).
+    init(title: LocalizedStringKey, @ViewBuilder content: () -> Content) {
+        self.init(title: title, trailing: { EmptyView() }, content: content)
+    }
+}
+
 /// Tinted icon tile for settings rows — 30pt, radius 9, teal-fill background.
 struct BoardlyIconTile: View {
     let systemName: String
