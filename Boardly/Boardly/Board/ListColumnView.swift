@@ -7,6 +7,7 @@ struct ListColumnView: View {
     let payload: BoardPayload
     let onCardTap: (Card) -> Void
     let onCreateCard: (String) -> Void
+    var loadImage: ((URL) async -> Data?)?
 
     @State private var newCardName = ""
     @State private var isAddingCard = false
@@ -16,16 +17,21 @@ struct ListColumnView: View {
         VStack(alignment: .leading, spacing: 10) {
             // Header — list name + count pill, sitting directly on the paper.
             HStack(spacing: 8) {
+                if let color = list.color {
+                    Circle()
+                        .fill(Color(plankaLabel: color))
+                        .frame(width: 8, height: 8)
+                }
                 Text(list.name ?? "Untitled")
                     .font(.sans(16, .bold))
                     .foregroundStyle(Color.boardlyInk)
                     .lineLimit(1)
                 Text("\(cards.count)")
-                    .font(.mono(11, .medium))
-                    .foregroundStyle(Color.boardlyTextSecondary)
+                    .font(.sans(12, .bold))
+                    .foregroundStyle(Color.boardlyTextTertiary)
                     .padding(.horizontal, 7)
-                    .padding(.vertical, 2)
-                    .background(Color.boardlySurfaceSecondary, in: Capsule())
+                    .padding(.vertical, 1)
+                    .background(Color.boardlyNeutralFill, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, 4)
@@ -40,7 +46,9 @@ struct ListColumnView: View {
                                 taskLists: payload.taskLists(for: card),
                                 tasks: payload.taskLists(for: card).flatMap { payload.tasks(for: $0) },
                                 labels: payload.labels(for: card),
-                                members: payload.members(for: card))
+                                members: payload.members(for: card),
+                                coverURL: payload.coverURL(for: card),
+                                loadImage: loadImage)
                         }
                         .buttonStyle(.plain)
                     }

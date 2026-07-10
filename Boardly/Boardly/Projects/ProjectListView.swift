@@ -52,15 +52,27 @@ struct ProjectListView: View {
     @State private var query = ""
 
     var body: some View {
-        ZStack {
-            Color.boardlyBackground.ignoresSafeArea()
-
-            if viewModel.payload == nil, viewModel.error == nil {
-                ProgressView().tint(.accentColor)
-            } else if let error = viewModel.error {
-                ContentUnavailableView(error, systemImage: "exclamationmark.triangle")
-            } else if let payload = viewModel.payload {
-                content(payload)
+        BoardlyScreen(title: "Projects") {
+            Button {
+                // Project creation lands in Phase 5 (admin POST /projects).
+            } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(Color.accentColor)
+            }
+            .boardlyTapTarget("Add project")
+            if let user = viewModel.currentUser {
+                AvatarView(name: user.name, size: 34, bordered: false)
+            }
+        } content: {
+            Group {
+                if viewModel.payload == nil, viewModel.error == nil {
+                    ProgressView().tint(.accentColor).frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if let error = viewModel.error {
+                    ContentUnavailableView(error, systemImage: "exclamationmark.triangle")
+                } else if let payload = viewModel.payload {
+                    content(payload)
+                }
             }
         }
         .navigationTitle("")
@@ -77,7 +89,6 @@ struct ProjectListView: View {
             // Lazy so off-screen project cards (and their board rows) don't render
             // — each board row loads its card count on appear, bounding the burst.
             LazyVStack(alignment: .leading, spacing: 18) {
-                header
                 searchField
 
                 if projects.isEmpty {
@@ -104,31 +115,11 @@ struct ProjectListView: View {
                     }
                 }
             }
-            .padding(20)
+            .padding(.horizontal, 20)
+            .padding(.bottom, 20)
         }
         .refreshable { await viewModel.load(using: client) }
         .scrollDismissesKeyboard(.immediately)
-    }
-
-    private var header: some View {
-        HStack(spacing: 12) {
-            Text("Projects")
-                .font(.boardlyScreenTitle)
-                .foregroundStyle(Color.boardlyInk)
-            Spacer()
-            Button {
-                // Project creation lands in Phase 5 (admin POST /projects).
-            } label: {
-                Image(systemName: "plus")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
-            }
-            .boardlyTapTarget("Add project")
-            if let user = viewModel.currentUser {
-                AvatarView(name: user.name, size: 34, bordered: false)
-            }
-        }
-        .padding(.top, 8)
     }
 
     private func sectionLabel(_ text: LocalizedStringKey) -> some View {
@@ -218,7 +209,7 @@ private struct FavoriteCard: View {
                         .font(.system(size: 11))
                         .foregroundStyle(Color.labelTeal)
                     Text(project.name)
-                        .font(.boardlyMonoCaption)
+                        .font(.sans(12))
                         .foregroundStyle(Color.boardlyTextSecondary)
                         .lineLimit(1)
                 }
@@ -318,7 +309,7 @@ private struct BoardRow: View {
                     .lineLimit(1)
                 if !meta.isEmpty {
                     Text(verbatim: meta)
-                        .font(.boardlyMonoCaption)
+                        .font(.sans(12))
                         .foregroundStyle(Color.boardlyTextSecondary)
                         .lineLimit(1)
                 }
