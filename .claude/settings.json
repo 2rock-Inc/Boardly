@@ -1,25 +1,53 @@
 {
   "permissions": {
+    "defaultMode": "acceptEdits",
     "allow": [
-      "Bash(swift build *)",
-      "Bash(swift test *)",
-      "Bash(xcodebuild *)",
-      "Bash(xcrun simctl *)",
-      "Bash(swiftlint *)",
+      "Read",
+      "Edit",
+      "Write",
+      "Glob",
+      "Grep",
+      "Bash(swift *)",
       "Bash(swiftformat *)",
-      "Bash(git status)",
-      "Bash(git diff *)",
-      "Bash(git log *)"
+      "Bash(swiftlint *)",
+      "Bash(xcodebuild *)",
+      "Bash(xcrun *)",
+      "Bash(plutil *)",
+      "Bash(python3 *)",
+      "Bash(git *)",
+      "Bash(gh *)",
+      "Bash(grep *)",
+      "Bash(sed *)",
+      "Bash(awk *)",
+      "Bash(jq *)",
+      "Bash(sort *)",
+      "Bash(uniq *)",
+      "Bash(cut *)",
+      "Bash(tr *)",
+      "Bash(xargs *)",
+      "Bash(echo *)",
+      "Bash(printf *)",
+      "Bash(tee *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(mkdir *)",
+      "Bash(touch *)",
+      "Bash(chmod +x *)",
+      "Bash(rm *)"
     ],
     "deny": [
-      "Read(./.env)",
-      "Read(./.env.*)",
+      "Read(.env)",
+      "Read(.env.*)",
       "Read(./**/*.xcconfig)",
       "Read(./secrets/**)",
       "Read(./**/GoogleService-Info.plist)",
-      "Bash(curl *)"
-    ],
-    "defaultMode": "acceptEdits"
+      "Bash(curl *)",
+      "Bash(sudo *)",
+      "Bash(rm -rf *)",
+      "Bash(git push --force*)",
+      "Bash(git reset --hard*)",
+      "Bash(git clean *)"
+    ]
   },
   "hooks": {
     "PreToolUse": [
