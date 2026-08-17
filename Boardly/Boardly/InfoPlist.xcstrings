@@ -1,0 +1,23 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "NSPhotoLibraryUsageDescription" : {
+      "comment" : "Permission prompt shown when attaching a photo to a card or setting a project background.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Boardly accesses your photos to attach them to cards and set a project background."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Boardly accède à vos photos pour les joindre aux cartes et définir le fond d’un projet."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}
