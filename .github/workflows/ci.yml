@@ -52,8 +52,25 @@ jobs:
       - name: BoardlyKit unit tests
         run: swift test
       # App-target tests on a simulator (UI tests are excluded).
+      #
+      # xcodebuild refuses a generic destination here ("Tests must be run on a
+      # concrete device") and a bare `platform=iOS Simulator` is ambiguous, so the
+      # device has to be named one way or another. Hard-coding a model ties the job
+      # to whatever the runner image ships — iPhone 16 disappeared with Xcode 26 —
+      # so resolve any available iPhone on the newest installed runtime instead.
       - name: App unit tests (iOS Simulator)
-        run: xcodebuild -project "$PROJECT" -scheme "$SCHEME" -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:BoardlyTests test
+        run: |
+          DEVICE_ID=$(xcrun simctl list devices available --json | python3 -c "
+          import json, sys
+          runtimes = json.load(sys.stdin)['devices']
+          version = lambda r: [int(n) for n in r.split('iOS-')[1].split('-')]
+          newest = max((r for r in runtimes
+                        if 'iOS-' in r and any(d['name'].startswith('iPhone') for d in runtimes[r])),
+                       key=version)
+          print(next(d['udid'] for d in runtimes[newest] if d['name'].startswith('iPhone')))
+          ")
+          xcrun simctl list devices available | grep "$DEVICE_ID"
+          xcodebuild -project "$PROJECT" -scheme "$SCHEME" -destination "id=$DEVICE_ID" -only-testing:BoardlyTests test
 
   lint:
     runs-on: macos-15
