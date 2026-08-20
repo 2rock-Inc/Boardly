@@ -16,13 +16,16 @@ struct ProfileStoreTests {
         #expect(sut.activeProfile == nil)
     }
 
-    @Test("addProfile appends and sets as active when it's the first")
+    @Test("addProfile appends without activating, even for the first profile")
     func addFirstProfile() {
+        // An active profile means an authenticated session, so adding a server must never
+        // activate it — doing so sent the very first server straight to the projects list
+        // with no token, skipping the login screen entirely.
         let sut = makeSut()
         let profile = makeProfile()
         sut.addProfile(profile)
         #expect(sut.profiles.count == 1)
-        #expect(sut.activeProfileID == profile.id)
+        #expect(sut.activeProfileID == nil)
     }
 
     @Test("addProfile second profile does not change active")
@@ -31,6 +34,7 @@ struct ProfileStoreTests {
         let p1 = makeProfile(name: "Server A")
         let p2 = makeProfile(name: "Server B")
         sut.addProfile(p1)
+        sut.setActiveProfile(id: p1.id) // as the login flow would, once authenticated
         sut.addProfile(p2)
         #expect(sut.profiles.count == 2)
         #expect(sut.activeProfileID == p1.id)
@@ -52,6 +56,7 @@ struct ProfileStoreTests {
         let p2 = makeProfile(name: "B")
         sut.addProfile(p1)
         sut.addProfile(p2)
+        sut.setActiveProfile(id: p1.id)
         sut.removeProfile(id: p1.id)
         #expect(sut.activeProfileID == p2.id)
     }
@@ -84,6 +89,7 @@ struct ProfileStoreTests {
         let sut = makeSut()
         let p1 = makeProfile()
         sut.addProfile(p1)
+        sut.setActiveProfile(id: p1.id)
         sut.setActiveProfile(id: UUID())
         #expect(sut.activeProfileID == p1.id)
     }
@@ -98,7 +104,37 @@ struct ProfileStoreTests {
         let sut2 = ProfileStore(userDefaults: defaults)
         #expect(sut2.profiles.count == 1)
         #expect(sut2.profiles[0].name == "Persistent Server")
+        // Saved, but never logged into — relaunching must not resume a session.
+        #expect(sut2.activeProfileID == nil)
+    }
+
+    @Test("an authenticated profile is restored on relaunch")
+    func activeProfileRestored() throws {
+        let defaults = try #require(UserDefaults(suiteName: "restore-test-\(UUID().uuidString)"))
+        let sut1 = ProfileStore(userDefaults: defaults)
+        let profile = makeProfile()
+        sut1.addProfile(profile)
+        sut1.setActiveProfile(id: profile.id)
+
+        let sut2 = ProfileStore(userDefaults: defaults)
         #expect(sut2.activeProfileID == profile.id)
+    }
+
+    @Test("clearing the active profile survives a relaunch")
+    func clearedProfileStaysCleared() throws {
+        // Logout and "switch server" both drop the stored active profile. Relaunching used
+        // to fall back to the first profile, dropping the user straight back into a session
+        // they had just left — and, once logged out, one with no token at all.
+        let defaults = try #require(UserDefaults(suiteName: "logout-test-\(UUID().uuidString)"))
+        let sut1 = ProfileStore(userDefaults: defaults)
+        let profile = makeProfile()
+        sut1.addProfile(profile)
+        sut1.setActiveProfile(id: profile.id)
+        sut1.clearActiveProfile()
+
+        let sut2 = ProfileStore(userDefaults: defaults)
+        #expect(sut2.profiles.count == 1) // the server is still listed
+        #expect(sut2.activeProfileID == nil) // but no session is resumed
     }
 
     @Test("makeClient creates PlankaClient bound to profile")
