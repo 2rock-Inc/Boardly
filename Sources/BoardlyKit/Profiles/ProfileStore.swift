@@ -21,13 +21,17 @@ public final class ProfileStore {
         return profiles.first { $0.id == id }
     }
 
+    /// Adds a profile without activating it.
+    ///
+    /// An active profile stands for an *authenticated* session: `RootView` swaps to
+    /// `MainView` as soon as `activeProfile` is non-nil. Activating a server the moment it
+    /// is added would put the app in a session it holds no token for — and, because the
+    /// swap is a full-screen cover, would bury the login screen the caller just pushed.
+    /// Activation belongs to the login flow, which calls `setActiveProfile` once a token
+    /// is stored.
     public func addProfile(_ profile: ServerProfile) {
         BoardlyLog.tag(.profile).icon("➕").info("Profile added", metadata: ["name": profile.name])
         profiles.append(profile)
-        if profiles.count == 1 {
-            activeProfileID = profile.id
-            userDefaults.set(profile.id.uuidString, forKey: activeProfileKey)
-        }
         saveToUserDefaults()
     }
 
@@ -81,13 +85,15 @@ public final class ProfileStore {
               let decoded = try? JSONDecoder().decode([ServerProfile].self, from: data)
         else { return }
         profiles = decoded
+        // Restore only an explicitly stored active profile. Falling back to the first
+        // one would re-enter a session nobody asked for: after "switch server" or logout
+        // the stored key is deliberately absent, and a freshly added server has never had
+        // one — in both cases the app must come back to the server picker.
         if let idString = userDefaults.string(forKey: activeProfileKey),
            let id = UUID(uuidString: idString),
            profiles.contains(where: { $0.id == id })
         {
             activeProfileID = id
-        } else {
-            activeProfileID = profiles.first?.id
         }
     }
 
