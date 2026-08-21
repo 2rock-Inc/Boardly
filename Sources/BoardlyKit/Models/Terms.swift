@@ -6,15 +6,39 @@ import Foundation
 /// it, never localize it. `signature` is what proves *which* text was agreed to — it goes
 /// back verbatim in `POST /access-tokens/accept-terms`.
 public struct Terms: Codable, Sendable, Equatable {
-    public let type: String
+    /// Optional despite `planka-openapi.json` marking it required: live instances omit it,
+    /// and decoding it as non-optional failed the whole request.
+    public let type: String?
     public let language: String
     public let content: String
     public let signature: String
 
-    public init(type: String, language: String, content: String, signature: String) {
+    public init(type: String? = nil, language: String, content: String, signature: String) {
         self.type = type
         self.language = language
         self.content = content
         self.signature = signature
+    }
+
+    /// Marker PLANKA puts between the terms themselves and the confirmation checkboxes
+    /// the user is meant to tick.
+    private static let confirmationsMarker = "[confirmations]::"
+
+    /// The terms text, without the confirmation block appended to it.
+    public var body: String {
+        guard let range = content.range(of: Self.confirmationsMarker) else { return content }
+        return String(content[content.startIndex ..< range.lowerBound])
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// The statements the user is agreeing to, one per line — shown next to the accept
+    /// control rather than buried at the end of the scroll, and never rendered as the raw
+    /// `[confirmations]::` marker.
+    public var confirmations: [String] {
+        guard let range = content.range(of: Self.confirmationsMarker) else { return [] }
+        return content[range.upperBound...]
+            .split(separator: "\n")
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty && $0 != "---" }
     }
 }
