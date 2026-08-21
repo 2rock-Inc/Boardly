@@ -36,7 +36,13 @@ final class TermsViewModel {
         error = nil
         defer { isLoading = false }
         do {
-            terms = try await client.getTerms(language: Locale.preferredLanguages.first)
+            // Ask the instance which languages it actually has before requesting one:
+            // it answers an unavailable language with whichever it lists first, which is
+            // how a French device ends up reading German terms.
+            let bootstrap = try? await client.validateInstance()
+            let available = bootstrap?.termsLanguages ?? []
+            terms = try await client.getTerms(
+                language: Terms.preferredLanguage(available: available))
         } catch {
             self.error = localizedErrorMessage(error)
         }

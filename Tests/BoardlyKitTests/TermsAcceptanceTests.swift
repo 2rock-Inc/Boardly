@@ -136,6 +136,44 @@ struct TermsAcceptanceTests {
         #expect(terms.confirmations.isEmpty)
     }
 
+    // MARK: - Choosing a language
+
+    @Test("an exact language match wins")
+    func languageExactMatch() {
+        #expect(Terms.preferredLanguage(
+            available: ["de-DE", "en-US", "fr-FR"],
+            preferred: ["fr-FR", "en-GB"]) == "fr-FR")
+    }
+
+    @Test("a regional variant beats an unrelated language")
+    func languageRegionalVariant() {
+        #expect(Terms.preferredLanguage(
+            available: ["de-DE", "fr-FR"],
+            preferred: ["fr-CA"]) == "fr-FR")
+    }
+
+    @Test("English is the fallback, not whatever the instance lists first")
+    func languageFallsBackToEnglish() {
+        // Verified against a live instance: asking a de-DE/en-US instance for fr-FR
+        // returns German. Left to the server, a French user reads legal terms in a
+        // language they may not speak.
+        #expect(Terms.preferredLanguage(
+            available: ["de-DE", "en-US"],
+            preferred: ["fr-FR"]) == "en-US")
+    }
+
+    @Test("with neither the user's language nor English, the first is used")
+    func languageLastResort() {
+        #expect(Terms.preferredLanguage(
+            available: ["de-DE", "it-IT"],
+            preferred: ["fr-FR"]) == "de-DE")
+    }
+
+    @Test("no advertised languages means no query at all")
+    func languageNoneAdvertised() {
+        #expect(Terms.preferredLanguage(available: [], preferred: ["fr-FR"]) == nil)
+    }
+
     @Test("getTerms omits the query when no language is given")
     func getTermsNoLanguage() async throws {
         mockHTTP.stub(json: #"""
