@@ -102,6 +102,40 @@ struct TermsAcceptanceTests {
         #expect(terms.content == "# Hello")
     }
 
+    @Test("terms decode without the `type` the spec calls required")
+    func termsDecodeWithoutType() async throws {
+        // What pro.demo.planka.cloud actually serves: no `type`, even though
+        // planka-openapi.json lists it under `required`. Declaring it non-optional made
+        // every fetch fail with "couldn't read the server's response".
+        mockHTTP.stub(json: #"""
+        {"item":{"language":"en-US","content":"# Terms","signature":"sig-abc"}}
+        """#)
+
+        let terms = try await client.getTerms()
+        #expect(terms.type == nil)
+        #expect(terms.signature == "sig-abc")
+    }
+
+    @Test("the confirmations block is split out of the terms body")
+    func confirmationsSplit() {
+        // PLANKA appends the statements to tick after a `[confirmations]::` marker. Left
+        // in place, the marker renders as literal text in the middle of the terms.
+        let terms = Terms(
+            language: "en-US",
+            content: "Some terms.\n\n[confirmations]::\n---\n✔️ **I accept these terms**\n",
+            signature: "sig")
+
+        #expect(terms.body == "Some terms.")
+        #expect(terms.confirmations == ["✔️ **I accept these terms**"])
+    }
+
+    @Test("terms with no confirmations block are left whole")
+    func noConfirmations() {
+        let terms = Terms(language: "en-US", content: "Just terms.", signature: "sig")
+        #expect(terms.body == "Just terms.")
+        #expect(terms.confirmations.isEmpty)
+    }
+
     @Test("getTerms omits the query when no language is given")
     func getTermsNoLanguage() async throws {
         mockHTTP.stub(json: #"""
