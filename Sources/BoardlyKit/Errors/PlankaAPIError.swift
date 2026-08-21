@@ -3,6 +3,9 @@ import Foundation
 public enum PlankaAPIError: Error, @unchecked Sendable {
     case unauthorized
     case forbidden
+    /// A 403 on the sign-in flow that carries a specific, actionable reason.
+    /// Distinct from `.forbidden`, which stays the generic "not allowed to do this".
+    case authRestriction(AuthRestriction)
     case notFound
     case conflict
     case invalidParams
@@ -19,6 +22,7 @@ extension PlankaAPIError: Equatable {
         switch (lhs, rhs) {
         case (.unauthorized, .unauthorized): true
         case (.forbidden, .forbidden): true
+        case let (.authRestriction(l), .authRestriction(r)): l == r
         case (.notFound, .notFound): true
         case (.conflict, .conflict): true
         case (.invalidParams, .invalidParams): true
@@ -38,6 +42,7 @@ extension PlankaAPIError: LocalizedError {
         switch self {
         case .unauthorized: "Unauthorized — please log in again."
         case .forbidden: "You don't have permission to perform this action."
+        case let .authRestriction(restriction): "Sign-in refused: \(restriction.reason)."
         case .notFound: "The requested resource was not found."
         case .conflict: "A conflict occurred with the current state of the resource."
         case .invalidParams: "Invalid parameters were sent to the server."

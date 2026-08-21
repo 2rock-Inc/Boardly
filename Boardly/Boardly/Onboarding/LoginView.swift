@@ -1,6 +1,16 @@
 import BoardlyKit
 import SwiftUI
 
+/// How a sign-in attempt ended. Not a `Bool`: PLANKA can refuse credentials that are
+/// perfectly valid and hand back a half-finished session to continue instead.
+enum LoginOutcome {
+    case authenticated
+    /// Valid credentials, but the instance's terms have to be accepted first. The token
+    /// identifies the pending sign-in and is short-lived.
+    case termsRequired(pendingToken: String)
+    case failed
+}
+
 @Observable
 @MainActor
 final class LoginViewModel {
@@ -28,7 +38,7 @@ final class LoginViewModel {
         oidc = try? await client.validateInstance().oidc
     }
 
-    func login(using client: PlankaClient) async -> Bool {
+    func login(using client: PlankaClient) async -> LoginOutcome {
         isLoggingIn = true
         error = nil
         defer { isLoggingIn = false }
@@ -37,8 +47,11 @@ final class LoginViewModel {
             try await client.login(
                 emailOrUsername: email.trimmingCharacters(in: .whitespacesAndNewlines),
                 password: password)
-            return true
+            return .authenticated
         } catch let apiError as PlankaAPIError {
+            if case let .authRestriction(restriction) = apiError {
+                return outcome(for: restriction)
+            }
             switch apiError {
             case .unauthorized: error = String(localized: "Invalid email/username or password.")
             case .forbidden: error = String(localized: "Login is restricted. Check with your administrator.")
@@ -47,7 +60,19 @@ final class LoginViewModel {
         } catch {
             self.error = localizedErrorMessage(error)
         }
-        return false
+        return .failed
+    }
+
+    /// PLANKA refuses a sign-in for one of several reasons, and only one of them is
+    /// something the user can resolve here. Accepting terms continues the flow with the
+    /// pending token; the rest are dead ends that at least deserve an honest explanation
+    /// instead of being flattened into "contact your administrator".
+    private func outcome(for restriction: AuthRestriction) -> LoginOutcome {
+        if case .termsAcceptanceRequired = restriction.reason, let pendingToken = restriction.pendingToken {
+            return .termsRequired(pendingToken: pendingToken)
+        }
+        error = localizedRestrictionMessage(restriction.reason)
+        return .failed
     }
 
     /// Begin the OIDC/SSO leg by presenting the web flow (parsed from the
@@ -73,8 +98,8 @@ final class LoginViewModel {
 
     /// Finish SSO: exchange the captured `code` (+ the session's `nonce`) for a
     /// token. Returns whether login succeeded.
-    func completeSSO(code: String, using client: PlankaClient) async -> Bool {
-        guard let session = oidcSession else { return false }
+    func completeSSO(code: String, using client: PlankaClient) async -> LoginOutcome {
+        guard let session = oidcSession else { return .failed }
         oidcSession = nil
         isLoggingIn = true
         error = nil
@@ -82,8 +107,12 @@ final class LoginViewModel {
 
         do {
             try await client.exchangeOIDC(code: code, nonce: session.nonce)
-            return true
+            return .authenticated
         } catch let apiError as PlankaAPIError {
+            // Terms can be pending on the SSO leg too — same continuation applies.
+            if case let .authRestriction(restriction) = apiError {
+                return outcome(for: restriction)
+            }
             switch apiError {
             case .unauthorized: error = String(localized: "SSO authentication failed (invalid code or nonce).")
             case .forbidden: error = String(localized: "SSO login was refused by the server.")
@@ -92,7 +121,7 @@ final class LoginViewModel {
         } catch {
             self.error = localizedErrorMessage(error)
         }
-        return false
+        return .failed
     }
 
     func cancelSSO() {
@@ -226,9 +255,8 @@ struct LoginView: View {
                 onCode: { code in
                     Task {
                         let client = profileStore.makeClient(for: profile)
-                        if await viewModel.completeSSO(code: code, using: client) {
-                            profileStore.setActiveProfile(id: profile.id)
-                        }
+                        let outcome = await viewModel.completeSSO(code: code, using: client)
+                        handle(outcome)
                     }
                 },
                 onCancel: { viewModel.cancelSSO() })
@@ -238,10 +266,20 @@ struct LoginView: View {
     private func handleSignIn() {
         Task {
             let client = profileStore.makeClient(for: profile)
-            if await viewModel.login(using: client) {
-                profileStore.setActiveProfile(id: profile.id)
-                // RootView swaps to MainView when activeProfile becomes non-nil
-            }
+            let outcome = await viewModel.login(using: client)
+            handle(outcome)
+        }
+    }
+
+    private func handle(_ outcome: LoginOutcome) {
+        switch outcome {
+        case .authenticated:
+            // RootView swaps to MainView when activeProfile becomes non-nil
+            profileStore.setActiveProfile(id: profile.id)
+        case let .termsRequired(pendingToken):
+            path.append(.terms(profileID: profile.id, pendingToken: pendingToken))
+        case .failed:
+            break // the view model already set `error`
         }
     }
 

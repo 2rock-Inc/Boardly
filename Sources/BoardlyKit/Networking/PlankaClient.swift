@@ -49,6 +49,52 @@ public struct PlankaClient: Sendable {
             metadata: ["user": emailOrUsername])
     }
 
+    /// Fetch the instance's terms, for the flow that follows a
+    /// `.termsAcceptanceRequired` restriction.
+    ///
+    /// Unauthenticated by design — the caller has no token yet, that being the whole point.
+    public func getTerms(language: String? = nil) async throws -> Terms {
+        struct Response: Decodable {
+            let item: Terms
+        }
+
+        let query = language.map { [URLQueryItem(name: "language", value: $0)] } ?? []
+        let request = try buildRequest(
+            method: "GET",
+            path: "/terms",
+            queryItems: query,
+            requiresAuth: false)
+        let response: Response = try await execute(request)
+        return response.item
+    }
+
+    /// Accept the terms and finish signing in, storing the token exactly as `login` does.
+    ///
+    /// `pendingToken` comes from the `.termsAcceptanceRequired` restriction and is short-
+    /// lived (ten minutes), so a user who leaves the screen open will get `.unauthorized`
+    /// back and has to sign in again. `signature` must be the one from the `Terms` that
+    /// were actually shown — it is what records which text was agreed to.
+    public func acceptTerms(pendingToken: String, signature: String) async throws {
+        struct Body: Encodable {
+            let pendingToken: String
+            let signature: String
+        }
+        struct Response: Decodable {
+            let item: String
+        }
+
+        BoardlyLog.tag(.auth).icon("📜").info("Accepting terms")
+        let body = try JSONEncoder().encode(Body(pendingToken: pendingToken, signature: signature))
+        let request = try buildRequest(
+            method: "POST",
+            path: "/access-tokens/accept-terms",
+            body: body,
+            requiresAuth: false)
+        let response: Response = try await execute(request)
+        try tokenStore.saveToken(response.item)
+        BoardlyLog.tag(.auth).icon("✅").info("Terms accepted, token stored")
+    }
+
     /// Exchange an OIDC authorization `code` + `nonce` (captured from the SSO
     /// redirect) for a PLANKA access token, then store it — same shape as
     /// password login. The instance advertises OIDC via `Bootstrap.oidc`.
@@ -773,6 +819,7 @@ public struct PlankaClient: Sendable {
     private func buildRequest(
         method: String,
         path: String,
+        queryItems: [URLQueryItem] = [],
         body: Data? = nil,
         requiresAuth: Bool = true) throws -> URLRequest
     {
@@ -781,6 +828,9 @@ public struct PlankaClient: Sendable {
         }
         let basePath = components.path.hasSuffix("/") ? String(components.path.dropLast()) : components.path
         components.path = basePath + "/api" + path
+        // Set through `queryItems` rather than appended to `path`, which lands in
+        // `components.path` and would be percent-encoded into the path itself.
+        if !queryItems.isEmpty { components.queryItems = queryItems }
 
         guard let url = components.url else {
             throw PlankaAPIError.invalidURL
@@ -893,7 +943,8 @@ public struct PlankaClient: Sendable {
 
         guard (200 ... 299).contains(http.statusCode) else {
             // Try to parse PLANKA's structured error body
-            let plankaCode = (try? JSONDecoder().decode(PlankaErrorBody.self, from: data))?.code
+            let errorBody = try? JSONDecoder().decode(PlankaErrorBody.self, from: data)
+            let plankaCode = errorBody?.code
             var meta: [String: Any] = ["path": path]
             if let code = plankaCode { meta["code"] = code }
             if http.statusCode == 401 {
@@ -912,6 +963,15 @@ public struct PlankaClient: Sendable {
                 BoardlyLog.tag(.network).icon("⚠️").warning(
                     "← \(http.statusCode) \(method) \(path)",
                     metadata: meta)
+            }
+            // A 403 on the sign-in flow carries a reason the user can act on, so it must
+            // not be flattened into the generic `.forbidden` that a plain permission
+            // failure produces. Only bodies that actually describe a restriction qualify.
+            if http.statusCode == 403, let restriction = errorBody?.authRestriction {
+                BoardlyLog.tag(.auth).icon("🚧").warning(
+                    "Sign-in restricted",
+                    metadata: ["reason": String(describing: restriction.reason)])
+                throw PlankaAPIError.authRestriction(restriction)
             }
             if let mapped = plankaCode.flatMap(PlankaAPIError.from(plankaCode:)) {
                 throw mapped
@@ -935,4 +995,22 @@ public struct PlankaClient: Sendable {
 private struct PlankaErrorBody: Decodable {
     let code: String?
     let message: String?
+    /// Undocumented in `planka-openapi.json`, but returned alongside a resumable
+    /// sign-in restriction and required by `POST /access-tokens/accept-terms`.
+    let pendingToken: String?
+    /// Names the step needed to finish signing in, e.g. `accept-terms`.
+    let step: String?
+
+    /// Reads this body as a sign-in restriction, or `nil` if it is an ordinary
+    /// permission failure — a board the user may not touch must stay `.forbidden`.
+    var authRestriction: AuthRestriction? {
+        guard let message else {
+            // No message to go on: only trust the resumable-flow markers.
+            guard pendingToken != nil || step != nil else { return nil }
+            return AuthRestriction(reason: .unknown(""), pendingToken: pendingToken)
+        }
+        let reason = AuthRestriction.Reason(message: message)
+        if case .unknown = reason, pendingToken == nil, step == nil { return nil }
+        return AuthRestriction(reason: reason, pendingToken: pendingToken)
+    }
 }

@@ -1,566 +1,6 @@
 {
   "sourceLanguage": "en",
   "strings": {
-    "Board members" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Board members"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Membres du tableau"
-          }
-        }
-      }
-    },
-    "Board members · %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Board members · %lld"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Membres du tableau · %lld"
-          }
-        }
-      }
-    },
-    "Project team" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Project team"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Équipe du projet"
-          }
-        }
-      }
-    },
-    "No project members to add." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No project members to add."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aucun membre de projet à ajouter."
-          }
-        }
-      }
-    },
-    "Search members" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Search members"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rechercher des membres"
-          }
-        }
-      }
-    },
-    "Rename board" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rename board"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Renommer le tableau"
-          }
-        }
-      }
-    },
-    "Board name" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Board name"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nom du tableau"
-          }
-        }
-      }
-    },
-    "Save" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Save"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enregistrer"
-          }
-        }
-      }
-    },
-    "Delete board?" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete board?"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Supprimer le tableau ?"
-          }
-        }
-      }
-    },
-    "Delete" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Supprimer"
-          }
-        }
-      }
-    },
-    "This permanently deletes the board and all its cards." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This permanently deletes the board and all its cards."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cela supprime définitivement le tableau et toutes ses cartes."
-          }
-        }
-      }
-    },
-    "Export CSV" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Export CSV"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Exporter en CSV"
-          }
-        }
-      }
-    },
-    "Delete board" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete board"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Supprimer le tableau"
-          }
-        }
-      }
-    },
-    "Filter and sort" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Filter and sort"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Filtrer et trier"
-          }
-        }
-      }
-    },
-    "Filters" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Filters"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Filtres"
-          }
-        }
-      }
-    },
-    "Apply" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Apply"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Appliquer"
-          }
-        }
-      }
-    },
-    "Clear filters" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Clear filters"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Effacer les filtres"
-          }
-        }
-      }
-    },
-    "Due date" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Due date"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Échéance"
-          }
-        }
-      }
-    },
-    "Members" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Members"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Membres"
-          }
-        }
-      }
-    },
-    "Labels" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Labels"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Étiquettes"
-          }
-        }
-      }
-    },
-    "Overdue" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Overdue"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "En retard"
-          }
-        }
-      }
-    },
-    "With due date" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "With due date"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Avec échéance"
-          }
-        }
-      }
-    },
-    "No due date" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No due date"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sans échéance"
-          }
-        }
-      }
-    },
-    "Back" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Back"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Retour"
-          }
-        }
-      }
-    },
-    "Board menu" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Board menu"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Menu du tableau"
-          }
-        }
-      }
-    },
-    "Add card" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add card"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ajouter une carte"
-          }
-        }
-      }
-    },
-    "Close" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fermer"
-          }
-        }
-      }
-    },
-    "Send comment" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Send comment"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Envoyer le commentaire"
-          }
-        }
-      }
-    },
-    "Add project" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add project"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ajouter un projet"
-          }
-        }
-      }
-    },
-    "Edit project" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Edit project"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Modifier le projet"
-          }
-        }
-      }
-    },
-    "Remove attachment" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Remove attachment"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Supprimer la pièce jointe"
-          }
-        }
-      }
-    },
-    "Edit service" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Edit service"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Modifier le service"
-          }
-        }
-      }
-    },
-    "Delete service" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete service"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Supprimer le service"
-          }
-        }
-      }
-    },
-    "Delete webhook" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete webhook"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Supprimer le webhook"
-          }
-        }
-      }
-    },
-    "Delete field" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete field"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Supprimer le champ"
-          }
-        }
-      }
-    },
     "": {
       "localizations": {
         "en": {
@@ -573,6 +13,22 @@
           "stringUnit": {
             "state": "translated",
             "value": ""
+          }
+        }
+      }
+    },
+    "%@ requires you to accept its terms before you can sign in.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ requires you to accept its terms before you can sign in."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ exige que vous acceptiez ses conditions avant de vous connecter."
           }
         }
       }
@@ -819,13 +275,13 @@
     },
     "587": {
       "localizations": {
-        "fr": {
+        "en": {
           "stringUnit": {
             "state": "translated",
             "value": "587"
           }
         },
-        "en": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "587"
@@ -851,48 +307,64 @@
     },
     "A Keychain error occurred.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Une erreur de trousseau est survenue."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "A Keychain error occurred."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Une erreur de trousseau est survenue."
           }
         }
       }
     },
     "A network error occurred. Check your connection.": {
       "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A network error occurred. Check your connection."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Une erreur réseau est survenue. Vérifiez votre connexion."
           }
-        },
+        }
+      }
+    },
+    "Accept and Continue": {
+      "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A network error occurred. Check your connection."
+            "value": "Accept and Continue"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accepter et continuer"
           }
         }
       }
     },
     "Access token (optional)": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Jeton d’accès (facultatif)"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Access token (optional)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jeton d’accès (facultatif)"
           }
         }
       }
@@ -1138,6 +610,22 @@
         }
       }
     },
+    "Add card": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add card"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter une carte"
+          }
+        }
+      }
+    },
     "Add lists to this board from the web app.": {
       "localizations": {
         "en": {
@@ -1154,50 +642,50 @@
         }
       }
     },
-    "Added to “%@”": {
+    "Add project": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Added to “%@”"
+            "value": "Add project"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ajouté à « %@ »"
+            "value": "Ajouter un projet"
           }
         }
       }
     },
     "Administrator": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Administrateur"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Administrator"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Administrateur"
           }
         }
       }
     },
     "Admins only.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Réservé aux administrateurs."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Admins only."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réservé aux administrateurs."
           }
         }
       }
@@ -1221,16 +709,16 @@
     },
     "All Projects": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tous les projets"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "All Projects"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tous les projets"
           }
         }
       }
@@ -1247,6 +735,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Apparence"
+          }
+        }
+      }
+    },
+    "Apply": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apply"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Appliquer"
           }
         }
       }
@@ -1301,6 +805,22 @@
         }
       }
     },
+    "Back": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retour"
+          }
+        }
+      }
+    },
     "Background": {
       "extractionState": "manual",
       "localizations": {
@@ -1347,6 +867,70 @@
           "stringUnit": {
             "state": "translated",
             "value": "Champs du tableau"
+          }
+        }
+      }
+    },
+    "Board members": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Board members"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Membres du tableau"
+          }
+        }
+      }
+    },
+    "Board members · %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Board members · %lld"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Membres du tableau · %lld"
+          }
+        }
+      }
+    },
+    "Board menu": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Board menu"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menu du tableau"
+          }
+        }
+      }
+    },
+    "Board name": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Board name"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nom du tableau"
           }
         }
       }
@@ -1481,6 +1065,38 @@
         }
       }
     },
+    "Clear filters": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear filters"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Effacer les filtres"
+          }
+        }
+      }
+    },
+    "Close": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fermer"
+          }
+        }
+      }
+    },
     "Coming soon": {
       "localizations": {
         "en": {
@@ -1547,448 +1163,448 @@
     },
     "Could not construct a valid URL.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible de construire une URL valide."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Could not construct a valid URL."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de construire une URL valide."
           }
         }
       }
     },
     "Could not reach a PLANKA instance at that URL.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible de joindre une instance PLANKA à cette URL."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Could not reach a PLANKA instance at that URL."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de joindre une instance PLANKA à cette URL."
           }
         }
       }
     },
     "Couldn't add the service.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible d’ajouter le service."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Couldn't add the service."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible d’ajouter le service."
           }
         }
       }
     },
     "Couldn't create the webhook.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible de créer le webhook."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Couldn't create the webhook."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de créer le webhook."
           }
         }
       }
     },
     "Couldn't delete the service.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible de supprimer le service."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Couldn't delete the service."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de supprimer le service."
           }
         }
       }
     },
     "Couldn't delete the webhook.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible de supprimer le webhook."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Couldn't delete the webhook."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de supprimer le webhook."
           }
         }
       }
     },
     "Couldn't load the configuration.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible de charger la configuration."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Couldn't load the configuration."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de charger la configuration."
           }
         }
       }
     },
     "Couldn't load the webhooks.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible de charger les webhooks."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Couldn't load the webhooks."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de charger les webhooks."
           }
         }
       }
     },
     "Couldn't load your profile.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible de charger votre profil."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Couldn't load your profile."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de charger votre profil."
           }
         }
       }
     },
     "Couldn't save your preference.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible d’enregistrer votre préférence."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Couldn't save your preference."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible d’enregistrer votre préférence."
           }
         }
       }
     },
     "Couldn't save.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enregistrement impossible."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Couldn't save."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrement impossible."
           }
         }
       }
     },
     "Couldn't send the test (SMTP must be configured through the UI).": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible d’envoyer le test (le SMTP doit être configuré via l’interface)."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Couldn't send the test (SMTP must be configured through the UI)."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible d’envoyer le test (le SMTP doit être configuré via l’interface)."
           }
         }
       }
     },
     "Couldn't send the test.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible d’envoyer le test."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Couldn't send the test."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible d’envoyer le test."
           }
         }
       }
     },
     "Couldn't update the service.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible de mettre à jour le service."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Couldn't update the service."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de mettre à jour le service."
           }
         }
       }
     },
     "Couldn’t add the field.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible d’ajouter le champ."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Couldn’t add the field."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible d’ajouter le champ."
           }
         }
       }
     },
     "Couldn’t add the group.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible d’ajouter le groupe."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Couldn’t add the group."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible d’ajouter le groupe."
           }
         }
       }
     },
     "Couldn’t add the manager.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible d’ajouter le responsable."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Couldn’t add the manager."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible d’ajouter le responsable."
           }
         }
       }
     },
     "Couldn’t change the background.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible de changer l’arrière-plan."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Couldn’t change the background."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de changer l’arrière-plan."
           }
         }
       }
     },
     "Couldn’t change visibility.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible de changer la visibilité."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Couldn’t change visibility."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de changer la visibilité."
           }
         }
       }
     },
     "Couldn’t delete the group.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible de supprimer le groupe."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Couldn’t delete the group."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de supprimer le groupe."
           }
         }
       }
     },
     "Couldn’t delete the project.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible de supprimer le projet."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Couldn’t delete the project."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de supprimer le projet."
           }
         }
       }
     },
     "Couldn’t index the search.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible d’indexer la recherche."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Couldn’t index the search."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible d’indexer la recherche."
           }
         }
       }
     },
     "Couldn’t load notifications.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible de charger les notifications."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Couldn’t load notifications."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de charger les notifications."
           }
         }
       }
     },
     "Couldn’t mark all as read.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible de tout marquer comme lu."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Couldn’t mark all as read."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de tout marquer comme lu."
           }
         }
       }
     },
     "Couldn’t reach the PLANKA server. Check the address and try again.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible de joindre le serveur PLANKA. Vérifiez l’adresse et réessayez."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Couldn’t reach the PLANKA server. Check the address and try again."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de joindre le serveur PLANKA. Vérifiez l’adresse et réessayez."
           }
         }
       }
     },
     "Couldn’t read the server’s response.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible de lire la réponse du serveur."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Couldn’t read the server’s response."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de lire la réponse du serveur."
           }
         }
       }
     },
     "Couldn’t remove the background.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible de retirer l’arrière-plan."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Couldn’t remove the background."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de retirer l’arrière-plan."
           }
         }
       }
     },
     "Couldn’t remove the manager.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible de retirer le responsable."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Couldn’t remove the manager."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de retirer le responsable."
           }
         }
       }
@@ -2011,16 +1627,16 @@
     },
     "Couldn’t save the project.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impossible d’enregistrer le projet."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Couldn’t save the project."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible d’enregistrer le projet."
           }
         }
       }
@@ -2059,16 +1675,16 @@
     },
     "Credentials": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Identifiants"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Credentials"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Identifiants"
           }
         }
       }
@@ -2091,16 +1707,16 @@
     },
     "Dark": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sombre"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Dark"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sombre"
           }
         }
       }
@@ -2201,6 +1817,86 @@
         }
       }
     },
+    "Delete board": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete board"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supprimer le tableau"
+          }
+        }
+      }
+    },
+    "Delete board?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete board?"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supprimer le tableau ?"
+          }
+        }
+      }
+    },
+    "Delete field": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete field"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supprimer le champ"
+          }
+        }
+      }
+    },
+    "Delete service": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete service"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supprimer le service"
+          }
+        }
+      }
+    },
+    "Delete webhook": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete webhook"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supprimer le webhook"
+          }
+        }
+      }
+    },
     "Description": {
       "localizations": {
         "en": {
@@ -2219,64 +1915,80 @@
     },
     "Display name (optional)": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nom affiché (facultatif)"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Display name (optional)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nom affiché (facultatif)"
           }
         }
       }
     },
     "Due Date": {
       "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Due Date"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Échéance"
           }
-        },
+        }
+      }
+    },
+    "Due date": {
+      "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Due Date"
+            "value": "Due date"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Échéance"
           }
         }
       }
     },
     "Earlier": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Plus tôt"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Earlier"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plus tôt"
           }
         }
       }
     },
     "Edit": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Modifier"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Edit"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modifier"
           }
         }
       }
@@ -2293,6 +2005,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Modifier le projet"
+          }
+        }
+      }
+    },
+    "Edit project": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit project"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modifier le projet"
+          }
+        }
+      }
+    },
+    "Edit service": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit service"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modifier le service"
           }
         }
       }
@@ -2331,48 +2075,64 @@
     },
     "Events (comma-separated, empty = all)": {
       "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Events (comma-separated, empty = all)"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Événements (séparés par des virgules, vide = tous)"
           }
-        },
+        }
+      }
+    },
+    "Export CSV": {
+      "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Events (comma-separated, empty = all)"
+            "value": "Export CSV"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exporter en CSV"
           }
         }
       }
     },
     "Failed to upload the background image.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Échec de l’envoi de l’image d’arrière-plan."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Failed to upload the background image."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Échec de l’envoi de l’image d’arrière-plan."
           }
         }
       }
     },
     "Favorites": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Favoris"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Favorites"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Favoris"
           }
         }
       }
@@ -2389,6 +2149,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nom du champ"
+          }
+        }
+      }
+    },
+    "Filter and sort": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filter and sort"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtrer et trier"
+          }
+        }
+      }
+    },
+    "Filters": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filters"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtres"
           }
         }
       }
@@ -2510,16 +2302,16 @@
     },
     "Grouped": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Groupés"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Grouped"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Groupés"
           }
         }
       }
@@ -2558,16 +2350,16 @@
     },
     "Home View": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vue d’accueil"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Home View"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vue d’accueil"
           }
         }
       }
@@ -2640,32 +2432,32 @@
     },
     "Invalid URL format.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Format d’URL invalide."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Invalid URL format."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Format d’URL invalide."
           }
         }
       }
     },
     "Invalid email/username or password.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "E-mail/nom d’utilisateur ou mot de passe invalide."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Invalid email/username or password."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E-mail/nom d’utilisateur ou mot de passe invalide."
           }
         }
       }
@@ -2688,7 +2480,6 @@
       }
     },
     "Labels": {
-      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -2706,16 +2497,16 @@
     },
     "Light": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Clair"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Light"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clair"
           }
         }
       }
@@ -2787,16 +2578,16 @@
     },
     "Login is restricted. Check with your administrator.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "La connexion est restreinte. Contactez votre administrateur."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Login is restricted. Check with your administrator."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La connexion est restreinte. Contactez votre administrateur."
           }
         }
       }
@@ -2852,16 +2643,16 @@
     },
     "Managers · %lld": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Responsables · %lld"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Managers · %lld"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Responsables · %lld"
           }
         }
       }
@@ -2878,38 +2669,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tout marquer comme lu"
-          }
-        }
-      }
-    },
-    "Markdown": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Markdown"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Markdown"
-          }
-        }
-      }
-    },
-    "Markdown Editor": {
-      "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Éditeur Markdown"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Markdown Editor"
           }
         }
       }
@@ -2946,24 +2705,55 @@
         }
       }
     },
-    "Member": {
+    "Markdown": {
       "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Markdown"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Membre"
+            "value": "Markdown"
+          }
+        }
+      }
+    },
+    "Markdown Editor": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Markdown Editor"
           }
         },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Éditeur Markdown"
+          }
+        }
+      }
+    },
+    "Member": {
+      "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Member"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Membre"
+          }
         }
       }
     },
     "Members": {
-      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -3014,16 +2804,16 @@
     },
     "My webhook": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mon webhook"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "My webhook"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mon webhook"
           }
         }
       }
@@ -3078,48 +2868,48 @@
     },
     "Network error during SSO login.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Erreur réseau pendant la connexion SSO."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Network error during SSO login."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erreur réseau pendant la connexion SSO."
           }
         }
       }
     },
     "Network error. Check the URL and your connection.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Erreur réseau. Vérifiez l’URL et votre connexion."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Network error. Check the URL and your connection."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erreur réseau. Vérifiez l’URL et votre connexion."
           }
         }
       }
     },
     "Network error. Please check your connection.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Erreur réseau. Vérifiez votre connexion."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Network error. Please check your connection."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erreur réseau. Vérifiez votre connexion."
           }
         }
       }
@@ -3206,16 +2996,16 @@
     },
     "New Service": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nouveau service"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "New Service"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nouveau service"
           }
         }
       }
@@ -3285,6 +3075,22 @@
         }
       }
     },
+    "No due date": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No due date"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sans échéance"
+          }
+        }
+      }
+    },
     "No fields": {
       "localizations": {
         "en": {
@@ -3345,6 +3151,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aucune notification"
+          }
+        }
+      }
+    },
+    "No project members to add.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No project members to add."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucun membre de projet à ajouter."
           }
         }
       }
@@ -3447,16 +3269,16 @@
     },
     "OIDC: authorization URL could not be parsed. authorizationUrl = %@": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "OIDC : impossible d’analyser l’URL d’autorisation. authorizationUrl = %@"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "OIDC: authorization URL could not be parsed. authorizationUrl = %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OIDC : impossible d’analyser l’URL d’autorisation. authorizationUrl = %@"
           }
         }
       }
@@ -3489,6 +3311,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sur cette carte · %lld"
+          }
+        }
+      }
+    },
+    "Overdue": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overdue"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En retard"
           }
         }
       }
@@ -3544,13 +3382,13 @@
     },
     "Port": {
       "localizations": {
-        "fr": {
+        "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Port"
           }
         },
-        "en": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Port"
@@ -3610,32 +3448,48 @@
     },
     "Project Owner": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Propriétaire du projet"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Project Owner"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Propriétaire du projet"
           }
         }
       }
     },
     "Project not found.": {
       "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Project not found."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Projet introuvable."
           }
-        },
+        }
+      }
+    },
+    "Project team": {
+      "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Project not found."
+            "value": "Project team"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Équipe du projet"
           }
         }
       }
@@ -3668,6 +3522,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Projets"
+          }
+        }
+      }
+    },
+    "Remove attachment": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove attachment"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supprimer la pièce jointe"
+          }
+        }
+      }
+    },
+    "Rename board": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rename board"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renommer le tableau"
           }
         }
       }
@@ -3722,16 +3608,16 @@
     },
     "SMTP Server": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Serveur SMTP"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "SMTP Server"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Serveur SMTP"
           }
         }
       }
@@ -3754,32 +3640,32 @@
     },
     "SSO authentication failed (invalid code or nonce).": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Échec de l’authentification SSO (code ou nonce invalide)."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "SSO authentication failed (invalid code or nonce)."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Échec de l’authentification SSO (code ou nonce invalide)."
           }
         }
       }
     },
     "SSO login was refused by the server.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Connexion SSO refusée par le serveur."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "SSO login was refused by the server."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connexion SSO refusée par le serveur."
           }
         }
       }
@@ -3896,66 +3782,82 @@
         }
       }
     },
-    "Sender (From)": {
+    "Send comment": {
       "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send comment"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Expéditeur (De)"
+            "value": "Envoyer le commentaire"
           }
-        },
+        }
+      }
+    },
+    "Sender (From)": {
+      "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Sender (From)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Expéditeur (De)"
           }
         }
       }
     },
     "Server": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Serveur"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Server"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Serveur"
           }
         }
       }
     },
     "Server address": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Adresse du serveur"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Server address"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adresse du serveur"
           }
         }
       }
     },
     "Server error (%lld).": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Erreur serveur (%lld)."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Server error (%lld)."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erreur serveur (%lld)."
           }
         }
       }
@@ -3978,16 +3880,16 @@
     },
     "Service URL": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "URL du service"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Service URL"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "URL du service"
           }
         }
       }
@@ -4004,6 +3906,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Configurer un serveur"
+          }
+        }
+      }
+    },
+    "Sign-in is restricted on this server. Check with your administrator.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign-in is restricted on this server. Check with your administrator."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La connexion est restreinte sur ce serveur. Renseignez-vous auprès de votre administrateur."
           }
         }
       }
@@ -4026,16 +3944,32 @@
     },
     "System": {
       "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "System"
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Système"
           }
-        },
+        }
+      }
+    },
+    "Terms of Service": {
+      "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "System"
+            "value": "Terms of Service"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conditions d’utilisation"
           }
         }
       }
@@ -4058,64 +3992,176 @@
     },
     "The requested item was not found.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "L’élément demandé est introuvable."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "The requested item was not found."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’élément demandé est introuvable."
           }
         }
       }
     },
     "The server address is invalid.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "L’adresse du serveur est invalide."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "The server address is invalid."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’adresse du serveur est invalide."
           }
         }
       }
     },
     "The server rejected the request.": {
       "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server rejected the request."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Le serveur a rejeté la requête."
           }
-        },
+        }
+      }
+    },
+    "The server rejected these terms. Try signing in again.": {
+      "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The server rejected the request."
+            "value": "The server rejected these terms. Try signing in again."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le serveur a refusé ces conditions. Essayez de vous reconnecter."
+          }
+        }
+      }
+    },
+    "The terms couldn’t be loaded.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The terms couldn’t be loaded."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de charger les conditions."
           }
         }
       }
     },
     "This conflicts with the current state. Refresh and try again.": {
       "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This conflicts with the current state. Refresh and try again."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Cela entre en conflit avec l’état actuel. Actualisez et réessayez."
           }
-        },
+        }
+      }
+    },
+    "This connection isn’t encrypted — your login token will be sent in cleartext.": {
+      "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This conflicts with the current state. Refresh and try again."
+            "value": "This connection isn’t encrypted — your login token will be sent in cleartext."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cette connexion n’est pas chiffrée — votre jeton de connexion sera envoyé en clair."
+          }
+        }
+      }
+    },
+    "This permanently deletes the board and all its cards.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This permanently deletes the board and all its cards."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cela supprime définitivement le tableau et toutes ses cartes."
+          }
+        }
+      }
+    },
+    "This server hasn’t been set up yet. An administrator has to sign in first.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This server hasn’t been set up yet. An administrator has to sign in first."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce serveur n’est pas encore configuré. Un administrateur doit s’y connecter en premier."
+          }
+        }
+      }
+    },
+    "This server only allows single sign-on. Use the SSO button instead.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This server only allows single sign-on. Use the SSO button instead."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce serveur n’autorise que l’authentification unique. Utilisez plutôt le bouton SSO."
+          }
+        }
+      }
+    },
+    "This took too long and the sign-in expired. Please sign in again.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This took too long and the sign-in expired. Please sign in again."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’opération a pris trop de temps et la connexion a expiré. Reconnectez-vous."
           }
         }
       }
@@ -4205,13 +4251,13 @@
     },
     "URL": {
       "localizations": {
-        "fr": {
+        "en": {
           "stringUnit": {
             "state": "translated",
             "value": "URL"
           }
         },
-        "en": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "URL"
@@ -4221,77 +4267,61 @@
     },
     "Unauthorized — please log in again.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Non autorisé — veuillez vous reconnecter."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Unauthorized — please log in again."
           }
-        }
-      }
-    },
-    "Unexpected error: %@": {
-      "localizations": {
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Erreur inattendue : %@"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Unexpected error: %@"
+            "value": "Non autorisé — veuillez vous reconnecter."
           }
         }
       }
     },
     "Unreadable image.": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Image illisible."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Unreadable image."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Image illisible."
           }
         }
       }
     },
     "Username": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nom d’utilisateur"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Username"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nom d’utilisateur"
           }
         }
       }
     },
     "WYSIWYG": {
       "localizations": {
-        "fr": {
+        "en": {
           "stringUnit": {
             "state": "translated",
             "value": "WYSIWYG"
           }
         },
-        "en": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "WYSIWYG"
@@ -4315,18 +4345,50 @@
         }
       }
     },
+    "With due date": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "With due date"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avec échéance"
+          }
+        }
+      }
+    },
     "You don’t have permission to do this.": {
       "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You don’t have permission to do this."
+          }
+        },
         "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Vous n’avez pas la permission de faire cela."
           }
-        },
+        }
+      }
+    },
+    "You need to accept this server’s terms before signing in.": {
+      "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "You don’t have permission to do this."
+            "value": "You need to accept this server’s terms before signing in."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vous devez accepter les conditions de ce serveur avant de vous connecter."
           }
         }
       }
@@ -4365,13 +4427,13 @@
     },
     "cardCreate, cardUpdate": {
       "localizations": {
-        "fr": {
+        "en": {
           "stringUnit": {
             "state": "translated",
             "value": "cardCreate, cardUpdate"
           }
         },
-        "en": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "cardCreate, cardUpdate"
@@ -4445,13 +4507,13 @@
     },
     "no-reply@example.com": {
       "localizations": {
-        "fr": {
+        "en": {
           "stringUnit": {
             "state": "translated",
             "value": "no-reply@example.com"
           }
         },
-        "en": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "no-reply@example.com"
@@ -4477,13 +4539,13 @@
     },
     "secret": {
       "localizations": {
-        "fr": {
+        "en": {
           "stringUnit": {
             "state": "translated",
             "value": "secret"
           }
         },
-        "en": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "secret"
@@ -4493,13 +4555,13 @@
     },
     "smtp.example.com": {
       "localizations": {
-        "fr": {
+        "en": {
           "stringUnit": {
             "state": "translated",
             "value": "smtp.example.com"
           }
         },
-        "en": {
+        "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "smtp.example.com"
@@ -4509,32 +4571,32 @@
     },
     "updated %@": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "modifié %@"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "updated %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "modifié %@"
           }
         }
       }
     },
     "username": {
       "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "nom d’utilisateur"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "username"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "nom d’utilisateur"
           }
         }
       }
@@ -4599,22 +4661,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "••••••••"
-          }
-        }
-      }
-    },
-    "This connection isn’t encrypted — your login token will be sent in cleartext.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "This connection isn’t encrypted — your login token will be sent in cleartext."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cette connexion n’est pas chiffrée — votre jeton de connexion sera envoyé en clair."
           }
         }
       }
