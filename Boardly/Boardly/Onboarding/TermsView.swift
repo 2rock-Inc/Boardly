@@ -14,11 +14,21 @@ final class TermsViewModel {
     /// `AttributedString`'s Markdown support, so inline parsing that keeps the author's
     /// line breaks is the honest rendering rather than one that silently collapses them.
     var attributedContent: AttributedString {
-        guard let content = terms?.content else { return AttributedString() }
+        guard let body = terms?.body else { return AttributedString() }
+        return Self.markdown(body)
+    }
+
+    /// The statements being agreed to, lifted out of the terms text so they sit next to
+    /// the accept button instead of at the bottom of a long scroll.
+    var confirmations: [AttributedString] {
+        (terms?.confirmations ?? []).map(Self.markdown)
+    }
+
+    private static func markdown(_ source: String) -> AttributedString {
         let parsed = try? AttributedString(
-            markdown: content,
+            markdown: source,
             options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace))
-        return parsed ?? AttributedString(content)
+        return parsed ?? AttributedString(source)
     }
 
     func load(using client: PlankaClient) async {
@@ -26,7 +36,13 @@ final class TermsViewModel {
         error = nil
         defer { isLoading = false }
         do {
-            terms = try await client.getTerms(language: Locale.preferredLanguages.first)
+            // Ask the instance which languages it actually has before requesting one:
+            // it answers an unavailable language with whichever it lists first, which is
+            // how a French device ends up reading German terms.
+            let bootstrap = try? await client.validateInstance()
+            let available = bootstrap?.termsLanguages ?? []
+            terms = try await client.getTerms(
+                language: Terms.preferredLanguage(available: available))
         } catch {
             self.error = localizedErrorMessage(error)
         }
@@ -118,6 +134,13 @@ struct TermsView: View {
 
     private var actions: some View {
         VStack(spacing: 12) {
+            ForEach(Array(viewModel.confirmations.enumerated()), id: \.offset) { _, line in
+                Text(line) // server data — rendered, not localized
+                    .font(.boardlyCallout)
+                    .foregroundStyle(Color.boardlyTextSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
             Button(action: handleAccept) {
                 if viewModel.isAccepting {
                     ProgressView().tint(.white)
