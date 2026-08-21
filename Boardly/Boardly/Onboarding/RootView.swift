@@ -16,6 +16,10 @@ struct RootView: View {
                         if let profile = profileStore.profiles.first(where: { $0.id == profileID }) {
                             LoginView(profile: profile, path: $path)
                         }
+                    case let .terms(profileID, pendingToken):
+                        if let profile = profileStore.profiles.first(where: { $0.id == profileID }) {
+                            TermsView(profile: profile, pendingToken: pendingToken, path: $path)
+                        }
                     }
                 }
         }
