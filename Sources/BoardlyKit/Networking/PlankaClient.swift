@@ -190,7 +190,13 @@ public struct PlankaClient: Sendable {
             return payload
         } catch {
             BoardlyLog.tag(.network).icon("❌").error(
-                "Decode failed", error: error, metadata: ["type": "BoardPayload", "path": request.url?.path ?? "?"])
+                "Decode failed",
+                error: error,
+                metadata: [
+                    "type": "BoardPayload",
+                    "path": request.url?.path ?? "?",
+                    "reason": error.decodingDiagnostic,
+                ])
             throw PlankaAPIError.decodingError(error)
         }
     }
@@ -909,7 +915,13 @@ public struct PlankaClient: Sendable {
             BoardlyLog.tag(.network).icon("❌").error(
                 "Decode failed",
                 error: error,
-                metadata: ["type": "\(T.self)", "path": request.url?.path ?? "?"])
+                metadata: [
+                    "type": "\(T.self)",
+                    "path": request.url?.path ?? "?",
+                    // The reason a DecodingError gives up is the whole diagnosis, and
+                    // localizedDescription throws it away.
+                    "reason": error.decodingDiagnostic,
+                ])
             throw PlankaAPIError.decodingError(error)
         }
     }
