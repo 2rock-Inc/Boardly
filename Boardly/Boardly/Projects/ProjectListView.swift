@@ -109,8 +109,8 @@ struct ProjectListView: View {
                                 members: payload.members(for: project),
                                 cardCounts: viewModel.cardCounts,
                                 loadCount: { boardId in Task { await viewModel.loadCardCount(boardId, using: client) } },
-                                onOpenBoard: { path.append(.board(id: $0.id, name: $0.name, projectName: project.name)) },
-                                onOpenProject: { path.append(.project(id: project.id, name: project.name)) })
+                                onOpenBoard: { path.append(.board(id: $0.id, name: $0.name, projectName: project.name ?? "")) },
+                                onOpenProject: { path.append(.project(id: project.id, name: project.name ?? "")) })
                         }
                     }
                 }
@@ -183,10 +183,10 @@ struct ProjectListView: View {
     }
 
     private func filteredProjects(_ payload: ProjectsPayload) -> [Project] {
-        guard !query.isEmpty else { return payload.projects }
+        guard !query.isEmpty else { return payload.listable }
         let q = query.lowercased()
-        return payload.projects.filter { project in
-            project.name.lowercased().contains(q)
+        return payload.listable.filter { project in
+            (project.name ?? "").lowercased().contains(q)
                 || payload.boards(for: project).contains { $0.name.lowercased().contains(q) }
         }
     }
@@ -208,7 +208,7 @@ private struct FavoriteCard: View {
                     Image(systemName: "star.fill")
                         .font(.system(size: 11))
                         .foregroundStyle(Color.labelTeal)
-                    Text(project.name)
+                    Text(project.name ?? "")
                         .font(.sans(12))
                         .foregroundStyle(Color.boardlyTextSecondary)
                         .lineLimit(1)
@@ -244,7 +244,7 @@ private struct ProjectCard: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 10) {
-                Text(project.name)
+                Text(project.name ?? "")
                     .font(.sans(16, .bold))
                     .foregroundStyle(.white)
                     .lineLimit(1)

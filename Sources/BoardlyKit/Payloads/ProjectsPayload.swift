@@ -30,6 +30,14 @@ public struct ProjectsPayload: Sendable {
         self.customFields = customFields
     }
 
+    /// The projects worth listing, i.e. the ones that have a name.
+    ///
+    /// `projects` stays faithful to what the server sent; this drops PLANKA Pro's
+    /// unnamed personal project — an item whose every field is null but the id, the
+    /// timestamps and the owner. PLANKA's own web client doesn't list it either, and we
+    /// have nothing to render for it: no name, no background, no boards attached.
+    public var listable: [Project] { projects.filter { $0.name != nil } }
+
     /// Project managers (responsables) of the project.
     public func managers(for project: Project) -> [ProjectManager] {
         projectManagers.filter { $0.projectId == project.id }
