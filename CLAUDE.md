@@ -8,7 +8,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 The canonical API reference is `Reference/planka-openapi.json` (OpenAPI 3.0). **Always derive models from this file**, not from Postman docs or guesswork.
 
-The work is split into 5 phases — see `ROADMAP.md` for the execution plan and the suggested kickoff prompt for each phase.
+The work is split into phases — see `ROADMAP.md` for the execution plan and the suggested kickoff prompt for each phase.
+
+**The spec is a starting point, not the truth.** Live instances outrun it, and the two editions (community / Pro) don't send the same fields. When a decode fails, profile the real payload rather than trusting `planka-openapi.json` — an audit of every model against the spec found zero problems while the Pro instance was breaking the projects screen. See Phase 9 in `ROADMAP.md` for the field-level snapshot.
 
 ---
 

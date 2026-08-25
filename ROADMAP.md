@@ -1,4 +1,4 @@
-# Boardly — Macro Roadmap (8 phases)
+# Boardly — Macro Roadmap (9 phases)
 
 Each phase is meant to be one (or a few) separate Claude Code session(s).
 Phases are ordered by dependency: each one builds on what the previous
@@ -333,6 +333,83 @@ they don't depend on the CI machine's region.
 > a fully translated locale, and route date/number formatting through the current
 > locale. Include unit tests per the "Testing expectations" in ROADMAP.md. Plan
 > first, then implement.
+
+---
+
+## Phase 9 — Catching up with the server (fields we receive and ignore)
+
+**Goal:** close the gap between what PLANKA sends and what Boardly models. This is
+not speculation: it comes from profiling two live instances (`pro.demo.planka.cloud`
+and `community.demo.planka.cloud`) against every BoardlyKit model — 2 021 objects,
+21 models, checked in both directions. Decoding itself is sound (that audit found no
+remaining mismatch once the Pro personal-project fix landed); what it found is **48
+fields the server sends that we drop on the floor**, each one a PLANKA feature the
+app can't see.
+
+Ordered by user-visible cost, not by size.
+
+### 9a — Board membership permissions ⚠️ needs data before it can be written
+
+`BoardMembership` carries `canCreateCards`, `canUseComments`,
+`canSeeOnlyAssignedCards`, `canAccessInbox`, `canUseInbox`,
+`canInteractWithGuests` and `hideIdentityFromGuests` — none of them modelled. We
+don't read `role` for board members either, so a **viewer gets the same UI as an
+editor**: the app offers actions the server then refuses with `E_FORBIDDEN`.
+
+The trap: on both demo instances every one of those booleans is **null across all 78
+memberships**, and the two editions don't agree on the field set (community sends
+only `canComment`, which Pro drops entirely). In PLANKA, null means "the role's
+default applies", *not* "denied" — so gating naively on `if !canUseComments` would
+grey the UI out for everybody. Key the gate off `role`, and treat the booleans as
+refinements only where non-null. **Don't write this without an instance that has a
+genuinely restricted member to test against**: the demo data contains no example of
+a permission actually set.
+
+### 9b — Card features we don't surface
+
+`startDate`, the whole recurrence family (`recurrence`, `recurrenceDueDateOffset`,
+`recurrenceStartedAt`, `recurrenceDestination`, `lastRecurredAt`,
+`skipDuplicateRecurrence`), location (`locationName`, `locationCoordinates`),
+`isDraft`, `isSubscribed`, `coverLinkAttachmentId`, and the duplication trail
+(`sourceId`, `sourceList`, `sourceLabels`). Recurring cards and card subscriptions
+are the two users notice missing.
+
+### 9c — Board features we don't surface
+
+`notice` / `isNoticeEnabled` (a board-level banner), `isSubscribed`,
+`displayCardAges`, `startWithEmptyBoard`, `type`, and the guest-visibility settings
+(`canGuestsSeeOtherGuests`, `setCoverAttachmentsVisibleToGuestsAutomatically`,
+`setCoverLinkAttachmentsVisibleToGuestsAutomatically`). `Label` has its own pair
+(`canBeUsedByGuests`, `canBeUsedByWorkers`) and `Attachment` has
+`isVisibleToGuests`: the guest model is a coherent feature we ignore wholesale.
+
+### 9d — Account & instance
+
+`User`: `isTotpEnabled`, `totpEnabledAt`, `totpRecoveryCodesRemaining` (2FA),
+`department`, `location`, `autoLogoutMode`, `lockedFieldNames`,
+`hideIdentityFromGuests`. `Bootstrap`: `instanceName`, `logo`, `loginCover`,
+`organization`, `welcomeMessage`, `isDemoMode`, and **`maintenanceMode` /
+`maintenanceMessage`** — that last pair is the cheapest win in the phase, since an
+instance in maintenance currently just fails opaquely.
+
+### Deliberately skipped
+
+`Project.backgroundStockImage`, `backgroundFilter`, `backgroundFilterStrength` —
+Pro-only background cosmetics with no equivalent in our design system.
+
+**Testing expectations:** decode tests built from **captured live payloads**, not
+hand-written fixtures — the Pro personal-project bug got through precisely because
+the spec and the fixtures agreed with each other and disagreed with the server. Any
+permission gating needs the three states covered (allowed, denied, and null ⇒ role
+default). Re-profile a live instance before starting: the field list above is a
+snapshot of 2026-08-25, and PLANKA keeps moving.
+
+**Suggested kickoff prompt:**
+> Read CLAUDE.md and ROADMAP.md. Implement Phase 9a: read board membership `role`
+> and permissions, and gate the board UI so a viewer isn't offered actions the
+> server will refuse. Treat a null permission as "the role's default applies", never
+> as "denied". Include unit tests per the "Testing expectations" in ROADMAP.md.
+> Plan first, then implement.
 
 ---
 
