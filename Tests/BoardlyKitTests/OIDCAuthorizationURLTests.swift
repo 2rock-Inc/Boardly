@@ -27,7 +27,7 @@ struct OIDCAuthorizationURLTests {
 
     @Test("escaped separators are repaired at decode time")
     func repairsEscapedSeparators() throws {
-        let items = queryItems(try decode(escaped))
+        let items = try queryItems(decode(escaped))
         #expect(items["scope"] == "openid email profile")
         #expect(items["response_type"] == "code")
         #expect(items["redirect_uri"] == "https://todo.example.com/oidc-callback")
@@ -38,7 +38,7 @@ struct OIDCAuthorizationURLTests {
     }
 
     @Test("without the repair, every parameter but the first is unreachable")
-    func documentsTheFailure() throws {
+    func documentsTheFailure() {
         // Guards the reasoning behind the fix: this is what the app used to see.
         let raw = "https://idp.example.com/auth?client_id=ABC&amp;scope=openid&amp;response_type=code"
         let items = (URLComponents(string: raw)?.queryItems ?? [])
@@ -71,7 +71,7 @@ struct OIDCAuthorizationURLTests {
     func leavesEncodedValuesAlone() throws {
         // %26 is an encoded `&` in a value — unescaping must not go near it.
         let json = #"{"authorizationUrl":"https://idp.example.com/auth?state=a%26b","endSessionUrl":null,"isEnforced":false}"#
-        let items = queryItems(try decode(json))
+        let items = try queryItems(decode(json))
         #expect(items["state"] == "a&b")
     }
 }

@@ -37,10 +37,10 @@ public struct Bootstrap: Codable, Sendable {
         /// well-formed URL, so this costs nothing when the server behaves.
         public init(from decoder: any Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            self.init(
-                authorizationUrl: try container.decode(String.self, forKey: .authorizationUrl),
-                endSessionUrl: try container.decodeIfPresent(String.self, forKey: .endSessionUrl),
-                isEnforced: try container.decode(Bool.self, forKey: .isEnforced))
+            try self.init(
+                authorizationUrl: container.decode(String.self, forKey: .authorizationUrl),
+                endSessionUrl: container.decodeIfPresent(String.self, forKey: .endSessionUrl),
+                isEnforced: container.decode(Bool.self, forKey: .isEnforced))
         }
     }
 }
