@@ -206,13 +206,13 @@ struct SearchView: View {
 
     private func projectRow(_ project: Project) -> some View {
         Button {
-            path.append(.project(id: project.id, name: project.name))
+            path.append(.project(id: project.id, name: project.name ?? ""))
         } label: {
             HStack(spacing: 12) {
                 RoundedRectangle(cornerRadius: 6, style: .continuous)
                     .fill(projectColor(project.id))
                     .frame(width: 26, height: 26)
-                Text(highlighted(project.name))
+                Text(highlighted(project.name ?? ""))
                     .font(.boardlyBody)
                     .foregroundStyle(Color.boardlyInk)
                     .lineLimit(1)

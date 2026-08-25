@@ -164,9 +164,9 @@ private struct GeneralTab: View {
         .task(id: viewModel.project?.id) {
             guard !seeded, let project = viewModel.project else { return }
             seeded = true
-            name = project.name
+            name = project.name ?? ""
             description = project.description ?? ""
-            isHidden = project.isHidden
+            isHidden = project.isEffectivelyHidden
         }
     }
 

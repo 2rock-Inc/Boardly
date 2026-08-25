@@ -61,9 +61,9 @@ final class SearchViewModel {
         defer { isIndexing = false }
         do {
             let payload = try await client.getProjects()
-            projects = payload.projects
+            projects = payload.listable
             let projectName = Dictionary(
-                payload.projects.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
+                payload.listable.map { ($0.id, $0.name ?? "") }, uniquingKeysWith: { first, _ in first })
 
             let (cards, complete) = await indexCards(boards: payload.boards, projectName: projectName)
             cardHits = cards
@@ -120,7 +120,7 @@ final class SearchViewModel {
 
     var projectResults: [Project] {
         guard hasQuery, scope == .all || scope == .projects else { return [] }
-        return projects.filter { Self.normalize($0.name).contains(normalizedQuery) }
+        return projects.filter { Self.normalize($0.name ?? "").contains(normalizedQuery) }
     }
 
     var boardResults: [BoardHit] {
