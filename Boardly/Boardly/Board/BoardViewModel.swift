@@ -26,6 +26,13 @@ final class BoardViewModel {
         self.boardId = boardId
     }
 
+    /// What the signed-in user may do here. Unrestricted until the payload lands, so
+    /// the board doesn't flash read-only while loading, and unrestricted whenever the
+    /// user has no membership row — see `BoardPayload.permissions(for:)`.
+    var permissions: BoardPermissions {
+        payload?.permissions(for: client.currentUserId()) ?? .unrestricted
+    }
+
     // MARK: - Real-time sync
 
     /// Subscribe this board to live events over the profile's *shared* connection

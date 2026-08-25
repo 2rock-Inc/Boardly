@@ -141,7 +141,8 @@ private struct BoardScreen: View {
                 boardContent
             }
 
-            if viewModel.payload != nil {
+            // A viewer can't create cards — PLANKA refuses the POST outright.
+            if viewModel.payload != nil, viewModel.permissions.canEdit {
                 fab
             }
         }
@@ -241,26 +242,36 @@ private struct BoardScreen: View {
             }
             .boardlyTapTarget("Filter and sort")
             Menu {
-                Button {
-                    renameText = currentBoardName
-                    showRename = true
-                } label: {
-                    Label("Rename board", systemImage: "pencil")
+                // Renaming, custom fields and deletion are board administration:
+                // offered only to someone the server will actually let through.
+                if viewModel.permissions.canEdit {
+                    Button {
+                        renameText = currentBoardName
+                        showRename = true
+                    } label: {
+                        Label("Rename board", systemImage: "pencil")
+                    }
                 }
                 Button { showMembers = true } label: {
                     Label("Board members", systemImage: "person.2")
                 }
-                Button { showCustomFieldsSheet = true } label: {
-                    Label("Custom Fields", systemImage: "square.grid.2x2")
+                if viewModel.permissions.canEdit {
+                    Button { showCustomFieldsSheet = true } label: {
+                        Label("Custom Fields", systemImage: "square.grid.2x2")
+                    }
                 }
+                // Export reads what's already on screen — no server write, so a
+                // viewer keeps it.
                 Button {
                     exportFile = ExportFile(csv: viewModel.exportCSV(), name: currentBoardName)
                 } label: {
                     Label("Export CSV", systemImage: "square.and.arrow.up")
                 }
-                Divider()
-                Button(role: .destructive) { showDeleteConfirm = true } label: {
-                    Label("Delete board", systemImage: "trash")
+                if viewModel.permissions.canEdit {
+                    Divider()
+                    Button(role: .destructive) { showDeleteConfirm = true } label: {
+                        Label("Delete board", systemImage: "trash")
+                    }
                 }
             } label: {
                 Image(systemName: "ellipsis")
@@ -339,6 +350,7 @@ private struct BoardScreen: View {
                         onCreateCard: { name in
                             Task { await viewModel.createCard(in: list, name: name) }
                         },
+                        canAddCards: viewModel.permissions.canEdit,
                         loadImage: { await viewModel.loadImage(url: $0) })
                         .frame(width: 280)
                 }
@@ -376,6 +388,7 @@ private struct BoardScreen: View {
                                 card: card,
                                 tasks: payload.taskLists(for: card).flatMap { payload.tasks(for: $0) },
                                 onTap: { selectedCardId = SelectedCard(id: card.id) },
+                                canToggleTasks: viewModel.permissions.canEdit,
                                 onToggleTask: { task in Task { await viewModel.toggleTask(task) } })
                         }
                     }
@@ -433,6 +446,7 @@ private struct ListModeCardRow: View {
     let card: Card
     let tasks: [PlankaTask]
     let onTap: () -> Void
+    let canToggleTasks: Bool
     let onToggleTask: (PlankaTask) -> Void
 
     private var completed: Int { tasks.filter(\.isCompleted).count }
@@ -464,6 +478,7 @@ private struct ListModeCardRow: View {
                 VStack(alignment: .leading, spacing: 6) {
                     ForEach(tasks) { task in
                         Button { onToggleTask(task) } label: {
+                            // A viewer sees the checkboxes but can't flip them.
                             HStack(spacing: 8) {
                                 Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
                                     .foregroundStyle(task.isCompleted ? Color.labelGreen : Color.boardlyTextTertiary)
@@ -476,6 +491,7 @@ private struct ListModeCardRow: View {
                             }
                         }
                         .buttonStyle(.plain)
+                        .disabled(!canToggleTasks)
                     }
                 }
                 .padding(.leading, 2)

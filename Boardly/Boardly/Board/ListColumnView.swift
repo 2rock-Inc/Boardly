@@ -7,6 +7,9 @@ struct ListColumnView: View {
     let payload: BoardPayload
     let onCardTap: (Card) -> Void
     let onCreateCard: (String) -> Void
+    /// False for a board viewer: the add-card affordance disappears rather than
+    /// producing an `E_FORBIDDEN` on submit.
+    var canAddCards = true
     var loadImage: ((URL) async -> Data?)?
 
     @State private var newCardName = ""
@@ -54,7 +57,7 @@ struct ListColumnView: View {
                         .buttonStyle(.plain)
                     }
 
-                    if isAddingCard {
+                    if isAddingCard, canAddCards {
                         TextField("Card title", text: $newCardName)
                             .font(.boardlyBody)
                             .padding(12)
@@ -66,7 +69,7 @@ struct ListColumnView: View {
                             .onSubmit { submitNewCard() }
                     }
 
-                    addCardButton
+                    if canAddCards { addCardButton }
                 }
                 .padding(.bottom, 8)
             }

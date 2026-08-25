@@ -27,6 +27,11 @@ struct CardDetailView: View {
 
     private var card: Card? { boardVM.payload?.card(id: cardId) }
 
+    /// A board viewer reads this card; every mutating affordance below is gated on
+    /// these rather than left to fail with `E_FORBIDDEN` on tap.
+    private var canEdit: Bool { boardVM.permissions.canEdit }
+    private var canComment: Bool { boardVM.permissions.canComment }
+
     var body: some View {
         ZStack(alignment: .topLeading) {
             Color.boardlyBackground.ignoresSafeArea()
@@ -47,7 +52,9 @@ struct CardDetailView: View {
             }
         }
         .safeAreaInset(edge: .bottom) {
-            if card != nil { commentInputBar }
+            // Commenting is the one write a viewer may be granted — but only if the
+            // membership says so, which is a separate permission from editing.
+            if card != nil, canComment { commentInputBar }
         }
         .task {
             if let loaded = await boardVM.loadComments(cardId: cardId) {
@@ -113,7 +120,7 @@ struct CardDetailView: View {
                         metaSubtitle(card: card, payload: payload)
                     }
 
-                    quickActions(card: card)
+                    if canEdit { quickActions(card: card) }
 
                     if let due = card.dueDate {
                         Button { showDueDateSheet = true } label: {
@@ -130,9 +137,14 @@ struct CardDetailView: View {
                             .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Color.boardlySeparator, lineWidth: 0.5))
                         }
                         .buttonStyle(.plain)
+                        // Not `.disabled`: the due date is information a viewer still
+                        // needs to read, and dimming it would hide it to say "you may
+                        // not edit this". It just stops being tappable.
+                        .allowsHitTesting(canEdit)
                     }
 
-                    chronoSection(card: card)
+                    // The stopwatch writes to the card, so it's an editor affordance.
+                    if canEdit { chronoSection(card: card) }
 
                     descriptionSection(card: card)
 
@@ -149,8 +161,10 @@ struct CardDetailView: View {
 
                     commentsSection(card: card)
                     if !actions.isEmpty { activitySection(payload: payload) }
-                    moveSection(card: card, payload: payload)
-                    deleteButton(card: card)
+                    if canEdit {
+                        moveSection(card: card, payload: payload)
+                        deleteButton(card: card)
+                    }
                 }
                 .padding(20)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -224,6 +238,7 @@ struct CardDetailView: View {
                 .tracking(-0.46)
                 .foregroundStyle(Color.boardlyInk)
                 .onTapGesture {
+                    guard canEdit else { return }
                     editedName = card.name
                     isEditingName = true
                 }
@@ -281,30 +296,45 @@ struct CardDetailView: View {
 
     // MARK: - Description
 
+    @ViewBuilder
     private func descriptionSection(card: Card) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            BoardlyFieldLabel("Description")
-            ZStack(alignment: .topLeading) {
-                if editedDescription.isEmpty {
-                    Text("Add a description…")
+        if canEdit {
+            VStack(alignment: .leading, spacing: 8) {
+                BoardlyFieldLabel("Description")
+                ZStack(alignment: .topLeading) {
+                    if editedDescription.isEmpty {
+                        Text("Add a description…")
+                            .font(.boardlyBody)
+                            .foregroundStyle(Color.boardlyTextTertiary)
+                            .padding(.top, 8)
+                            .padding(.leading, 4)
+                    }
+                    TextEditor(text: $editedDescription)
                         .font(.boardlyBody)
-                        .foregroundStyle(Color.boardlyTextTertiary)
-                        .padding(.top, 8)
-                        .padding(.leading, 4)
+                        .foregroundStyle(Color.boardlyInk)
+                        .frame(minHeight: 80)
+                        .scrollContentBackground(.hidden)
                 }
-                TextEditor(text: $editedDescription)
+                if editedDescription != (card.description ?? "") {
+                    Button("Save") { saveDescription(card: card) }
+                        .font(.boardlyCallout)
+                        .foregroundStyle(Color.accentColor)
+                }
+            }
+            .boardlyCard()
+        } else if let description = card.description, !description.isEmpty {
+            // Read-only rendering for a viewer. An empty description simply drops the
+            // section — an editor's "Add a description…" placeholder would only be
+            // inviting them to do something the server will refuse.
+            VStack(alignment: .leading, spacing: 8) {
+                BoardlyFieldLabel("Description")
+                Text(verbatim: description)
                     .font(.boardlyBody)
                     .foregroundStyle(Color.boardlyInk)
-                    .frame(minHeight: 80)
-                    .scrollContentBackground(.hidden)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
-            if editedDescription != (card.description ?? "") {
-                Button("Save") { saveDescription(card: card) }
-                    .font(.boardlyCallout)
-                    .foregroundStyle(Color.accentColor)
-            }
+            .boardlyCard()
         }
-        .boardlyCard()
     }
 
     // MARK: - Tasks
@@ -372,6 +402,9 @@ struct CardDetailView: View {
                 }
             }
             .buttonStyle(.plain)
+            // Same reasoning as the due date: the values stay legible, only the tap
+            // into the editing sheet goes away.
+            .allowsHitTesting(canEdit)
             .boardlyCard()
         }
     }
@@ -436,6 +469,7 @@ struct CardDetailView: View {
                         .frame(width: 22, height: 22)
                     }
                     .buttonStyle(.plain)
+                    .disabled(!canEdit)
                     .accessibilityLabel(task.isCompleted ? "Mark task incomplete" : "Mark task complete")
 
                     Text(task.name)
@@ -446,13 +480,15 @@ struct CardDetailView: View {
                     Spacer(minLength: 0)
                 }
                 .swipeActions(edge: .trailing) {
-                    Button(role: .destructive) {
-                        Task { await boardVM.deleteTask(task) }
-                    } label: { SwiftUI.Label("Delete", systemImage: "trash") }
+                    if canEdit {
+                        Button(role: .destructive) {
+                            Task { await boardVM.deleteTask(task) }
+                        } label: { SwiftUI.Label("Delete", systemImage: "trash") }
+                    }
                 }
             }
 
-            if addingTaskInListId == taskList.id {
+            if addingTaskInListId == taskList.id, canEdit {
                 HStack(spacing: 12) {
                     Image(systemName: "circle").foregroundStyle(Color.boardlyTextTertiary).font(.system(size: 20))
                     TextField("New task", text: $newTaskName)
@@ -462,14 +498,16 @@ struct CardDetailView: View {
                 }
             }
 
-            Button {
-                addingTaskInListId = taskList.id
-                newTaskName = ""
-                taskFieldFocused = true
-            } label: {
-                SwiftUI.Label("Add a task", systemImage: "plus")
-                    .font(.boardlyCallout)
-                    .foregroundStyle(Color.boardlyTextSecondary)
+            if canEdit {
+                Button {
+                    addingTaskInListId = taskList.id
+                    newTaskName = ""
+                    taskFieldFocused = true
+                } label: {
+                    SwiftUI.Label("Add a task", systemImage: "plus")
+                        .font(.boardlyCallout)
+                        .foregroundStyle(Color.boardlyTextSecondary)
+                }
             }
         }
         .boardlyCard()
@@ -572,6 +610,7 @@ struct CardDetailView: View {
                     CommentBubble(
                         comment: comment,
                         author: boardVM.payload?.users.first { $0.id == comment.userId },
+                        canDelete: comment.userId == boardVM.currentUser?.id || canEdit,
                         onDelete: {
                             Task {
                                 if await boardVM.deleteComment(id: comment.id, cardId: cardId) {
@@ -713,6 +752,9 @@ private struct CoverImageView: View {
 private struct CommentBubble: View {
     let comment: Comment
     let author: User?
+    /// Delete was previously offered on every comment, including other people's —
+    /// the server refuses those. Own comments, or a board editor moderating.
+    let canDelete: Bool
     let onDelete: () -> Void
 
     var body: some View {
@@ -741,8 +783,10 @@ private struct CommentBubble: View {
         .background(Color.boardlySurface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Color.boardlySeparator, lineWidth: 0.5))
         .contextMenu {
-            Button(role: .destructive, action: onDelete) {
-                SwiftUI.Label("Delete", systemImage: "trash")
+            if canDelete {
+                Button(role: .destructive, action: onDelete) {
+                    SwiftUI.Label("Delete", systemImage: "trash")
+                }
             }
         }
     }
